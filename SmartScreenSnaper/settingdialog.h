@@ -21,6 +21,8 @@ private slots:
 
     void on_toolButtonAutoSavePath_clicked();
 
+    void on_checkBoxRunWithWindows_stateChanged(int arg1);
+
 private:
     Ui::SettingDialog *ui;
 

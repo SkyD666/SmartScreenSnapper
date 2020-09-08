@@ -11,6 +11,7 @@ bool PublicData::clickCloseToTray = true;
 bool PublicData::ignoreClickCloseToTray = false;
 bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
+bool PublicData::noBorder = false;
 SnapType PublicData::snapType[SNAPTYPECOUNT] = {{ScreenSnap, "", false, QApplication::applicationDirPath()},
                                                 {ActiveWindowSnap, "", false, QApplication::applicationDirPath()},
                                                 {CursorSnap, "", false, QApplication::applicationDirPath()}};
@@ -23,7 +24,7 @@ PublicData::PublicData()
 
 void PublicData::readSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath().toLocal8Bit() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
 
     int size = qSettings.beginReadArray("SnapType");
 
@@ -40,11 +41,12 @@ void PublicData::readSettings()
     clickCloseToTray = qSettings.value("Config/ClickCloseToTray", true).toBool();
     hotKeyNoWait = qSettings.value("Config/HotKeyNoWait", true).toBool();
     includeCursor = qSettings.value("Config/IncludeCursor", false).toBool();
+    noBorder = qSettings.value("Config/NoBorder", false).toBool();
 }
 
 void PublicData::writeSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath().toLocal8Bit() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
 
     qSettings.beginWriteArray("SnapType");
 
@@ -63,6 +65,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/ClickCloseToTray", clickCloseToTray);
     qSettings.setValue("Config/HotKeyNoWait", hotKeyNoWait);
     qSettings.setValue("Config/IncludeCursor", includeCursor);
+    qSettings.setValue("Config/NoBorder", noBorder);
 }
 
 void PublicData::registerAllHotKey(QObject* app)

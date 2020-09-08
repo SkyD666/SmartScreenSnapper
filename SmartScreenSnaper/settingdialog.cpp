@@ -5,6 +5,7 @@
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QDebug>
+#include <QSettings>
 
 SettingDialog::SettingDialog(QWidget *parent) :
     QDialog(parent),
@@ -15,7 +16,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->tabWidgetSetting->tabBar()->hide();
 
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("常规设置"), ui->listWidgetSetting));
-//    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("热键设置"), ui->listWidgetSetting));
+    //    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("热键设置"), ui->listWidgetSetting));
 
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
@@ -90,6 +91,10 @@ SettingDialog::SettingDialog(QWidget *parent) :
     connect(ui->checkBoxIncludeCursor, &QCheckBox::stateChanged, [=](int state){
         PublicData::includeCursor = state;
     });
+
+    connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, [=](int state){
+        PublicData::noBorder = state;
+    });
 }
 
 SettingDialog::~SettingDialog()
@@ -104,6 +109,17 @@ void SettingDialog::readSettings()
     ui->checkBoxPlaySound->setChecked(PublicData::isPlaySound);
     ui->checkBoxHotKeyNoWait->setChecked(PublicData::hotKeyNoWait);
     ui->checkBoxIncludeCursor->setChecked(PublicData::includeCursor);
+    ui->checkBoxNoBorder->setChecked(PublicData::noBorder);
+
+    QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
+    QString value = qSettings.value(QApplication::applicationName()).toString();
+    QString appPath = QApplication::applicationFilePath();
+    appPath = appPath.replace("/","\\");
+    if (value == "\"" + appPath + "\"" + " -autorun") {
+        ui->checkBoxRunWithWindows->setChecked(true);
+    } else {
+        ui->checkBoxRunWithWindows->setChecked(false);
+    }
 }
 
 void SettingDialog::on_pushButtonDeleteHotKey_clicked()
@@ -117,5 +133,19 @@ void SettingDialog::on_toolButtonAutoSavePath_clicked()
                                                         PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSavePath, QFileDialog::ShowDirsOnly);
     if (dirPath != "") {
         ui->lineEditAutoSavePath->setText(dirPath);
+    }
+}
+
+void SettingDialog::on_checkBoxRunWithWindows_stateChanged(int state)
+{
+    QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
+    QString appPath = QApplication::applicationFilePath();
+    QString appName = QApplication::applicationName();
+    QString val = qSettings.value(appName).toString();
+    appPath = appPath.replace("/","\\");
+    if (state) {
+        qSettings.setValue(appName, "\"" + appPath + "\"" + " -autorun");
+    } else {
+        qSettings.remove(appName);
     }
 }

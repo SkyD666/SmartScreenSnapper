@@ -51,6 +51,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionSave"/>
+    <addaction name="actionCloseAllNotSave"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -66,6 +67,7 @@
     <property name="title">
      <string>帮助(&amp;H)</string>
     </property>
+    <addaction name="actionOpenSource"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuTool">
@@ -233,6 +235,16 @@
    </property>
    <property name="toolTip">
     <string>截取光标</string>
+   </property>
+  </action>
+  <action name="actionCloseAllNotSave">
+   <property name="text">
+    <string>关闭所有文档且不保存...</string>
+   </property>
+  </action>
+  <action name="actionOpenSource">
+   <property name="text">
+    <string>代码开源...</string>
    </property>
   </action>
  </widget>

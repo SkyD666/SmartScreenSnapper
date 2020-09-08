@@ -1,10 +1,14 @@
 #include <QMessageBox>
+#include <QSlider>
 #include "mdiwindow.h"
 #include "mainwindow.h"
 
 MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(parent, flags)
 {
+    this->parent = parent;
     this->saved = true;
+    this->xScale = 1;
+    this->yScale = 1;
 }
 
 void MdiWindow::setListItemName(QString name) {
@@ -32,7 +36,11 @@ void MdiWindow::setSaved(bool saved) {
 }
 
 void MdiWindow::closeEvent(QCloseEvent *event) {
-//    if (!this->saved || (!this->saved && MainWindow::noToAllClicked)) {
+    if (MainWindow::closeAllNotSave) {
+        emit close();
+        return;
+    }
+
     if (!this->saved && (!this->saved && !MainWindow::noToAllClicked)) {
         int messageBoxResult = QMessageBox::Cancel;
         if (MainWindow::exitApp) {
@@ -60,5 +68,43 @@ void MdiWindow::closeEvent(QCloseEvent *event) {
         }
     } else {
         emit close();
+    }
+}
+
+void MdiWindow::setXScale(double xScale)
+{
+    this->xScale = xScale;
+}
+
+double MdiWindow::getXScale()
+{
+    return this->xScale;
+}
+
+void MdiWindow::setYScale(double yScale)
+{
+    this->yScale = yScale;
+}
+
+double MdiWindow::getYScale()
+{
+    return this->yScale;
+}
+
+void MdiWindow::wheelEvent(QWheelEvent *event)
+{
+    QPoint numDegrees=event->angleDelta() / 8;
+    if (!numDegrees.isNull()) {
+        if (event->modifiers() == Qt::ControlModifier && numDegrees.y() > 0) {
+            emit zoom(10);
+            event->accept();
+        } else if (event->modifiers() == Qt::ControlModifier && numDegrees.y() < 0) {
+            emit zoom(-10);
+            event->accept();
+        } else {
+            event->ignore();
+        }
+    } else {
+        event->ignore();
     }
 }

@@ -38,6 +38,8 @@ public:
     static bool exitApp;
 
     static bool noToAllClicked;
+
+    static bool closeAllNotSave;
 private slots:
     void on_actionNew_triggered();
 
@@ -55,16 +57,20 @@ private slots:
 
     void hotKeyPressed(int);
 
-    QPixmap grabWindow(HWND winId, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1, bool isCursorSnap = false);
+    QPixmap grabWindow(HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
 
     void savePicture(QString filePath);
 
     void on_actionCursorSnap_triggered();
 
+    void on_actionCloseAllNotSave_triggered();
+
+    void on_actionOpenSource_triggered();
+
 private:
     Ui::MainWindow *ui;
 
-    void* statusBarWidgets[2];
+    void* statusBarWidgets[5];
 
     QSystemTrayIcon systemTray;
 

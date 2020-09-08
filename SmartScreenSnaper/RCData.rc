@@ -11,8 +11,8 @@ DAZIJI		SOUND "E:\\C++\\SmartScreenSnaper\\SmartScreenSnaper\\sound\\DAZIJI.wav"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 1,0,0,0
-    PRODUCTVERSION 1,0,0,0
+    FILEVERSION 1,0,0,1
+    PRODUCTVERSION 1,0,0,1
     FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
     FILEFLAGS VS_FF_DEBUG
@@ -29,8 +29,8 @@ VS_VERSION_INFO VERSIONINFO
             BEGIN
                 VALUE "CompanyName", "Sky_D\0"
                 VALUE "FileDescription", "SmartScreenSnaper\0"
-                VALUE "FileVersion", "1.0.0.0\0"
-                VALUE "ProductVersion", "1.0.0.0\0"
+                VALUE "FileVersion", "1.0.0.1\0"
+                VALUE "ProductVersion", "1.0.0.1\0"
                 VALUE "LegalCopyright", "\0"
                 VALUE "LegalTrademarks", "\0"
                 VALUE "OriginalFilename", "SmartScreenSnaper.exe\0"

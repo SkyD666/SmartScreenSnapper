@@ -20,6 +20,7 @@ SOURCES += \
     MyGlobalShortcut/MyGlobalShortCut.cpp \
     MyGlobalShortcut/MyWinEventFilter.cpp \
     aboutdialog.cpp \
+    graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
     mdiwindow.cpp \
@@ -32,6 +33,7 @@ HEADERS += \
     MyGlobalShortcut/MyGlobalShortCut.h \
     MyGlobalShortcut/MyWinEventFilter.h \
     aboutdialog.h \
+    graphicsview.h \
     mainwindow.h \
     mdiwindow.h \
     minifmod.h \

@@ -38,6 +38,8 @@ public:
 
     static bool includeCursor;
 
+    static bool noBorder;
+
     //0全屏截图，1活动窗口截图，2截取光标
     static SnapType snapType[SNAPTYPECOUNT];
 
