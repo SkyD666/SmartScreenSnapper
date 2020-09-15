@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <winuser.h>
 #include <QWidget>
+#include <QClipboard>
 #include <QGraphicsView>
 #include <QDesktopWidget>
 #include <QDateTime>
@@ -15,6 +16,7 @@
 #include <QToolButton>
 #include <QtWinExtras/qwinfunctions.h>
 #include "graphicsview.h"
+#include "windowsinfo.h"
 #include "publicdata.h"
 #include "mdiwindow.h"
 #include "aboutdialog.h"
@@ -82,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated,
             [=](QMdiSubWindow *window){
-        if(ui->listDocument->count() > 1 && window != NULL){
+        if(ui->listDocument->count() > 0 && window != NULL){
             ui->listDocument->setCurrentItem(&((MdiWindow*)window)->getListItem());
 
             ((QLabel*)(statusBarWidgets[1]))->setText(tr("共") + QString::number(ui->listDocument->count()) + tr("张, 选中第") +
@@ -168,7 +170,7 @@ int MainWindow::createMDIWindow() {
     //    });
 
 
-    connect(child, &MdiWindow::zoom, [=](int n){
+    connect(graphicsView, &GraphicsView::zoom, [=](int n){
         QSlider* qSlider = (QSlider*)statusBarWidgets[3];
         qSlider->setValue(qSlider->value() + n);
     });
@@ -293,21 +295,23 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
         }
         if (messageBoxResult == QMessageBox::Yes) {
             if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[ActiveWindowSnap].waitTime * 1000);
-            windowIndex = createMDIWindow();
-            activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
+            HWND activeWindowHwnd = GetForegroundWindow();
+            RECT activeWindowRect;
+            GetWindowRect(activeWindowHwnd, &activeWindowRect);
             name = tr("活动窗口截图") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
             //            int windowFrameSizeX = GetSystemMetrics(SM_CXSIZEFRAME);
             //            int windowFrameSizeY = GetSystemMetrics(SM_CYSIZEFRAME);
             //            int windowCaptionSize = GetSystemMetrics(SM_CYCAPTION);
-            HWND activeWindowHwnd = GetForegroundWindow();
-            RECT activeWindowRect;
-            GetWindowRect(activeWindowHwnd, &activeWindowRect);
-            ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(grabWindow(activeWindowHwnd,
-                                                                                      ActiveWindowSnap,
-                                                                                      PublicData::includeCursor,
-                                                                                      0, 0,
-                                                                                      activeWindowRect.right - activeWindowRect.left,
-                                                                                      activeWindowRect.bottom - activeWindowRect.top));
+            QPixmap activeWindowPicture = grabWindow(activeWindowHwnd,
+                                                     ActiveWindowSnap,
+                                                     PublicData::includeCursor,
+                                                     0, 0,
+                                                     activeWindowRect.right - activeWindowRect.left,
+                                                     activeWindowRect.bottom - activeWindowRect.top);
+            windowIndex = createMDIWindow();
+            activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
+            ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(activeWindowPicture);
+
         } else {
             return;
         }
@@ -340,11 +344,16 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
 
 QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
 {
-    RECT r;
+    RECT r/*, r2*/;
     GetClientRect(winId, &r);
+//    GetWindowRect(winId, &r2);
 
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
+
+    long xBorder, yBorder, captionBorder;
+
+    WindowsInfo::getWindowBorderSize(winId, &xBorder, &yBorder, &captionBorder);
 
     HDC display_dc = GetWindowDC(winId);
     //    if (PublicData::noBorder) {
@@ -356,18 +365,18 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
     HDC bitmap_dc = CreateCompatibleDC(display_dc);
     HBITMAP bitmap = NULL;
     if (PublicData::noBorder && type == ActiveWindowSnap) {
-        bitmap = CreateCompatibleBitmap(display_dc, w - 2 * GetSystemMetrics(SM_CXFRAME),
-                                        h -  2 * GetSystemMetrics(SM_CYFRAME) - GetSystemMetrics(SM_CYCAPTION));
+        bitmap = CreateCompatibleBitmap(display_dc, w - 2 * xBorder,
+                                        h -  2 * yBorder - captionBorder);
     } else {
         bitmap = CreateCompatibleBitmap(display_dc, w, h);
     }
     HGDIOBJ null_bitmap = SelectObject(bitmap_dc, bitmap);
 
     if (PublicData::noBorder && type == ActiveWindowSnap) {
-        h -= GetSystemMetrics(SM_CYFRAME);
-        w -= GetSystemMetrics(SM_CXFRAME);
-        BitBlt(bitmap_dc, -GetSystemMetrics(SM_CXFRAME),
-               -GetSystemMetrics(SM_CYCAPTION) - GetSystemMetrics(SM_CYFRAME),
+        h -= yBorder;
+        w -= yBorder;
+        BitBlt(bitmap_dc, -xBorder,
+               -captionBorder - yBorder,
                w, h, display_dc, x, y, SRCCOPY | CAPTUREBLT);
     } else {
         BitBlt(bitmap_dc, 0, 0, w, h, display_dc, x, y, SRCCOPY | CAPTUREBLT);
@@ -378,14 +387,14 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
         ICONINFO iconInf;
         ci.cbSize = sizeof(CURSORINFO);
         GetCursorInfo(&ci);
-        RECT winRect;
-        GetWindowRect(winId, &winRect);
-        GetIconInfo(ci.hCursor, &iconInf);
         if(type == CursorSnap){
             RECT rect = {0, 0, w, h};
             FillRect(bitmap_dc, &rect, CreateSolidBrush(RGB(255, 255, 255)));
             DrawIcon(bitmap_dc, 0, 0, ci.hCursor);
         } else {
+            RECT winRect;
+            GetWindowRect(winId, &winRect);
+            GetIconInfo(ci.hCursor, &iconInf);
             DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - winRect.left - iconInf.xHotspot, ci.ptScreenPos.y - y - winRect.top - iconInf.yHotspot, ci.hCursor);
         }
     }
@@ -448,6 +457,7 @@ void MainWindow::initSystemTray()
         case QSystemTrayIcon::Trigger:
         case QSystemTrayIcon::MiddleClick:
             this->show();
+            this->setWindowState(Qt::WindowActive);
             break;
         case QSystemTrayIcon::Unknown:
             break;
@@ -525,4 +535,17 @@ void MainWindow::on_actionOpenSource_triggered()
     ShellExecute((HWND)this->winId(), (LPCWSTR)L"open",
                  (LPCWSTR)L"https://github.com/SkyD666/SmartScreenSnaper",
                  (LPCWSTR)L"", (LPCWSTR)L"", SW_SHOWNORMAL);
+}
+
+void MainWindow::on_actionCopy_triggered()
+{
+    if (!ui->listDocument->count()) return;
+    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+    if (activeWindow != NULL) {
+        QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
+        QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
+        QPainter painter(&image);
+        graphicsScene->render(&painter);
+        QApplication::clipboard()->setImage(image);
+    }\
 }

@@ -90,21 +90,3 @@ double MdiWindow::getYScale()
 {
     return this->yScale;
 }
-
-void MdiWindow::wheelEvent(QWheelEvent *event)
-{
-    QPoint numDegrees=event->angleDelta() / 8;
-    if (!numDegrees.isNull()) {
-        if (event->modifiers() == Qt::ControlModifier && numDegrees.y() > 0) {
-            emit zoom(10);
-            event->accept();
-        } else if (event->modifiers() == Qt::ControlModifier && numDegrees.y() < 0) {
-            emit zoom(-10);
-            event->accept();
-        } else {
-            event->ignore();
-        }
-    } else {
-        event->ignore();
-    }
-}

@@ -19,8 +19,6 @@ signals:
 public:
     MdiWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
-    void wheelEvent(QWheelEvent *event) override;
-
     void setListItemName(QString name);
 
     QListWidgetItem & getListItem();

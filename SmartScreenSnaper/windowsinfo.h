@@ -19,6 +19,8 @@ public:
     static QString getCPU();
 
     static QString getGPU();
+
+    static void getWindowBorderSize(HWND hwnd, long* xBorder, long* yBorder, long* captionBorder);
 };
 
 #endif // WINDOWSINFO_H

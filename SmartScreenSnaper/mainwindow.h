@@ -67,6 +67,8 @@ private slots:
 
     void on_actionOpenSource_triggered();
 
+    void on_actionCopy_triggered();
+
 private:
     Ui::MainWindow *ui;
 

@@ -15,7 +15,7 @@ signals:
 public:
     GraphicsView(QWidget *parent = nullptr);
 
-
+    void wheelEvent(QWheelEvent *event) override;
 };
 
 #endif // GRAPHICSVIEW_H
