@@ -69,6 +69,8 @@ private slots:
 
     void on_actionCopy_triggered();
 
+    void on_actionFreeSnap_triggered();
+
 private:
     Ui::MainWindow *ui;
 

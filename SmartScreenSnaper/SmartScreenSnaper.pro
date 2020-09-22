@@ -20,6 +20,7 @@ SOURCES += \
     MyGlobalShortcut/MyGlobalShortCut.cpp \
     MyGlobalShortcut/MyWinEventFilter.cpp \
     aboutdialog.cpp \
+    freesnapdialog.cpp \
     graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     MyGlobalShortcut/MyGlobalShortCut.h \
     MyGlobalShortcut/MyWinEventFilter.h \
     aboutdialog.h \
+    freesnapdialog.h \
     graphicsview.h \
     mainwindow.h \
     mdiwindow.h \
@@ -44,6 +46,7 @@ HEADERS += \
 
 FORMS += \
     aboutdialog.ui \
+    freesnapdialog.ui \
     mainwindow.ui \
     settingdialog.ui
 
@@ -68,6 +71,11 @@ INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
 unix|win32: LIBS += -L$$PWD/./ -lGDI32
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
+
+unix|win32: LIBS += -L$$PWD/./ -lMSImg32
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.

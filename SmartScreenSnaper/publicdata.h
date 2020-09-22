@@ -4,11 +4,11 @@
 #include <QList>
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 
-#define SNAPTYPECOUNT 3
+#define SNAPTYPECOUNT 4
 #define MDIWINBKCOLOR RGB(160, 160, 160)
 
 enum {
-    ScreenSnap = 0, ActiveWindowSnap = 1,CursorSnap = 2
+    ScreenSnap = 0, ActiveWindowSnap = 1, CursorSnap = 2, FreeSnap = 3
 };
 
 struct SnapType{
@@ -39,6 +39,8 @@ public:
     static bool includeCursor;
 
     static bool noBorder;
+
+    static bool copyToClipBoardAfterSnap;
 
     //0全屏截图，1活动窗口截图，2截取光标
     static SnapType snapType[SNAPTYPECOUNT];

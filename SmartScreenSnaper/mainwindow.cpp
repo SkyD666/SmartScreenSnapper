@@ -15,12 +15,14 @@
 #include <QDebug>
 #include <QToolButton>
 #include <QtWinExtras/qwinfunctions.h>
+#include <QPropertyAnimation>
 #include "graphicsview.h"
 #include "windowsinfo.h"
 #include "publicdata.h"
 #include "mdiwindow.h"
 #include "aboutdialog.h"
 #include "settingdialog.h"
+#include "freesnapdialog.h"
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
@@ -131,6 +133,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
             return;
         }
     }
+    if(event->isAccepted()) {
+        qApp->exit();
+    }
     //    ui->mdiArea->closeAllSubWindows();
 }
 
@@ -172,6 +177,12 @@ int MainWindow::createMDIWindow() {
 
     connect(graphicsView, &GraphicsView::zoom, [=](int n){
         QSlider* qSlider = (QSlider*)statusBarWidgets[3];
+        //        QPropertyAnimation *animation = new QPropertyAnimation(qSlider, "value");
+        //        animation->setDuration(100);
+        //        animation->setEasingCurve(QEasingCurve::InOutQuart);
+        //        animation->setStartValue(qSlider->value());
+        //        animation->setEndValue(qSlider->value() + n);
+        //        animation->start();
         qSlider->setValue(qSlider->value() + n);
     });
 
@@ -262,7 +273,15 @@ void MainWindow::initStatusBar()
     });
 
     connect((QToolButton*)statusBarWidgets[4], &QAbstractButton::clicked,
-            [=](){ ((QSlider*)statusBarWidgets[3])->setValue(100); });
+            [=](){
+        QSlider* qSlider = (QSlider*)statusBarWidgets[3];
+        QPropertyAnimation *animation = new QPropertyAnimation(qSlider, "value");
+        animation->setDuration(700);
+        animation->setEasingCurve(QEasingCurve::OutElastic);
+        animation->setStartValue(qSlider->value());
+        animation->setEndValue(100);
+        animation->start();
+    });
 
     ((QLabel*)statusBarWidgets[1])->setText(tr("共") + QString::number(ui->listDocument->count()) + tr("张, 选中第") +
                                             QString::number(ui->listDocument->currentRow() + 1) + tr("张"));
@@ -327,6 +346,21 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
                                , 0, 0, GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)));
         break;
     }
+    case FreeSnap: {
+        if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[FreeSnap].waitTime * 1000);
+        QPixmap* picture = new QPixmap;
+        FreeSnapDialog freeSnapDialog(grabWindow((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor),
+                                      picture, this);
+        freeSnapDialog.exec();
+        if (picture == NULL)
+            return;
+        windowIndex = createMDIWindow();
+        activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
+        name = tr("截取光标") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
+        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(*picture);
+        delete picture;
+        break;
+    }
     }
 
     activeWindow->setWindowTitle(name);
@@ -334,6 +368,7 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
     activeWindow->setListItemName(name);
     activeWindow->setSaved(false);
 
+    if(PublicData::copyToClipBoardAfterSnap) ui->actionCopy->trigger();
     if(PublicData::isPlaySound) PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
 
     if (PublicData::snapType[index].isAutoSave && PublicData::snapType[index].autoSavePath != "") {
@@ -346,7 +381,7 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
 {
     RECT r/*, r2*/;
     GetClientRect(winId, &r);
-//    GetWindowRect(winId, &r2);
+    //    GetWindowRect(winId, &r2);
 
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
@@ -390,6 +425,8 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
         if(type == CursorSnap){
             RECT rect = {0, 0, w, h};
             FillRect(bitmap_dc, &rect, CreateSolidBrush(RGB(255, 255, 255)));
+//            SetBkMode(bitmap_dc, TRANSPARENT);
+//            qDebug() << TransparentBlt(bitmap_dc, 0, 0, w - 1, h - 1, bitmap_dc, 0, 0, w, h, RGB(255, 255, 255));
             DrawIcon(bitmap_dc, 0, 0, ci.hCursor);
         } else {
             RECT winRect;
@@ -507,6 +544,10 @@ void MainWindow::hotKeyPressed(int i)
         commonSnapAction(CursorSnap, true);
         break;
     }
+    case FreeSnap: {
+        commonSnapAction(FreeSnap, true);
+        break;
+    }
     }
 }
 
@@ -548,4 +589,9 @@ void MainWindow::on_actionCopy_triggered()
         graphicsScene->render(&painter);
         QApplication::clipboard()->setImage(image);
     }\
+}
+
+void MainWindow::on_actionFreeSnap_triggered()
+{
+    commonSnapAction(FreeSnap, false);
 }

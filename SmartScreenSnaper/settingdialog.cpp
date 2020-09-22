@@ -40,6 +40,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->comboBoxSnapType->addItem(QIcon(":/images/ScreenSnap.png"), tr("全屏截图"));
     ui->comboBoxSnapType->addItem(QIcon(":/images/ActiveWindow.png"), tr("活动窗口截图"));
     ui->comboBoxSnapType->addItem(QIcon(":/images/CursorSnap.png"), tr("截取光标"));
+    ui->comboBoxSnapType->addItem(QIcon(":/images/FreeSnap.png"), tr("自由截图"));
 
     connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, [=](const QKeySequence &keySequence){
         PublicData::snapType[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
@@ -95,6 +96,10 @@ SettingDialog::SettingDialog(QWidget *parent) :
     connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, [=](int state){
         PublicData::noBorder = state;
     });
+
+    connect(ui->checkBoxCopyToClipBoardAfterSnap, &QCheckBox::stateChanged, [=](int state){
+        PublicData::copyToClipBoardAfterSnap = state;
+    });
 }
 
 SettingDialog::~SettingDialog()
@@ -110,6 +115,7 @@ void SettingDialog::readSettings()
     ui->checkBoxHotKeyNoWait->setChecked(PublicData::hotKeyNoWait);
     ui->checkBoxIncludeCursor->setChecked(PublicData::includeCursor);
     ui->checkBoxNoBorder->setChecked(PublicData::noBorder);
+    ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
 
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString value = qSettings.value(QApplication::applicationName()).toString();

@@ -4,5 +4,6 @@
         <file>images/icon.png</file>
         <file>images/ScreenSnap.png</file>
         <file>images/CursorSnap.png</file>
+        <file>images/FreeSnap.png</file>
     </qresource>
 </RCC>

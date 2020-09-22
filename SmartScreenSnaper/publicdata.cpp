@@ -12,9 +12,11 @@ bool PublicData::ignoreClickCloseToTray = false;
 bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
-SnapType PublicData::snapType[SNAPTYPECOUNT] = {{ScreenSnap, "", false, QApplication::applicationDirPath()},
-                                                {ActiveWindowSnap, "", false, QApplication::applicationDirPath()},
-                                                {CursorSnap, "", false, QApplication::applicationDirPath()}};
+bool PublicData::copyToClipBoardAfterSnap = false;
+SnapType PublicData::snapType[SNAPTYPECOUNT] = {{0, "", false, QApplication::applicationDirPath()},
+                                                {0, "", false, QApplication::applicationDirPath()},
+                                                {0, "", false, QApplication::applicationDirPath()},
+                                                {0, "", false, QApplication::applicationDirPath()}};
 QList<QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
@@ -42,6 +44,7 @@ void PublicData::readSettings()
     hotKeyNoWait = qSettings.value("Config/HotKeyNoWait", true).toBool();
     includeCursor = qSettings.value("Config/IncludeCursor", false).toBool();
     noBorder = qSettings.value("Config/NoBorder", false).toBool();
+    copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
 }
 
 void PublicData::writeSettings()
@@ -66,6 +69,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/HotKeyNoWait", hotKeyNoWait);
     qSettings.setValue("Config/IncludeCursor", includeCursor);
     qSettings.setValue("Config/NoBorder", noBorder);
+    qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
 }
 
 void PublicData::registerAllHotKey(QObject* app)

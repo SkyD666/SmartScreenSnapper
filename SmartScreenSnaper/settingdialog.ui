@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>546</width>
-    <height>420</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -65,8 +65,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>364</width>
-            <height>375</height>
+            <width>347</width>
+            <height>392</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -124,6 +124,13 @@
             <widget class="QCheckBox" name="checkBoxNoBorder">
              <property name="text">
               <string>不截取窗体边框</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxCopyToClipBoardAfterSnap">
+             <property name="text">
+              <string>截图后立即复制到剪贴板</string>
              </property>
             </widget>
            </item>

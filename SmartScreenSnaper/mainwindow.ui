@@ -118,6 +118,7 @@
    <addaction name="actionScreenSnap"/>
    <addaction name="actionActiveWindowSnap"/>
    <addaction name="actionCursorSnap"/>
+   <addaction name="actionFreeSnap"/>
   </widget>
   <widget class="QDockWidget" name="dockDocumentList">
    <property name="minimumSize">
@@ -260,6 +261,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionFreeSnap">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/FreeSnap.png</normaloff>:/images/FreeSnap.png</iconset>
+   </property>
+   <property name="text">
+    <string>自由截图</string>
+   </property>
+   <property name="toolTip">
+    <string>自由截图</string>
    </property>
   </action>
  </widget>
