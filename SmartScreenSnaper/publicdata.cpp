@@ -6,6 +6,7 @@
 
 int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;
+int PublicData::snapMethod = 0;
 bool PublicData::isPlaySound = false;
 bool PublicData::clickCloseToTray = true;
 bool PublicData::ignoreClickCloseToTray = false;
@@ -44,6 +45,7 @@ void PublicData::readSettings()
     hotKeyNoWait = qSettings.value("Config/HotKeyNoWait", true).toBool();
     includeCursor = qSettings.value("Config/IncludeCursor", false).toBool();
     noBorder = qSettings.value("Config/NoBorder", false).toBool();
+    snapMethod = qSettings.value("Config/SnapMethod", SnapMethod2).toInt();
     copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
 }
 
@@ -69,6 +71,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/HotKeyNoWait", hotKeyNoWait);
     qSettings.setValue("Config/IncludeCursor", includeCursor);
     qSettings.setValue("Config/NoBorder", noBorder);
+    qSettings.setValue("Config/SnapMethod", snapMethod);
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
 }
 

@@ -7,6 +7,8 @@
 #include <QThread>
 #include <QProcess>
 #include <QMessageBox>
+#include <QDebug>
+#include <QTimer>
 
 void playMusic();
 void stopPlayMusic();
@@ -38,7 +40,9 @@ AboutDialog::AboutDialog(QWidget *parent) :
 
     ui->checkBoxMusic->setCheckState(Qt::Checked);
 
-    drawStar(this, ui->labelStar, ui->labelStar);
+    QTimer::singleShot(0, [=](){     //使控件大小都正确初始化
+        drawStar(this, ui->labelStar, ui->labelStar);
+    });
 }
 
 

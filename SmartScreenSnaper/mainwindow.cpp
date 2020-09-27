@@ -303,7 +303,7 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
         windowIndex = createMDIWindow();
         activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
         name = tr("全屏截图") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
-        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(grabWindow((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor));
+        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(getWindowPixmap((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor));
         break;
     }
     case ActiveWindowSnap: {
@@ -321,12 +321,12 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
             //            int windowFrameSizeX = GetSystemMetrics(SM_CXSIZEFRAME);
             //            int windowFrameSizeY = GetSystemMetrics(SM_CYSIZEFRAME);
             //            int windowCaptionSize = GetSystemMetrics(SM_CYCAPTION);
-            QPixmap activeWindowPicture = grabWindow(activeWindowHwnd,
-                                                     ActiveWindowSnap,
-                                                     PublicData::includeCursor,
-                                                     0, 0,
-                                                     activeWindowRect.right - activeWindowRect.left,
-                                                     activeWindowRect.bottom - activeWindowRect.top);
+            QPixmap activeWindowPicture = getWindowPixmap(activeWindowHwnd,
+                                                          ActiveWindowSnap,
+                                                          PublicData::includeCursor,
+                                                          0, 0,
+                                                          activeWindowRect.right - activeWindowRect.left,
+                                                          activeWindowRect.bottom - activeWindowRect.top);
             windowIndex = createMDIWindow();
             activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
             ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(activeWindowPicture);
@@ -342,21 +342,21 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
         activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
         name = tr("截取光标") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
         ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(
-                    grabWindow((HWND)activeWindow->widget()->winId(), CursorSnap, true
-                               , 0, 0, GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)));
+                    getWindowPixmap((HWND)activeWindow->widget()->winId(), CursorSnap, true
+                                    , 0, 0, GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)));
         break;
     }
     case FreeSnap: {
         if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[FreeSnap].waitTime * 1000);
         QPixmap* picture = new QPixmap;
-        FreeSnapDialog freeSnapDialog(grabWindow((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor),
+        FreeSnapDialog freeSnapDialog(getWindowPixmap((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor),
                                       picture, this);
         freeSnapDialog.exec();
         if (picture == NULL)
             return;
         windowIndex = createMDIWindow();
         activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
-        name = tr("截取光标") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
+        name = tr("自由截图") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
         ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(*picture);
         delete picture;
         break;
@@ -376,6 +376,75 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
     }
 }
 
+QPixmap MainWindow::getWindowPixmap(HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
+{
+    switch (PublicData::snapMethod) {
+    case 0: {
+        return grabWindow(winId, type, includeCursor, x, y, w, h);
+    }
+    case 1: {
+        return grabWindow2(winId, type, includeCursor, x, y, w, h);
+    }
+    default: {
+        return grabWindow(winId, type, includeCursor, x, y, w, h);
+    }
+    }
+}
+
+QPixmap MainWindow::grabWindow2(HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
+{
+    RECT r;
+    GetWindowRect(winId, &r);
+
+    if (w < 0) w = r.right - r.left;
+    if (h < 0) h = r.bottom - r.top;
+
+    long xBorder, yBorder, captionBorder;
+
+    WindowsInfo::getWindowBorderSize(winId, &xBorder, &yBorder, &captionBorder);
+
+    HDC display_dc = GetWindowDC(0);
+
+    HDC bitmap_dc = CreateCompatibleDC(display_dc);
+    HBITMAP bitmap = NULL;
+    if (PublicData::noBorder && type == ActiveWindowSnap) {
+        bitmap = CreateCompatibleBitmap(display_dc, w - 2 * xBorder,
+                                        h -  2 * yBorder - captionBorder);
+    } else {
+        bitmap = CreateCompatibleBitmap(display_dc, w, h);
+    }
+    HGDIOBJ null_bitmap = SelectObject(bitmap_dc, bitmap);
+
+    if (PublicData::noBorder && type == ActiveWindowSnap) {
+        h -= yBorder;
+        w -= yBorder;
+        BitBlt(bitmap_dc, -xBorder,
+               -captionBorder - yBorder,
+               w, h, display_dc, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
+    } else {
+        BitBlt(bitmap_dc, 0, 0, w, h, display_dc, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
+    }
+
+    if(includeCursor){
+        CURSORINFO ci;
+        ICONINFO iconInf;
+        ci.cbSize = sizeof(CURSORINFO);
+        GetCursorInfo(&ci);
+        GetIconInfo(ci.hCursor, &iconInf);
+        DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot, ci.hCursor);
+    }
+
+    // clean up all but bitmap
+    ReleaseDC(winId, display_dc);
+    SelectObject(bitmap_dc, null_bitmap);
+    DeleteDC(bitmap_dc);
+
+    QPixmap pixmap = QtWin::fromHBITMAP(bitmap);
+
+    DeleteObject(bitmap);
+
+    return pixmap;
+}
 
 QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
 {
@@ -425,8 +494,8 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
         if(type == CursorSnap){
             RECT rect = {0, 0, w, h};
             FillRect(bitmap_dc, &rect, CreateSolidBrush(RGB(255, 255, 255)));
-//            SetBkMode(bitmap_dc, TRANSPARENT);
-//            qDebug() << TransparentBlt(bitmap_dc, 0, 0, w - 1, h - 1, bitmap_dc, 0, 0, w, h, RGB(255, 255, 255));
+            //            SetBkMode(bitmap_dc, TRANSPARENT);
+            //            qDebug() << TransparentBlt(bitmap_dc, 0, 0, w - 1, h - 1, bitmap_dc, 0, 0, w, h, RGB(255, 255, 255));
             DrawIcon(bitmap_dc, 0, 0, ci.hCursor);
         } else {
             RECT winRect;

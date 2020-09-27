@@ -2,6 +2,7 @@
 #include <ctime>
 #include <QThread>
 #include <windows.h>
+#include <QDebug>
 #include <wingdi.h>
 #include "star.h"
 
@@ -44,8 +45,7 @@ void Star::move()
     SetPixel( labelHdc, x + 1, y, RGB(0, 0, 0) );
     x += step;
 
-    if (x > label->width() || y > label->height() || x < -31 || y < 0 || step <=0 )
-    {
+    if (x > label->width() || y > label->height() || x < -31 || y < 0 || step <=0 ) {
         x = -30;
         y = qrand() % label->height();  //产生0-480的的坐标
         qsrand(qrand() % 999999);
@@ -86,13 +86,14 @@ void StarThread::play()
     long txtHetght = (size.cy) * (StarThread::text.count() - txt.remove("\n").count());
     RECT textRect = {0, StarThread::label->height(), StarThread::label->width(), StarThread::label->height() + txtHetght};
 
+    qDebug() << StarThread::label->height();
+
     //int i = 0;
     while (!QThread::currentThread()->isInterruptionRequested())
     {
         if(textRect.bottom < 0) OffsetRect(&textRect, 0, StarThread::label->height() + txtHetght);
 
-        for (int i = 0; i < MAXSTAR; i++)
-        {
+        for (int i = 0; i < MAXSTAR; i++) {
             star[i].move();
         }
 

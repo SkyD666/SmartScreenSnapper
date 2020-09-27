@@ -15,8 +15,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     ui->tabWidgetSetting->tabBar()->hide();
 
-    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("常规设置"), ui->listWidgetSetting));
-    //    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("热键设置"), ui->listWidgetSetting));
+    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("常规"), ui->listWidgetSetting));
+    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/ActiveWindow.png"), tr("截图"), ui->listWidgetSetting));
 
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
@@ -47,6 +47,16 @@ SettingDialog::SettingDialog(QWidget *parent) :
     });
 
     ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapType[ui->comboBoxSnapType->currentIndex()].hotKey));
+
+    ui->comboBoxSnapMethod->addItem(tr("方式1"));
+    ui->comboBoxSnapMethod->addItem(tr("方式2"));
+
+    //此处的信号有重载
+    connect(ui->comboBoxSnapMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        if(index < SNAPMETHOD) {
+            PublicData::snapMethod = index;
+        }
+    });
 
     readSettings(); //注意调用顺序，上面是进行初始设置，下面是在控件状态（选中、值等）发生改变时改变PublicData里的值
 
@@ -116,6 +126,7 @@ void SettingDialog::readSettings()
     ui->checkBoxIncludeCursor->setChecked(PublicData::includeCursor);
     ui->checkBoxNoBorder->setChecked(PublicData::noBorder);
     ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
+    ui->comboBoxSnapMethod->setCurrentIndex(PublicData::snapMethod);
 
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString value = qSettings.value(QApplication::applicationName()).toString();

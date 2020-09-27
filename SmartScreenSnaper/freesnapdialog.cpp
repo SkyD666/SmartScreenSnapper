@@ -187,7 +187,7 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
     } else if (inRightBottomPoint(event)) {
         setCursor(Qt::SizeFDiagCursor);
     } else {
-        setCursor(Qt::ArrowCursor);
+        setCursor(Qt::CrossCursor);
     }
 }
 
@@ -223,44 +223,44 @@ void FreeSnapDialog::keyReleaseEvent(QKeyEvent *)
 
 bool FreeSnapDialog::inLeftTopPoint(QMouseEvent *event)
 {
-    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
-    return event->x() >= topLeftPoint.x() - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
-            event->x() <= topLeftPoint.x() - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
-            event->y() >= topLeftPoint.y() - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
-            event->y() <= topLeftPoint.y() - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
+//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+    return event->x() >= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
+            event->x() <= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
+            event->y() >= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
+            event->y() <= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
 }
 
 bool FreeSnapDialog::inRightTopPoint(QMouseEvent *event)
 {
-    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
-    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
-    return event->x() >= bottomRightPoint.x() - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
-            event->x() <= bottomRightPoint.x() - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
-            event->y() >= topLeftPoint.y() - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
-            event->y() <= topLeftPoint.y() - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
+//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    return event->x() >= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
+            event->x() <= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
+            event->y() >= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
+            event->y() <= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
 }
 
 bool FreeSnapDialog::inLeftBottomPoint(QMouseEvent *event)
 {
-    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
-    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
-    return event->x() >= topLeftPoint.x() - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
-            event->x() <= topLeftPoint.x() - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
-            event->y() >= bottomRightPoint.y() - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
-            event->y() <= bottomRightPoint.y() - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
+//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    return event->x() >= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
+            event->x() <= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
+            event->y() >= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
+            event->y() <= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
 }
 
 bool FreeSnapDialog::inRightBottomPoint(QMouseEvent *event)
 {
-    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
-    return event->x() >= bottomRightPoint.x() - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
-            event->x() <= bottomRightPoint.x() - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
-            event->y() >= bottomRightPoint.y() - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
-            event->y() <= bottomRightPoint.y() - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
+//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    return event->x() >= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
+            event->x() <= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
+            event->y() >= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
+            event->y() <= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 + RECTPOINTPENHEIGHT / 2.0;
 }

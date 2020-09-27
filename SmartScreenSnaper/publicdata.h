@@ -7,8 +7,14 @@
 #define SNAPTYPECOUNT 4
 #define MDIWINBKCOLOR RGB(160, 160, 160)
 
+#define SNAPMETHOD 2
+
 enum {
     ScreenSnap = 0, ActiveWindowSnap = 1, CursorSnap = 2, FreeSnap = 3
+};
+
+enum {
+    SnapMethod1 = 0, SnapMethod2 = 1
 };
 
 struct SnapType{
@@ -39,6 +45,9 @@ public:
     static bool includeCursor;
 
     static bool noBorder;
+
+    //0原始方法，1全屏截图再截取
+    static int snapMethod;
 
     static bool copyToClipBoardAfterSnap;
 

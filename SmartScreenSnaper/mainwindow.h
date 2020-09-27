@@ -57,7 +57,11 @@ private slots:
 
     void hotKeyPressed(int);
 
+    QPixmap getWindowPixmap(HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
+
     QPixmap grabWindow(HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
+
+    QPixmap grabWindow2(HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
 
     void savePicture(QString filePath);
 
