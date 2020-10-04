@@ -72,17 +72,17 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(ui->actionDocumentListDock, &QAction::toggled,
-            [=](bool checked){ ui->dockDocumentList->setVisible(checked); });
+//    connect(ui->actionDocumentListDock, &QAction::toggled,
+//            [=](bool checked){ ui->dockDocumentList->setVisible(checked); });
 
-    connect(ui->actionactionToolBar, &QAction::toggled,
-            [=](bool checked){ui->toolBar->setVisible(checked);});
+//    connect(ui->actionactionToolBar, &QAction::toggled,
+//            [=](bool checked){ui->toolBar->setVisible(checked);});
 
-    connect(ui->dockDocumentList, &QDockWidget::visibilityChanged,
-            [=](bool visible){ if(this->windowState()!=Qt::WindowState::WindowMinimized && this->isVisible()) ui->actionDocumentListDock->setChecked(visible);});
+//    connect(ui->dockDocumentList, &QDockWidget::visibilityChanged,
+//            [=](bool visible){ if(this->windowState()!=Qt::WindowState::WindowMinimized && this->isVisible()) ui->actionDocumentListDock->setChecked(visible);});
 
-    connect(ui->toolBar, &QToolBar::visibilityChanged,
-            [=](bool visible){ ui->actionactionToolBar->setChecked(visible);});
+//    connect(ui->toolBar, &QToolBar::visibilityChanged,
+//            [=](bool visible){ ui->actionactionToolBar->setChecked(visible);});
 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated,
             [=](QMdiSubWindow *window){
@@ -378,6 +378,7 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
 
 QPixmap MainWindow::getWindowPixmap(HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
 {
+    if (type == CursorSnap) return grabWindow(winId, type, includeCursor, x, y, w, h);
     switch (PublicData::snapMethod) {
     case 0: {
         return grabWindow(winId, type, includeCursor, x, y, w, h);
@@ -395,6 +396,14 @@ QPixmap MainWindow::grabWindow2(HWND winId, int type, bool includeCursor, int x,
 {
     RECT r;
     GetWindowRect(winId, &r);
+
+    //多屏支持
+    if (type == ScreenSnap) {
+        r.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        r.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        r.right = GetSystemMetrics(SM_CXVIRTUALSCREEN) + r.left;
+        r.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN) + r.top;
+    }
 
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
@@ -421,6 +430,8 @@ QPixmap MainWindow::grabWindow2(HWND winId, int type, bool includeCursor, int x,
         BitBlt(bitmap_dc, -xBorder,
                -captionBorder - yBorder,
                w, h, display_dc, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
+        x += xBorder;
+        y += (yBorder + captionBorder);
     } else {
         BitBlt(bitmap_dc, 0, 0, w, h, display_dc, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
     }
@@ -452,6 +463,14 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
     GetClientRect(winId, &r);
     //    GetWindowRect(winId, &r2);
 
+    //多屏支持
+    if (type == ScreenSnap) {
+        r.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        r.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        r.right = GetSystemMetrics(SM_CXVIRTUALSCREEN) + r.left;
+        r.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN) + r.top;
+    }
+
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
 
@@ -482,8 +501,10 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
         BitBlt(bitmap_dc, -xBorder,
                -captionBorder - yBorder,
                w, h, display_dc, x, y, SRCCOPY | CAPTUREBLT);
+        x += xBorder;
+        y += (yBorder + captionBorder);
     } else {
-        BitBlt(bitmap_dc, 0, 0, w, h, display_dc, x, y, SRCCOPY | CAPTUREBLT);
+        BitBlt(bitmap_dc, 0, 0, w, h, display_dc, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
     }
 
     if(includeCursor){
@@ -501,7 +522,8 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
             RECT winRect;
             GetWindowRect(winId, &winRect);
             GetIconInfo(ci.hCursor, &iconInf);
-            DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - winRect.left - iconInf.xHotspot, ci.ptScreenPos.y - y - winRect.top - iconInf.yHotspot, ci.hCursor);
+//            DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot, ci.hCursor);
+            DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - winRect.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - winRect.top - iconInf.yHotspot, ci.hCursor);
         }
     }
 

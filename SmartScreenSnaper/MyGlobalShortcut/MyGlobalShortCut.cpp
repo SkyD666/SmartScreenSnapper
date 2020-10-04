@@ -1,4 +1,7 @@
 #include "MyGlobalShortCut.h"
+#include <QMessageBox>
+#include <windows.h>
+
 MyGlobalShortCut::MyGlobalShortCut()
 {
 
@@ -7,14 +10,15 @@ MyGlobalShortCut::~MyGlobalShortCut()
 {
 
 }
-MyGlobalShortCut::MyGlobalShortCut(QString key, QObject *app)
+MyGlobalShortCut::MyGlobalShortCut(QString key, QWidget *parent)
 {
     m_key = QKeySequence(key);
     m_filter = new MyWinEventFilter(this);
     m_app->installNativeEventFilter(m_filter);
+    m_parent = parent;
 
-
-    registerHotKey();
+    if(!registerHotKey() && key != "") QMessageBox::critical(m_parent, tr("错误"), tr("注册热键") + key +
+                                                tr("失败，请检查该热键是否被占用！\n若多个不同类型的截图热键用了同一热键，请忽略此条消息。"));
 }
 
 void MyGlobalShortCut::activateShortcut(int i)

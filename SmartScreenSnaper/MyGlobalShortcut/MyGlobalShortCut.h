@@ -16,8 +16,8 @@ signals:
     void activatedHotKey(int);
 public:
     MyGlobalShortCut();
-    MyGlobalShortCut(QObject* app);
-    MyGlobalShortCut(QString key,QObject* app);
+    MyGlobalShortCut(QWidget* parent);
+    MyGlobalShortCut(QString key,QWidget* parent);
     ~MyGlobalShortCut();
     void activateShortcut(int i);
     bool registerHotKey();
@@ -29,6 +29,7 @@ public:
     static quint32 nativeKeycode(Qt::Key keycode);
     static quint32 nativeModifiers(Qt::KeyboardModifiers modifiers);
 private:
+    QWidget* m_parent;
     QApplication *m_app;
     MyWinEventFilter *m_filter;
     QKeySequence m_key;

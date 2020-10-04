@@ -58,7 +58,7 @@ public:
 
     static void writeSettings();
 
-    static void registerAllHotKey(QObject* app);
+    static void registerAllHotKey(QWidget* parent);
 
     static void unregisterAllHotKey();
 

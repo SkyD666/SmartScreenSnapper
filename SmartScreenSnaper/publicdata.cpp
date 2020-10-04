@@ -75,16 +75,16 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
 }
 
-void PublicData::registerAllHotKey(QObject* app)
+void PublicData::registerAllHotKey(QWidget* parent)
 {
     for (int i = 0; i < (int)(sizeof(PublicData::snapType)/sizeof(SnapType)); i++){
         QList<MyGlobalShortCut*> hotKey;
         QStringList keys = PublicData::snapType[i].hotKey.split(", ");
         for (int j = 0; j < keys.size(); j++) {
             QString key = keys.at(j);
-            MyGlobalShortCut* shortcut = new MyGlobalShortCut(key, app);
+            MyGlobalShortCut* shortcut = new MyGlobalShortCut(key, parent);
             hotKey.push_back(shortcut);
-            QObject::connect(shortcut, SIGNAL(activatedHotKey(int)), app, SLOT(hotKeyPressed(int)));
+            QObject::connect(shortcut, SIGNAL(activatedHotKey(int)), parent, SLOT(hotKeyPressed(int)));
         }
         PublicData::hotKey.push_back(hotKey);
     }

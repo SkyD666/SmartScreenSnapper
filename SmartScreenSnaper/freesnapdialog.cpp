@@ -2,6 +2,8 @@
 #include "ui_freesnapdialog.h"
 #include <QDebug>
 #include <QApplication>
+#include <QDesktopWidget>
+#include <QGuiApplication>
 #include <windows.h>
 
 FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *parent) :
@@ -11,9 +13,15 @@ FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *paren
 {
     ui->setupUi(this);
 
+//    QDesktopWidget * desktop = QApplication::desktop();
+    QList<QScreen *> screens = QGuiApplication::screens();
+
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    setWindowState(Qt::WindowActive);
     //    SetWindowPos((HWND)this->winId() , HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-    resize(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+    //多显示器支持
+    move(GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN));
+    resize(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
 
     //可在不点击鼠标的情况下捕获移动事件
     setMouseTracking(true);

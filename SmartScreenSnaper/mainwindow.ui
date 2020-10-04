@@ -55,14 +55,6 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>视图(&amp;V)</string>
-    </property>
-    <addaction name="actionDocumentListDock"/>
-    <addaction name="separator"/>
-    <addaction name="actionactionToolBar"/>
-   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>帮助(&amp;H)</string>
@@ -84,7 +76,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
    <addaction name="menuTool"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -188,22 +179,6 @@
    </property>
    <property name="toolTip">
     <string>全屏截图</string>
-   </property>
-  </action>
-  <action name="actionDocumentListDock">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>文档列表</string>
-   </property>
-  </action>
-  <action name="actionactionToolBar">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>工具条</string>
    </property>
   </action>
   <action name="actionExit">
