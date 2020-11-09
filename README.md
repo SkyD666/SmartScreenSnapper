@@ -17,8 +17,9 @@
 
 
 
-**注：此工程使用了以下开源代码，特别感谢**
+![image](https://github.com/SkyD666/SmartScreenSnaper/raw/master/ScreenShots/MainWindow.png)
+
+**注：此工程使用了以下开源组件，特别感谢**
 
 1. minifmod播放.xm音乐组件
-2. MyGlobalShortcut注册全局热键
-
+2. MyGlobalShortcut注册全局热键(有修改)

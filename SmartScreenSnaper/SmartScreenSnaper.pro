@@ -1,5 +1,6 @@
-QT       += core gui
-QT       += winextras
+QT       += core gui \
+    winextras \
+    network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -20,6 +21,7 @@ SOURCES += \
     MyGlobalShortcut/MyGlobalShortCut.cpp \
     MyGlobalShortcut/MyWinEventFilter.cpp \
     aboutdialog.cpp \
+    application.cpp \
     freesnapdialog.cpp \
     graphicsview.cpp \
     main.cpp \
@@ -28,12 +30,14 @@ SOURCES += \
     publicdata.cpp \
     settingdialog.cpp \
     star.cpp \
+    updatedialog.cpp \
     windowsinfo.cpp
 
 HEADERS += \
     MyGlobalShortcut/MyGlobalShortCut.h \
     MyGlobalShortcut/MyWinEventFilter.h \
     aboutdialog.h \
+    application.h \
     freesnapdialog.h \
     graphicsview.h \
     mainwindow.h \
@@ -42,13 +46,15 @@ HEADERS += \
     publicdata.h \
     settingdialog.h \
     star.h \
+    updatedialog.h \
     windowsinfo.h
 
 FORMS += \
     aboutdialog.ui \
     freesnapdialog.ui \
     mainwindow.ui \
-    settingdialog.ui
+    settingdialog.ui \
+    updatedialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -76,6 +82,11 @@ INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
 unix|win32: LIBS += -L$$PWD/./ -lMSImg32
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
+
+unix|win32: LIBS += -L$$PWD/./ -lWININET
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.

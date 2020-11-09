@@ -75,6 +75,8 @@ private slots:
 
     void on_actionFreeSnap_triggered();
 
+    void on_actionUpdate_triggered();
+
 private:
     Ui::MainWindow *ui;
 

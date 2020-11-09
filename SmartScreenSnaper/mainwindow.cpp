@@ -23,6 +23,7 @@
 #include "aboutdialog.h"
 #include "settingdialog.h"
 #include "freesnapdialog.h"
+#include "updatedialog.h"
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
@@ -685,4 +686,10 @@ void MainWindow::on_actionCopy_triggered()
 void MainWindow::on_actionFreeSnap_triggered()
 {
     commonSnapAction(FreeSnap, false);
+}
+
+void MainWindow::on_actionUpdate_triggered()
+{
+    UpdateDialog updateDialog;
+    updateDialog.exec();
 }

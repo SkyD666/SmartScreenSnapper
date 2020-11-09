@@ -3,7 +3,9 @@
 
 GraphicsView::GraphicsView(QWidget *parent): QGraphicsView(parent)
 {
-
+    this->mousePressed = false;
+    lastMousePoint.setX(-1);
+    lastMousePoint.setY(-1);
 }
 
 void GraphicsView::wheelEvent(QWheelEvent *event)
@@ -28,4 +30,31 @@ void GraphicsView::wheelEvent(QWheelEvent *event)
         }
     }
     QGraphicsView::wheelEvent(event);
+}
+
+
+void GraphicsView::mousePressEvent(QMouseEvent *event)
+{
+    mousePressed = true;
+    lastMousePoint.setX(event->x());
+    lastMousePoint.setY(event->y());
+}
+
+void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
+{
+    mousePressed = false;
+}
+
+void GraphicsView::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons() & Qt::LeftButton) {
+        if (mousePressed) {
+            this->horizontalScrollBar()->setSliderPosition(this->horizontalScrollBar()->sliderPosition() -
+                                                           event->x() + lastMousePoint.x());
+            this->verticalScrollBar()->setSliderPosition(this->verticalScrollBar()->sliderPosition() -
+                                                           event->y() + lastMousePoint.y());
+            lastMousePoint.setX(event->x());
+            lastMousePoint.setY(event->y());
+        }
+    }
 }

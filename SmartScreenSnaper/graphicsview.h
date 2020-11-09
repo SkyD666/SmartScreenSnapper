@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include <QWheelEvent>
+#include <QMouseEvent>
 
 class GraphicsView : public QGraphicsView
 {
@@ -16,6 +17,17 @@ public:
     GraphicsView(QWidget *parent = nullptr);
 
     void wheelEvent(QWheelEvent *event) override;
+
+    void mouseMoveEvent(QMouseEvent *event) override;
+
+    void mousePressEvent(QMouseEvent *event) override;
+
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+private:
+    bool mousePressed;
+
+    QPoint lastMousePoint;
 };
 
 #endif // GRAPHICSVIEW_H

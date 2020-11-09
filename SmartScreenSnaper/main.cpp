@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 
-#include <QApplication>
+#include "application.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     } else {
         w.show();
     }
+    //a.installNativeEventFilter(&a);
     a.setApplicationName("SmartScreenSnaper");
     return a.exec();
 }

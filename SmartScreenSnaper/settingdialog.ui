@@ -33,7 +33,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidgetSetting">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <property name="tabBarAutoHide">
       <bool>false</bool>
@@ -94,6 +94,9 @@
            </item>
            <item>
             <widget class="QCheckBox" name="checkBoxRunWithWindows">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#000000;&quot;&gt;由于此功能需要写入注册表，所以当您想删除此软件时，请先取消勾选此项，以免有残留信息留在您的电脑内。&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>开机启动程序</string>
              </property>

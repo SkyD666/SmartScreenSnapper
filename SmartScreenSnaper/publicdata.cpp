@@ -77,12 +77,20 @@ void PublicData::writeSettings()
 
 void PublicData::registerAllHotKey(QWidget* parent)
 {
+    QStringList registeredKeyList;    //记录次热键是否被本程序注册，如果注册过了就不再注册了
     for (int i = 0; i < (int)(sizeof(PublicData::snapType)/sizeof(SnapType)); i++){
         QList<MyGlobalShortCut*> hotKey;
         QStringList keys = PublicData::snapType[i].hotKey.split(", ");
         for (int j = 0; j < keys.size(); j++) {
             QString key = keys.at(j);
-            MyGlobalShortCut* shortcut = new MyGlobalShortCut(key, parent);
+            if (key == "") continue;
+            MyGlobalShortCut* shortcut = NULL;
+            if (registeredKeyList.contains(key)) {
+                shortcut = new MyGlobalShortCut(key, parent, false);
+            } else {
+                registeredKeyList.push_back(key);
+                shortcut = new MyGlobalShortCut(key, parent, true);
+            }
             hotKey.push_back(shortcut);
             QObject::connect(shortcut, SIGNAL(activatedHotKey(int)), parent, SLOT(hotKeyPressed(int)));
         }

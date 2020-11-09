@@ -20,11 +20,9 @@ MyWinEventFilter::MyWinEventFilter(MyGlobalShortCut *shortcut)
 
 bool MyWinEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *)
 {
-    if(eventType == "windows_generic_MSG")
-    {
+    if(eventType == "windows_generic_MSG") {
         MSG *msg = static_cast<MSG *>(message);
-        if(msg->message == WM_HOTKEY)
-        {
+        if(msg->message == WM_HOTKEY) {
             const quint32 keycode = HIWORD(msg->lParam);
             const quint32 modifiers = LOWORD(msg->lParam);
             bool res = m_shortcut->shortcuts.value(qMakePair(keycode, modifiers));
@@ -34,7 +32,7 @@ bool MyWinEventFilter::nativeEventFilter(const QByteArray &eventType, void *mess
                         if (MyGlobalShortCut::nativeKeycode(PublicData::hotKey.at(i).at(j)->key) == HIWORD(msg->lParam) &&
                                MyGlobalShortCut::nativeModifiers(PublicData::hotKey.at(i).at(j)->mods) == LOWORD(msg->lParam)) {
                             m_shortcut ->activateShortcut(i);
-                            break;
+                            //break;
                         }
                     }
                 }
