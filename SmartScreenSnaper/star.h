@@ -5,7 +5,7 @@
 #include <QThread>
 #include <random>
 
-#define MAXSTAR 500          // 星星总数
+#define MAXSTAR 300          // 星星总数
 
 class  Star
 {

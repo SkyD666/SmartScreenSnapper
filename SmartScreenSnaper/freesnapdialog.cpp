@@ -5,15 +5,21 @@
 #include <QDesktopWidget>
 #include <QGuiApplication>
 #include <windows.h>
+#include <math.h>
+
+QColor FreeSnapDialog::rectColor(7, 200, 250);
+QColor FreeSnapDialog::grayColor(0, 0, 0, 180);
+QColor FreeSnapDialog::rectPointColor(200, 240, 255);
 
 FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FreeSnapDialog),
-    resultRef(result)
+    resultRef(result),
+    zoomRate(3.2)
 {
     ui->setupUi(this);
 
-//    QDesktopWidget * desktop = QApplication::desktop();
+    //    QDesktopWidget * desktop = QApplication::desktop();
     QList<QScreen *> screens = QGuiApplication::screens();
 
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
@@ -23,11 +29,16 @@ FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *paren
     move(GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN));
     resize(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
 
+    ui->widgetInfoContainer->adjustSize();
+    ui->widgetInfoContainer->setVisible(false);
+    ui->widgetInfoContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);      //信息Widget不接收鼠标事件
+
     //可在不点击鼠标的情况下捕获移动事件
     setMouseTracking(true);
 
     this->noOperate = true;
     this->picture = picture;
+    this->image = picture.toImage();
     this->isDrawing = false;
     this->pictureMap = picture;
     this->pictureMap.fill(GRAYCOLOR);
@@ -186,6 +197,47 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
         endPoint = event->pos();
         update();
     }
+
+    //开始信息标签设置
+    CURSORINFO ci;
+    ICONINFO iconInf;
+    ci.cbSize = sizeof(CURSORINFO);
+    GetCursorInfo(&ci);
+    GetIconInfo(ci.hCursor, &iconInf);
+    int infoContainerX = event->x() + GetSystemMetrics(SM_CXCURSOR) - iconInf.xHotspot;
+    int infoContainerY = event->y() + GetSystemMetrics(SM_CYCURSOR) - iconInf.yHotspot;
+    if (infoContainerX + ui->widgetInfoContainer->width() > GetSystemMetrics(SM_CXVIRTUALSCREEN))
+        infoContainerX = event->x() - GetSystemMetrics(SM_CXCURSOR) + iconInf.xHotspot - ui->widgetInfoContainer->width();
+    if (infoContainerY + ui->widgetInfoContainer->height() > GetSystemMetrics(SM_CYVIRTUALSCREEN))
+        infoContainerY = event->y() - GetSystemMetrics(SM_CYCURSOR) + iconInf.yHotspot - ui->widgetInfoContainer->height();
+    ui->widgetInfoContainer->setVisible(true);
+    ui->widgetInfoContainer->move(infoContainerX, infoContainerY);
+    ui->labelPosition->setText("(" + QString::number(event->x() + 1) + "," + QString::number(event->y() + 1) + ")");
+    int sizeX = abs(lastPoint.x() - endPoint.x()) + 1, sizeY = abs(lastPoint.y() - endPoint.y()) + 1;
+    if (noOperate) sizeX = 0, sizeY = 0;
+    ui->labelSize->setText(QString::number(sizeX) + " x " + QString::number(sizeY));
+    int r = 0, g = 0, b = 0;
+    image.pixelColor(event->x(), event->y()).getRgb(&r, &g, &b);
+    ui->labelRGB->setText("RGB:(" + QString::number(r) + "," + QString::number(g) + "," + QString::number(b) + ")");
+    //预览放大
+    float scaledPreviewWidth = ui->labelPreview->width() / zoomRate, scaledPreviewHeight = ui->labelPreview->height() / zoomRate;
+    //注意要向上取整ceil两次
+    QPixmap noScaledPreviewPixmap = picture.copy(ceil(event->x() - scaledPreviewWidth / 2), ceil(event->y() - scaledPreviewHeight / 2),
+                                                 scaledPreviewWidth, scaledPreviewHeight);
+    //如果鼠标位于边界，预览图片截取不全
+    if (noScaledPreviewPixmap.width() < (int)scaledPreviewWidth || noScaledPreviewPixmap.height() < (int)scaledPreviewHeight) {
+        noScaledPreviewPixmap.scaled(ui->labelPreview->width(), ui->labelPreview->height());
+        noScaledPreviewPixmap.fill(Qt::black);
+    } else {        //不在边界
+        QPainter painter(&noScaledPreviewPixmap);
+        painter.setPen(RECTCOLOR);
+        painter.drawLine(0, noScaledPreviewPixmap.height() / 2, noScaledPreviewPixmap.width(), noScaledPreviewPixmap.height() / 2);
+        painter.drawLine(noScaledPreviewPixmap.width() / 2, 0, noScaledPreviewPixmap.width() / 2, noScaledPreviewPixmap.height());
+    }
+    ui->labelPreview->setPixmap(noScaledPreviewPixmap.scaled(ui->labelPreview->width(), ui->labelPreview->height(), Qt::KeepAspectRatio));
+
+    //结束信息标签设置
+
     if (inLeftTopPoint(event)) {
         setCursor(Qt::SizeFDiagCursor);
     } else if (inRightTopPoint(event)) {
@@ -231,8 +283,8 @@ void FreeSnapDialog::keyReleaseEvent(QKeyEvent *)
 
 bool FreeSnapDialog::inLeftTopPoint(QMouseEvent *event)
 {
-//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
     return event->x() >= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
             event->x() <= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
             event->y() >= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
@@ -241,10 +293,10 @@ bool FreeSnapDialog::inLeftTopPoint(QMouseEvent *event)
 
 bool FreeSnapDialog::inRightTopPoint(QMouseEvent *event)
 {
-//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
-//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
     return event->x() >= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
             event->x() <= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
             event->y() >= (endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
@@ -253,10 +305,10 @@ bool FreeSnapDialog::inRightTopPoint(QMouseEvent *event)
 
 bool FreeSnapDialog::inLeftBottomPoint(QMouseEvent *event)
 {
-//    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
-//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint topLeftPoint(endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                        endPoint.y() > lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
     return event->x() >= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
             event->x() <= (endPoint.x() > lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
             event->y() >= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&
@@ -265,8 +317,8 @@ bool FreeSnapDialog::inLeftBottomPoint(QMouseEvent *event)
 
 bool FreeSnapDialog::inRightBottomPoint(QMouseEvent *event)
 {
-//    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
-//                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
+    //    QPoint bottomRightPoint(endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x(),
+    //                            endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y());
     return event->x() >= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 - RECTPOINTPENWIDTH / 2.0 &&
             event->x() <= (endPoint.x() < lastPoint.x() ? lastPoint.x() : endPoint.x()) - RECTPENWIDTH / 2.0 + RECTPOINTPENWIDTH / 2.0 &&
             event->y() >= (endPoint.y() < lastPoint.y() ? lastPoint.y() : endPoint.y()) - RECTPENWIDTH / 2.0 - RECTPOINTPENHEIGHT / 2.0 &&

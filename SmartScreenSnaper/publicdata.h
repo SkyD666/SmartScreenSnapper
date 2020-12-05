@@ -22,6 +22,7 @@ struct SnapType{
     QString hotKey;
     bool isAutoSave;
     QString autoSavePath;
+    QString autoSaveExtName;
 };
 
 class PublicData
@@ -53,6 +54,8 @@ public:
 
     //0全屏截图，1活动窗口截图，2截取光标
     static SnapType snapType[SNAPTYPECOUNT];
+
+    static QString imageExtName[3];
 
     static void readSettings();
 

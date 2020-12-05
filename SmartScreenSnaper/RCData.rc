@@ -1,8 +1,8 @@
 IDI_ICON1	ICON "icon.ico"
 
-0		MUSIC "Toilet story 4 u.xm"
+0		MUSIC "Etxe  by JosSs.xm"
 
-DAZIJI		SOUND "E:\\C++\\SmartScreenSnaper\\SmartScreenSnaper\\sound\\DAZIJI.wav"
+DAZIJI		SOUND "sound\\DAZIJI.wav"
 
 #if defined(UNDER_CE)
 #include <winbase.h>
@@ -11,8 +11,8 @@ DAZIJI		SOUND "E:\\C++\\SmartScreenSnaper\\SmartScreenSnaper\\sound\\DAZIJI.wav"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 1,0,0,6
-    PRODUCTVERSION 1,0,0,6
+    FILEVERSION 1,0,0,7
+    PRODUCTVERSION 1,0,0,7
     FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
     FILEFLAGS VS_FF_DEBUG
@@ -29,8 +29,8 @@ VS_VERSION_INFO VERSIONINFO
             BEGIN
                 VALUE "CompanyName", "Sky_D\0"
                 VALUE "FileDescription", "SmartScreenSnaper\0"
-                VALUE "FileVersion", "1.0.0.6\0"
-                VALUE "ProductVersion", "1.0.0.6\0"
+                VALUE "FileVersion", "1.0.0.7\0"
+                VALUE "ProductVersion", "1.0.0.7\0"
                 VALUE "LegalCopyright", "\0"
                 VALUE "LegalTrademarks", "\0"
                 VALUE "OriginalFilename", "SmartScreenSnaper.exe\0"

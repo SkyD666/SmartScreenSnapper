@@ -14,10 +14,11 @@ bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
-SnapType PublicData::snapType[SNAPTYPECOUNT] = {{0, "", false, QApplication::applicationDirPath()},
-                                                {0, "", false, QApplication::applicationDirPath()},
-                                                {0, "", false, QApplication::applicationDirPath()},
-                                                {0, "", false, QApplication::applicationDirPath()}};
+QString PublicData::imageExtName[] = {".png", ".jpg", ".bmp"};
+SnapType PublicData::snapType[SNAPTYPECOUNT] = {{0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
+                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
+                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
+                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]}};
 QList<QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
@@ -37,6 +38,7 @@ void PublicData::readSettings()
         snapType[i].hotKey = qSettings.value("HotKey", "").toString();
         snapType[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
         snapType[i].autoSavePath = qSettings.value("AutoSavePath", QApplication::applicationDirPath()).toString();
+        snapType[i].autoSaveExtName = qSettings.value("AutoSaveExtName", imageExtName[0]).toString();
     }
     qSettings.endArray();
 
@@ -63,6 +65,7 @@ void PublicData::writeSettings()
         qSettings.setValue("HotKey", snapType[i].hotKey);
         qSettings.setValue("IsAutoSave", snapType[i].isAutoSave);
         qSettings.setValue("AutoSavePath", snapType[i].autoSavePath);
+        qSettings.setValue("AutoSaveExtName", snapType[i].autoSaveExtName);
     }
     qSettings.endArray();
 
