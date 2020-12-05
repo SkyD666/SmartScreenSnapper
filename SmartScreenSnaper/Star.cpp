@@ -42,18 +42,19 @@ void Star::move()
     qsrand(qrand());
 
     SetPixel( labelHdc, x, y, RGB(0, 0, 0) );
-    SetPixel( labelHdc, x + 1, y, RGB(0, 0, 0) );
+    //SetPixel( labelHdc, x + 1, y, RGB(0, 0, 0) );
     x += step;
 
     if (x > label->width() || y > label->height() || x < -31 || y < 0 || step <=0 ) {
         x = -30;
-        y = qrand() % label->height();  //产生0-480的的坐标
+        y = qrand() % label->height();
         qsrand(qrand() % 999999);
         step = qrand() % 30;
-        color = RGB(qrand() % 255, qrand() % 255, qrand() % 255);
+        color = RGB(255, 255, 0);
+        //color = RGB(qrand() % 255, qrand() % 255, qrand() % 255);
     }
     SetPixel( labelHdc, x, y, color );
-    SetPixel( labelHdc, x + 1, y, color );
+    //SetPixel( labelHdc, x + 1, y, color );
 }
 
 StarThread::StarThread()
@@ -73,10 +74,12 @@ void StarThread::play()
     LOGFONT lFont;
     GetObject(GetStockObject(SYSTEM_FONT), sizeof(LOGFONT),&lFont);
     lFont.lfHeight = GetDeviceCaps(StarThread::labelHdc, LOGPIXELSY) * tm.tmHeight / 72;
-    lFont.lfWidth = GetDeviceCaps(StarThread::labelHdc, LOGPIXELSX) * tm.tmAveCharWidth / 72;
+    //lFont.lfWidth = GetDeviceCaps(StarThread::labelHdc, LOGPIXELSX) * tm.tmAveCharWidth / 72;
+    //lFont.lfHeight = -MulDiv(16, GetDeviceCaps(StarThread::labelHdc, LOGPIXELSY), 72);
+    lFont.lfWidth = 0;
     lFont.lfEscapement = 0;
     lFont.lfCharSet = tm.tmCharSet;
-    wcscpy_s(lFont.lfFaceName, L"黑体");
+    wcscpy_s(lFont.lfFaceName, L"Times New Roman");
     hFont = CreateFontIndirect(&lFont);
     SelectObject(StarThread::labelHdc, hFont);
 

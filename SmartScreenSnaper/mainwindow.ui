@@ -51,6 +51,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionSave"/>
+    <addaction name="actionPrint"/>
     <addaction name="actionCloseAllNotSave"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -208,6 +209,9 @@
    <property name="text">
     <string>设置(&amp;S)...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
   </action>
   <action name="actionCursorSnap">
    <property name="icon">
@@ -257,6 +261,11 @@
    </property>
    <property name="toolTip">
     <string>检查更新</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>打印(&amp;P)...</string>
    </property>
   </action>
  </widget>

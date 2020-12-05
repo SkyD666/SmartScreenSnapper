@@ -3,13 +3,14 @@
 
 #include <QDialog>
 #include <QPixmap>
+#include <QImage>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QRect>
 
-#define GRAYCOLOR QColor(0, 0, 0, 180)
-#define RECTCOLOR QColor(7, 200, 250)
-#define RECTPOINTCOLOR QColor(200, 240, 255)
+#define GRAYCOLOR grayColor
+#define RECTCOLOR rectColor
+#define RECTPOINTCOLOR rectPointColor
 #define RECTPENWIDTH 2
 #define RECTPOINTPENWIDTH 6
 #define RECTPOINTPENHEIGHT 6
@@ -44,6 +45,8 @@ private:
 
     QPixmap picture;
 
+    QImage image;        //存储QImage类型的picture
+
     QPixmap*& resultRef;
 
     QPixmap pictureMap;
@@ -59,6 +62,14 @@ private:
     bool noOperate;
 
     QRect resultRect;
+
+    float zoomRate;
+
+    static QColor rectColor;
+
+    static QColor grayColor;
+
+    static QColor rectPointColor;
 };
 
 #endif // FREESNAPDIALOG_H

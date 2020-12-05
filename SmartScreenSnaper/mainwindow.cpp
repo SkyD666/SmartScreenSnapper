@@ -16,6 +16,9 @@
 #include <QToolButton>
 #include <QtWinExtras/qwinfunctions.h>
 #include <QPropertyAnimation>
+#include <QDesktopServices>
+#include <QPrintDialog>
+#include <QPrinter>
 #include "graphicsview.h"
 #include "windowsinfo.h"
 #include "publicdata.h"
@@ -66,24 +69,26 @@ MainWindow::MainWindow(QWidget *parent)
             if (currentRow == -1) {
                 ui->actionSave->setEnabled(false);
                 ui->actionCloseAllNotSave->setEnabled(false);
+                ui->actionPrint->setEnabled(false);
             } else {
                 ui->actionSave->setEnabled(true);
                 ui->actionCloseAllNotSave->setEnabled(true);
+                ui->actionPrint->setEnabled(true);
             }
         }
     });
 
-//    connect(ui->actionDocumentListDock, &QAction::toggled,
-//            [=](bool checked){ ui->dockDocumentList->setVisible(checked); });
+    //    connect(ui->actionDocumentListDock, &QAction::toggled,
+    //            [=](bool checked){ ui->dockDocumentList->setVisible(checked); });
 
-//    connect(ui->actionactionToolBar, &QAction::toggled,
-//            [=](bool checked){ui->toolBar->setVisible(checked);});
+    //    connect(ui->actionactionToolBar, &QAction::toggled,
+    //            [=](bool checked){ui->toolBar->setVisible(checked);});
 
-//    connect(ui->dockDocumentList, &QDockWidget::visibilityChanged,
-//            [=](bool visible){ if(this->windowState()!=Qt::WindowState::WindowMinimized && this->isVisible()) ui->actionDocumentListDock->setChecked(visible);});
+    //    connect(ui->dockDocumentList, &QDockWidget::visibilityChanged,
+    //            [=](bool visible){ if(this->windowState()!=Qt::WindowState::WindowMinimized && this->isVisible()) ui->actionDocumentListDock->setChecked(visible);});
 
-//    connect(ui->toolBar, &QToolBar::visibilityChanged,
-//            [=](bool visible){ ui->actionactionToolBar->setChecked(visible);});
+    //    connect(ui->toolBar, &QToolBar::visibilityChanged,
+    //            [=](bool visible){ ui->actionactionToolBar->setChecked(visible);});
 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated,
             [=](QMdiSubWindow *window){
@@ -101,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionSave->setEnabled(false);
     ui->actionCloseAllNotSave->setEnabled(false);
+    ui->actionPrint->setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -203,22 +209,29 @@ void MainWindow::on_actionSave_triggered()
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
     QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
                                                     activeWindow->getName(), tr("PNG文件(*.png);;JPG文件(*.jpg);;BMP文件(*.bmp)"));
-    savePicture(filePath);
+    if (filePath != "") savePicture(filePath);
 }
 
 void MainWindow::savePicture(QString filePath)
 {
+    QDir *dir;
     if (filePath != "") {
-        QDir dir(filePath.left(filePath.lastIndexOf('/') + 1));
-        if(!dir.exists()) dir.mkdir(dir.path());
-        MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-        QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-        QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
-        QPainter painter(&image);
-        graphicsScene->render(&painter);
-        image.save(filePath);
-        activeWindow->setSaved(true);
+        dir = new QDir(filePath.left(filePath.lastIndexOf('/') + 1));
+    } else {
+        dir = new QDir(filePath);
     }
+    if (!dir->exists()) dir->mkdir(dir->path());
+    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+    QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
+    QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
+    QPainter painter(&image);
+    graphicsScene->render(&painter);
+    if (image.save(filePath)) {
+        activeWindow->setSaved(true);
+    } else {
+        QMessageBox::critical(this, tr("警告"), tr("保存图片失败"), QMessageBox::Ok);
+    }
+    delete dir;
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -372,8 +385,10 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
     if(PublicData::copyToClipBoardAfterSnap) ui->actionCopy->trigger();
     if(PublicData::isPlaySound) PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
 
-    if (PublicData::snapType[index].isAutoSave && PublicData::snapType[index].autoSavePath != "") {
-        savePicture(PublicData::snapType[index].autoSavePath + "/" + activeWindow->getName() + ".png");
+    if (PublicData::snapType[index].isAutoSave) {
+        QString folderPath = PublicData::snapType[index].autoSavePath + "/";
+        folderPath.replace("://", ":\\");
+        savePicture(folderPath + activeWindow->getName() + PublicData::snapType[index].autoSaveExtName);
     }
 }
 
@@ -523,7 +538,7 @@ QPixmap MainWindow::grabWindow(HWND winId, int type, bool includeCursor, int x, 
             RECT winRect;
             GetWindowRect(winId, &winRect);
             GetIconInfo(ci.hCursor, &iconInf);
-//            DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot, ci.hCursor);
+            //            DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot, ci.hCursor);
             DrawIcon(bitmap_dc, ci.ptScreenPos.x - x - r.left - winRect.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - winRect.top - iconInf.yHotspot, ci.hCursor);
         }
     }
@@ -680,7 +695,7 @@ void MainWindow::on_actionCopy_triggered()
         QPainter painter(&image);
         graphicsScene->render(&painter);
         QApplication::clipboard()->setImage(image);
-    }\
+    }
 }
 
 void MainWindow::on_actionFreeSnap_triggered()
@@ -692,4 +707,28 @@ void MainWindow::on_actionUpdate_triggered()
 {
     UpdateDialog updateDialog;
     updateDialog.exec();
+}
+
+void MainWindow::on_actionPrint_triggered()
+{
+    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+    if (!activeWindow) return;
+    QPrintDialog printDialog(this);
+    printDialog.setWindowTitle(tr("打印"));
+    if(printDialog.exec() == QPrintDialog::Accepted) {
+        QPrinter* printer = printDialog.printer();
+        //printer->setOutputFileName(activeWindow->getName());        //文件名
+        QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
+        QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
+        QPainter painter(&image);
+        graphicsScene->render(&painter);
+
+        QPainter painter2(printer);
+        QRect rect = painter2.viewport();                           //painter2矩形区域
+        QSize size = image.size();                                      //图片的大小
+        size.scale(rect.size(), Qt :: KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
+        painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
+        painter2.setWindow(image.rect());
+        painter2.drawImage(0, 0, image);
+    }
 }

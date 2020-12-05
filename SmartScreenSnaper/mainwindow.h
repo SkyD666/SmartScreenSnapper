@@ -77,6 +77,8 @@ private slots:
 
     void on_actionUpdate_triggered();
 
+    void on_actionPrint_triggered();
+
 private:
     Ui::MainWindow *ui;
 

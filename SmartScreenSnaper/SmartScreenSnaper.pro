@@ -1,6 +1,4 @@
-QT       += core gui \
-    winextras \
-    network
+QT       += core gui winextras printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

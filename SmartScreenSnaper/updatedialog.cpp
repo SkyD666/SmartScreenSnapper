@@ -326,14 +326,12 @@ void UpdateDialog::showDownloadProgress(long value) {
             ui->labelDownloadSpeed->setVisible(false);
 
             QString applicationFilePath = QApplication::applicationFilePath().replace("/", "\\");
-            QString newFilePath = QApplication::applicationFilePath().replace("/", "\\").replace(".exe", ".ex");
-            QString applicationPath = QApplication::applicationDirPath().replace("/", "\\");
 
             QString updateCmd = "choice /t 3 /d y /n >nul\ntaskkill /im " + QApplication::applicationName() + ".exe" +
-                    " -t -f\n:Repeat\ndel \"" + applicationFilePath +
-                    "\"\nif exist \"" + applicationFilePath + "\" goto Repeat\n" + "cd /d " + applicationPath + "\nrename \"" +
+                    " -t -f\n:Repeat\ndel \"%~dp0" + QApplication::applicationName() +
+                    ".exe\"\nif exist \"%~dp0" + QApplication::applicationName() + ".exe\" goto Repeat\n" + "cd /d \"%~dp0\"\nrename \"" +
                     QApplication::applicationName() + ".ex\" \"" + QApplication::applicationName() + ".exe\"\n:Repeat2\n" +
-                    "if not exist \"" + applicationFilePath + "\" goto Repeat2\nstart \"\" \"" + applicationFilePath + "\"\ndel %0\n";
+                    "if not exist \"%~dp0" + QApplication::applicationName() + ".exe\" goto Repeat2\nstart \"\" \"%~dp0" + QApplication::applicationName() + ".exe\"\ndel %0\n";
             ui->textEditChangeLog->setText(updateCmd);
             QFile qFile(QApplication::applicationFilePath().replace(".exe", ".bat"));
             if (qFile.exists()) {
@@ -345,7 +343,7 @@ void UpdateDialog::showDownloadProgress(long value) {
             //qDebug() << "\"" + QApplication::applicationFilePath().replace(".exe", ".bat").replace("/", "\\") + "\"";
             ShellExecute(NULL, L"open",
                          (LPCWSTR)(QApplication::applicationFilePath().replace(".exe", ".bat").replace("/", "\\")).toStdWString().c_str(),
-                         (LPCWSTR)L"", (LPCWSTR)L"", SW_HIDE);
+                         (LPCWSTR)L"", (LPCWSTR)L"", SW_NORMAL);
             exit(0);
             return;
         } else if (value == -1) {

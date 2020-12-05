@@ -22,6 +22,12 @@ SettingDialog::SettingDialog(QWidget *parent) :
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
     });
 
+
+    //下面的for循环要在下面的第一关connect之前调用
+    for (unsigned int i = 0; i < sizeof(PublicData::imageExtName) / sizeof(PublicData::imageExtName[0]); i++) {
+        ui->comboBoxAutoSaveExtName->addItem(PublicData::imageExtName[i]);
+    }
+
     //此处的信号有重载
     connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         if(index <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
@@ -30,8 +36,10 @@ SettingDialog::SettingDialog(QWidget *parent) :
             ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapType[index].hotKey));
             ui->lineEditAutoSavePath->setText(PublicData::snapType[index].autoSavePath);
             ui->checkBoxIsAutoSave->setChecked(PublicData::snapType[index].isAutoSave);
+            ui->comboBoxAutoSaveExtName->setCurrentText(PublicData::snapType[index].autoSaveExtName);
             ui->lineEditAutoSavePath->setEnabled(PublicData::snapType[index].isAutoSave);
             ui->toolButtonAutoSavePath->setEnabled(PublicData::snapType[index].isAutoSave);
+            ui->comboBoxAutoSaveExtName->setEnabled(PublicData::snapType[index].isAutoSave);
         }
     });
 
@@ -73,6 +81,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
         }
         ui->lineEditAutoSavePath->setEnabled(state);
         ui->toolButtonAutoSavePath->setEnabled(state);
+        ui->comboBoxAutoSaveExtName->setEnabled(state);
     });
 
     connect(ui->lineEditAutoSavePath, &QLineEdit::editingFinished, [=](){
@@ -84,6 +93,13 @@ SettingDialog::SettingDialog(QWidget *parent) :
     connect(ui->lineEditAutoSavePath, &QLineEdit::textChanged, [=](const QString &text){
         if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
             PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSavePath = text;
+        }
+    });
+
+    //自动保存格式，有信号重载
+    connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
+            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index];
         }
     });
 

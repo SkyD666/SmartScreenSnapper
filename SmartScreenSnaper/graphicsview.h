@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 #include <QWheelEvent>
 #include <QMouseEvent>
+#include <QMimeData>
 
 class GraphicsView : public QGraphicsView
 {
@@ -28,6 +29,8 @@ private:
     bool mousePressed;
 
     QPoint lastMousePoint;
+
+    QMimeData *mimeData;
 };
 
 #endif // GRAPHICSVIEW_H

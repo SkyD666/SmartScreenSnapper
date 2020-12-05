@@ -85,7 +85,7 @@ void drawStar(QWidget *parent, QWidget * label, QWidget * labelText) {
     StarThread::label = labelText;
     StarThread::labelHdc = GetWindowDC( (HWND)labelText->winId() );
     StarThread::text = QApplication::applicationName() + "\n\nVersion: " + QApplication::applicationVersion() +
-            "\n\n此为ScreenSnap的全新版本\n\n放弃VB6, 使用Qt 5.14.2重写" + "\n\n\n ";   //带一个空格结尾，防止最后一行闪烁
+            "\n\nA screenshot software\n\nMade by Sky_D\n\nWritten in Qt 5.14.2" + "\n\n\n ";   //带一个空格结尾，防止最后一行闪烁
 
     myThread = new QThread(parent);
     starObject = new StarThread();
