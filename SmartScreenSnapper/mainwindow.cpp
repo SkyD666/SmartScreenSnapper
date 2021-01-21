@@ -534,7 +534,7 @@ void MainWindow::on_actionCloseAllNotSave_triggered()
 void MainWindow::on_actionOpenSource_triggered()
 {
     ShellExecute((HWND)this->winId(), (LPCWSTR)L"open",
-                 (LPCWSTR)L"https://github.com/SkyD666/SmartScreenSnaper",
+                 (LPCWSTR)L"https://github.com/SkyD666/SmartScreenSnapper",
                  (LPCWSTR)L"", (LPCWSTR)L"", SW_SHOWNORMAL);
 }
 

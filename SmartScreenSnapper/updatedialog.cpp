@@ -154,7 +154,7 @@ void UpdateThread::checkUpdate() {
     isUpdateNetWorkRequest = true;
     HINTERNET hRequest = HttpOpenRequest(hConnection,
                                          L"GET",//指定动作，GET或者POST
-                                         L"/repos/SkyD666/SmartScreenSnaper/releases/latest",//指定要请求的uri
+                                         L"/repos/SkyD666/SmartScreenSnapper/releases/latest",//指定要请求的uri
                                          HTTP_VERSION,
                                          NULL, NULL, INTERNET_FLAG_SECURE | /*启用ssl模式*/INTERNET_FLAG_IGNORE_CERT_CN_INVALID/*忽略ssl模式下的证书名称错误*/, 0);
     isUpdateNetWorkRequest = false;

@@ -16,6 +16,6 @@ int main(int argc, char *argv[])
         w.show();
     }
     //a.installNativeEventFilter(&a);
-    a.setApplicationName("SmartScreenSnaper");
+    a.setApplicationName("SmartScreenSnapper");
     return a.exec();
 }

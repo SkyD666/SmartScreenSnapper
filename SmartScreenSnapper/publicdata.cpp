@@ -29,7 +29,7 @@ PublicData::PublicData()
 
 void PublicData::readSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnapperConfig.ini", QSettings::IniFormat);
 
     int size = qSettings.beginReadArray("SnapType");
 
@@ -54,7 +54,7 @@ void PublicData::readSettings()
 
 void PublicData::writeSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnaperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnapperConfig.ini", QSettings::IniFormat);
 
     qSettings.beginWriteArray("SnapType");
 

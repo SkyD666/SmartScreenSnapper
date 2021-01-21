@@ -1,4 +1,4 @@
-# SmartScreenSnaper
+# SmartScreenSnapper
 
 一个小巧实用的截图工具，使用Qt5编写，为ScreenSnap（VB6编写， https://github.com/SkyD666/VB6_ScreenShot ）的全新版本。
 
