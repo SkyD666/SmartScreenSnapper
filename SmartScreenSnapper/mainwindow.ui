@@ -112,6 +112,7 @@
    <addaction name="actionActiveWindowSnap"/>
    <addaction name="actionCursorSnap"/>
    <addaction name="actionFreeSnap"/>
+   <addaction name="actionGIF"/>
   </widget>
   <widget class="QDockWidget" name="dockDocumentList">
    <property name="minimumSize">
@@ -206,6 +207,10 @@
    </property>
   </action>
   <action name="actionSetting">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/Setting.svg</normaloff>:/images/Setting.svg</iconset>
+   </property>
    <property name="text">
     <string>设置(&amp;S)...</string>
    </property>
@@ -231,6 +236,10 @@
    </property>
   </action>
   <action name="actionOpenSource">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/GitHub.svg</normaloff>:/images/GitHub.svg</iconset>
+   </property>
    <property name="text">
     <string>代码开源...</string>
    </property>
@@ -266,6 +275,18 @@
   <action name="actionPrint">
    <property name="text">
     <string>打印(&amp;P)...</string>
+   </property>
+  </action>
+  <action name="actionGIF">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/images/GIFRecord.png</normaloff>:/images/GIFRecord.png</iconset>
+   </property>
+   <property name="text">
+    <string>录制GIF</string>
+   </property>
+   <property name="toolTip">
+    <string>录制GIF</string>
    </property>
   </action>
  </widget>

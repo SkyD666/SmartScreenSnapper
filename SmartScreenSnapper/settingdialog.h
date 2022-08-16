@@ -23,6 +23,10 @@ private slots:
 
     void on_checkBoxRunWithWindows_stateChanged(int arg1);
 
+    void on_toolButtonQssPath_clicked();
+
+    void on_pushButton_clicked();
+
 private:
     Ui::SettingDialog *ui;
 

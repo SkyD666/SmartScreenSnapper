@@ -31,6 +31,12 @@ class PublicData
 public:
     PublicData();
 
+    static QString qssPath;
+
+    static QString gifSavePath;
+
+    static QString styleName;       //外观主题名称
+
     static int activeWindowIndex;
 
     static int totalWindowCount;        //只增不减
@@ -59,6 +65,8 @@ public:
 
     static QString imageExtName[3];
 
+    static QString getConfigFilePath();
+
     static void readSettings();
 
     static void writeSettings();
@@ -70,6 +78,7 @@ public:
     //0全屏，1活动窗口截图
     static QList<QList<MyGlobalShortCut*>> hotKey;
 
+    static bool applyQss();
 };
 
 #endif // PUBLICDATA_H
