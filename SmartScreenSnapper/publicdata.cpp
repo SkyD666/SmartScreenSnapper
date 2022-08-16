@@ -15,6 +15,9 @@ bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
 bool PublicData::includeShadow = false;
+QString PublicData::gifSavePath = "";
+QString PublicData::styleName = "";
+QString PublicData::qssPath = "";
 QString PublicData::imageExtName[] = {".png", ".jpg", ".bmp"};
 SnapType PublicData::snapType[SNAPTYPECOUNT] = {{0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
                                                 {0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
@@ -27,9 +30,14 @@ PublicData::PublicData()
 
 }
 
+QString PublicData::getConfigFilePath()
+{
+    return QCoreApplication::applicationDirPath() + "/SmartScreenSnapperConfig.ini";
+}
+
 void PublicData::readSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnapperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(getConfigFilePath(), QSettings::IniFormat);
 
     int size = qSettings.beginReadArray("SnapType");
 
@@ -50,11 +58,14 @@ void PublicData::readSettings()
     noBorder = qSettings.value("Config/NoBorder", false).toBool();
     snapMethod = qSettings.value("Config/SnapMethod", SnapMethod2).toInt();
     copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
+    gifSavePath =  qSettings.value("Tool/GIFSavePath", "").toString();
+    styleName =  qSettings.value("Config/StyleName", "").toString();
+    qssPath =  qSettings.value("Config/QssPath", "").toString();
 }
 
 void PublicData::writeSettings()
 {
-    QSettings qSettings(QCoreApplication::applicationDirPath() + "/SmartScreenSnapperConfig.ini", QSettings::IniFormat);
+    QSettings qSettings(getConfigFilePath(), QSettings::IniFormat);
 
     qSettings.beginWriteArray("SnapType");
 
@@ -77,6 +88,9 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/NoBorder", noBorder);
     qSettings.setValue("Config/SnapMethod", snapMethod);
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
+    qSettings.setValue("Tool/GIFSavePath", gifSavePath);
+    qSettings.setValue("Config/StyleName", styleName);
+    qSettings.setValue("Config/QssPath", qssPath);
 }
 
 void PublicData::registerAllHotKey(QWidget* parent)
@@ -111,4 +125,20 @@ void PublicData::unregisterAllHotKey()
         }
     }
     PublicData::hotKey.clear();
+}
+
+bool PublicData::applyQss()
+{
+    if (PublicData::qssPath == "") {
+        qApp->setStyleSheet("");
+        return true;
+    }
+    QFile qssFile(PublicData::qssPath);
+    qssFile.open(QFile::ReadOnly);
+    if(qssFile.isOpen()) {
+        qApp->setStyleSheet(QLatin1String(qssFile.readAll()));
+        qssFile.close();
+        return true;
+    }
+    return false;
 }

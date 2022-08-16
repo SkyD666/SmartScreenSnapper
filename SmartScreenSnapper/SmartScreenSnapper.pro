@@ -1,4 +1,4 @@
-QT       += core gui winextras printsupport
+QT       += core gui winextras printsupport svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,6 +21,8 @@ SOURCES += \
     aboutdialog.cpp \
     application.cpp \
     freesnapdialog.cpp \
+    gif-h/gif.cpp \
+    gifdialog.cpp \
     graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -38,6 +40,8 @@ HEADERS += \
     aboutdialog.h \
     application.h \
     freesnapdialog.h \
+    gif-h/gif.h \
+    gifdialog.h \
     graphicsview.h \
     mainwindow.h \
     mdiwindow.h \
@@ -52,6 +56,7 @@ HEADERS += \
 FORMS += \
     aboutdialog.ui \
     freesnapdialog.ui \
+    gifdialog.ui \
     mainwindow.ui \
     settingdialog.ui \
     updatedialog.ui

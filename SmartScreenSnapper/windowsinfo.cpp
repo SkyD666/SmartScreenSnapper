@@ -28,10 +28,10 @@ QString WindowsInfo::getWindowsVersion() {
         fnIsWow64Process(GetCurrentProcess(),&bIsWow64);
     }
     QString sysBit = "unknown";
-    if(bIsWow64)
-        sysBit = "64位";
+    if (bIsWow64)
+        sysBit = "x64";
     else
-        sysBit = "32位";
+        sysBit = "x86";
 
     return QSysInfo::prettyProductName() + " " + sysBit;
 }

@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QSettings>
+#include <QMessageBox>
+#include <QDesktopServices>
 
 SettingDialog::SettingDialog(QWidget *parent) :
     QDialog(parent),
@@ -17,6 +19,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/icon.png"), tr("常规"), ui->listWidgetSetting));
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/ActiveWindow.png"), tr("捕捉"), ui->listWidgetSetting));
+    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/images/Setting.svg"), tr("高级"), ui->listWidgetSetting));
 
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
@@ -103,6 +106,14 @@ SettingDialog::SettingDialog(QWidget *parent) :
         }
     });
 
+    connect(ui->lineEditQssPath, &QLineEdit::editingFinished, [=](){
+        PublicData::qssPath = ui->lineEditQssPath->text();
+    });
+
+    connect(ui->lineEditQssPath, &QLineEdit::textChanged, [=](const QString &text){
+        PublicData::qssPath = text;
+    });
+
     //自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
@@ -138,6 +149,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
 SettingDialog::~SettingDialog()
 {
     PublicData::writeSettings();
+    if (!PublicData::applyQss()) QMessageBox::critical(this, tr("警告"), tr("QSS文件打开失败"), QMessageBox::Ok);
+
     delete ui;
 }
 
@@ -151,6 +164,7 @@ void SettingDialog::readSettings()
     ui->checkBoxIncludeShadow->setChecked(PublicData::includeShadow);
     ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
     ui->comboBoxSnapMethod->setCurrentIndex(PublicData::snapMethod);
+    ui->lineEditQssPath->setText(PublicData::qssPath);
 
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString value = qSettings.value(QApplication::applicationName()).toString();
@@ -189,4 +203,18 @@ void SettingDialog::on_checkBoxRunWithWindows_stateChanged(int state)
     } else {
         qSettings.remove(appName);
     }
+}
+
+void SettingDialog::on_toolButtonQssPath_clicked()
+{
+    QString dirPath = QFileDialog::getOpenFileName(this, tr("选择QSS文件"),
+                                                        PublicData::qssPath, tr("QSS文件(*.qss);;CSS文件(*.css);;所有文件(*.*)"));
+    if (dirPath != "") {
+        ui->lineEditQssPath->setText(dirPath);
+    }
+}
+
+void SettingDialog::on_pushButton_clicked()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(PublicData::getConfigFilePath()));
 }

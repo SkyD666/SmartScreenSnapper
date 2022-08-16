@@ -41,6 +41,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     ui->checkBoxMusic->setCheckState(Qt::Checked);
 
     QTimer::singleShot(0, [=](){     //使控件大小都正确初始化
+        ui->labelStar->setStyleSheet("background-color: #000000");
         drawStar(this, ui->labelStar, ui->labelStar);
     });
 }
@@ -85,7 +86,7 @@ void drawStar(QWidget *parent, QWidget * label, QWidget * labelText) {
     StarThread::label = labelText;
     StarThread::labelHdc = GetWindowDC( (HWND)labelText->winId() );
     StarThread::text = QApplication::applicationName() + "\n\nVersion: " + QApplication::applicationVersion() +
-            "\n\nA screenshot software\n\nMade by Sky_D\n\nWritten in Qt 5.14.2" + "\n\n\n ";   //带一个空格结尾，防止最后一行闪烁
+            "\n\nA screenshot software\n\nMade by SkyD666\n\nQt 5.14.2" + "\n\n\n ";   //带一个空格结尾，防止最后一行闪烁
 
     myThread = new QThread(parent);
     starObject = new StarThread();

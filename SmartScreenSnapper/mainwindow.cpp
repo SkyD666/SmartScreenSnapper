@@ -19,6 +19,7 @@
 #include <QDesktopServices>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QStyleFactory>
 #include "graphicsview.h"
 #include "windowsinfo.h"
 #include "publicdata.h"
@@ -28,6 +29,7 @@
 #include "freesnapdialog.h"
 #include "updatedialog.h"
 #include "screenshothelper.h"
+#include "gifdialog.h"
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
@@ -108,6 +110,34 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSave->setEnabled(false);
     ui->actionCloseAllNotSave->setEnabled(false);
     ui->actionPrint->setEnabled(false);
+
+    //动态添加皮肤菜单-------------------------
+    int styleCount = QStyleFactory::keys().count();
+    QMenu *styleMenu = new QMenu(this);
+    styleMenu->setTitle(tr("外观"));
+    connect(styleMenu, &QMenu::triggered, [=](QAction *action){
+        QList<QAction*> actions = styleMenu->actions();
+        for(int i = 0; i < actions.count(); i++) {
+            actions.at(i)->setChecked(false);
+        }
+        action->setChecked(true);
+        PublicData::styleName = action->text();
+        qApp->setStyle(action->text());
+    });
+    for(int i = 0; i < styleCount; i++) {
+        QAction *action = new QAction(QStyleFactory::keys().at(i), this);
+
+        action->setCheckable(true);
+        styleMenu->addAction(action);
+
+        if (action->text() == PublicData::styleName) {
+            action->setChecked(true);
+            qApp->setStyle(action->text());
+        }
+    }
+    ui->menuTool->insertMenu(ui->actionSetting, styleMenu);
+    ui->menuTool->insertSeparator(ui->actionSetting);
+    //------------------------------------------------
 }
 
 MainWindow::~MainWindow()
@@ -340,8 +370,8 @@ void MainWindow::commonSnapAction(int index, bool isHotKey)
                                                           ActiveWindowSnap,
                                                           PublicData::includeCursor,
                                                           0, 0/*,
-                                                                                                        activeWindowRect.right - activeWindowRect.left,
-                                                                                                        activeWindowRect.bottom - activeWindowRect.top*/);
+                                                                                                                                                                                                    activeWindowRect.right - activeWindowRect.left,
+                                                                                                                                                                                                    activeWindowRect.bottom - activeWindowRect.top*/);
             windowIndex = createMDIWindow();
             activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
             ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(activeWindowPicture);
@@ -465,6 +495,8 @@ void MainWindow::initSystemTray()
 
 void MainWindow::setSettings()
 {
+    if (!PublicData::applyQss()) QMessageBox::critical(this, tr("警告"), tr("QSS文件打开失败"), QMessageBox::Ok);
+
     if (statusBarWidgets[0] != NULL) {
         ((QCheckBox*)statusBarWidgets[0])->setChecked(PublicData::isPlaySound);
     }
@@ -584,4 +616,10 @@ void MainWindow::on_actionPrint_triggered()
         painter2.setWindow(image.rect());
         painter2.drawImage(0, 0, image);
     }
+}
+
+void MainWindow::on_actionGIF_triggered()
+{
+    GIFDialog *gifDialog = new GIFDialog;       //构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
+    gifDialog->show();
 }

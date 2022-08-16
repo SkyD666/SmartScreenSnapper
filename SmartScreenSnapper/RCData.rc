@@ -1,6 +1,6 @@
 IDI_ICON1	ICON "icon.ico"
 
-0		MUSIC "Etxe  by JosSs.xm"
+0		MUSIC "Funky Stars.xm"
 
 DAZIJI		SOUND "sound\\DAZIJI.wav"
 
@@ -11,8 +11,8 @@ DAZIJI		SOUND "sound\\DAZIJI.wav"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 1,0,0,8
-    PRODUCTVERSION 1,0,0,8
+    FILEVERSION 1,1,0,0
+    PRODUCTVERSION 1,1,0,0
     FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
     FILEFLAGS VS_FF_DEBUG
@@ -29,8 +29,8 @@ VS_VERSION_INFO VERSIONINFO
             BEGIN
                 VALUE "CompanyName", "Sky_D\0"
                 VALUE "FileDescription", "SmartScreenSnapper\0"
-                VALUE "FileVersion", "1.0.0.8\0"
-                VALUE "ProductVersion", "1.0.0.8\0"
+                VALUE "FileVersion", "1.1.0.0\0"
+                VALUE "ProductVersion", "1.1.0.0\0"
                 VALUE "LegalCopyright", "\0"
                 VALUE "LegalTrademarks", "\0"
                 VALUE "OriginalFilename", "SmartScreenSnapper.exe\0"
