@@ -1,6 +1,6 @@
 <div align="center">
     <div>
-        <img src="SmartScreenSnapper/images/icon.png" style="height: 100px"/>
+        <img src="image/icon.png" style="height: 100px"/>
     </div>
     <h1>📸 SmartScreenSnapper</h1>
     <p>
@@ -10,8 +10,8 @@
         <a href="https://github.com/SkyD666/SmartScreenSnapper/releases/latest" style="text-decoration:none" >
             <img src="https://img.shields.io/github/downloads/SkyD666/SmartScreenSnapper/total" alt="GitHub all downloads"/>
         </a>
-        <a href="https://img.shields.io/badge/Windows-7-brightgreen" style="text-decoration:none" >
-            <img src="https://img.shields.io/badge/Windows-7-brightgreen" alt="Windows version"/>
+        <a href="https://img.shields.io/badge/Windows->=7-brightgreen" style="text-decoration:none" >
+            <img src="https://img.shields.io/badge/Windows->=7-brightgreen" alt="Windows version"/>
         </a>
         <a href="https://github.com/SkyD666/SmartScreenSnapper/blob/master/LICENSE" style="text-decoration:none" >
             <img src="https://img.shields.io/github/license/SkyD666/SmartScreenSnapper" alt="GitHub license"/>
@@ -21,6 +21,8 @@
         一个小巧实用的<b>截图工具</b>，使用Qt5编写。
     </p>
 </div>
+
+
 
 ## 💡主要功能
 
@@ -36,9 +38,17 @@
 10. 支持**跟随系统启动**
 11. ......
 
+## 🤩应用截图
 
+![image](image/screenshot/ic_main_window.png)
 
-![image](ScreenShots/MainWindow.png)
+![ic_freesnap_dialog](image/screenshot/ic_freesnap_dialog.png)
+
+![ic_gif_dialog](image/screenshot/ic_gif_dialog.png)
+
+![ic_setting_dialog](image/screenshot/ic_setting_dialog.png)
+
+![ic_setting_dialog_2](image/screenshot/ic_setting_dialog_2.png)
 
 ## 🎉特别感谢
 

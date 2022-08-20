@@ -1,4 +1,4 @@
-QT       += core gui winextras printsupport svg
+QT       += core gui winextras printsupport svg network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,50 +16,54 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    MyGlobalShortcut/MyGlobalShortCut.cpp \
-    MyGlobalShortcut/MyWinEventFilter.cpp \
-    aboutdialog.cpp \
-    application.cpp \
-    freesnapdialog.cpp \
-    gif-h/gif.cpp \
-    gifdialog.cpp \
-    graphicsview.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    mdiwindow.cpp \
-    publicdata.cpp \
-    screenshothelper.cpp \
-    settingdialog.cpp \
-    star.cpp \
-    updatedialog.cpp \
-    windowsinfo.cpp
+    src/MyGlobalShortcut/MyGlobalShortCut.cpp \
+    src/MyGlobalShortcut/MyWinEventFilter.cpp \
+    src/aboutdialog.cpp \
+    src/application.cpp \
+    src/const.cpp \
+    src/freesnapdialog.cpp \
+    src/gif-h/gif.cpp \
+    src/gifdialog.cpp \
+    src/graphicsview.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/mdiwindow.cpp \
+    src/publicdata.cpp \
+    src/screenshothelper.cpp \
+    src/settingdialog.cpp \
+    src/star.cpp \
+    src/updatedialog.cpp \
+    src/updateutil.cpp \
+    src/windowsinfo.cpp
 
 HEADERS += \
-    MyGlobalShortcut/MyGlobalShortCut.h \
-    MyGlobalShortcut/MyWinEventFilter.h \
-    aboutdialog.h \
-    application.h \
-    freesnapdialog.h \
-    gif-h/gif.h \
-    gifdialog.h \
-    graphicsview.h \
-    mainwindow.h \
-    mdiwindow.h \
-    minifmod.h \
-    publicdata.h \
-    screenshothelper.h \
-    settingdialog.h \
-    star.h \
-    updatedialog.h \
-    windowsinfo.h
+    src/MyGlobalShortcut/MyGlobalShortCut.h \
+    src/MyGlobalShortcut/MyWinEventFilter.h \
+    src/aboutdialog.h \
+    src/application.h \
+    src/const.h \
+    src/freesnapdialog.h \
+    src/gif-h/gif.h \
+    src/gifdialog.h \
+    src/graphicsview.h \
+    src/mainwindow.h \
+    src/mdiwindow.h \
+    src/minifmod.h \
+    src/publicdata.h \
+    src/screenshothelper.h \
+    src/settingdialog.h \
+    src/star.h \
+    src/updatedialog.h \
+    src/updateutil.h \
+    src/windowsinfo.h
 
 FORMS += \
-    aboutdialog.ui \
-    freesnapdialog.ui \
-    gifdialog.ui \
-    mainwindow.ui \
-    settingdialog.ui \
-    updatedialog.ui
+    ui/aboutdialog.ui \
+    ui/freesnapdialog.ui \
+    ui/gifdialog.ui \
+    ui/mainwindow.ui \
+    ui/settingdialog.ui \
+    ui/updatedialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -67,31 +71,14 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    res.qrc
+    res/res.qrc
 
-RC_FILE += RCData.rc
+RC_FILE += res/RCData.rc
 
-unix|win32: LIBS += -L$$PWD/./ -lminifmod
+unix|win32: LIBS += \
+    -L$$PWD/./lib/ -lminifmod \
+    -L$$PWD/./lib/ -lWinMM \
+    -L$$PWD/./lib/ -lGDI32 \
 
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
-
-unix|win32: LIBS += -L$$PWD/./ -lWinMM
-
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
-
-unix|win32: LIBS += -L$$PWD/./ -lGDI32
-
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
-
-unix|win32: LIBS += -L$$PWD/./ -lMSImg32
-
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
-
-unix|win32: LIBS += -L$$PWD/./ -lWININET
-
-INCLUDEPATH += $$PWD/.
-DEPENDPATH += $$PWD/.
+INCLUDEPATH += $$PWD/./lib/
+DEPENDPATH += $$PWD/./lib/
