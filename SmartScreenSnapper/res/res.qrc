@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/ActiveWindow.png</file>
+        <file>image/icon.png</file>
+        <file>image/ScreenSnap.png</file>
+        <file>image/CursorSnap.png</file>
+        <file>image/FreeSnap.png</file>
+        <file>image/GIFRecord.png</file>
+        <file>image/Setting.svg</file>
+        <file>image/GitHub.svg</file>
+    </qresource>
+</RCC>
