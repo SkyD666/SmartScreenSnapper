@@ -80,9 +80,11 @@ MainWindow::MainWindow(QWidget *parent)
     networkAccessManager = new QNetworkAccessManager();
     connect(networkAccessManager, &QNetworkAccessManager::finished, this , [=] (QNetworkReply *reply) {
         GitHubRelease* gitHubRelease = UpdateUtil::getData(this, reply->readAll());
-        if (UpdateUtil::isNewVersion(gitHubRelease->name)) {
+
+        if (gitHubRelease && UpdateUtil::isNewVersion(gitHubRelease->name)) {
             UpdateDialog(this, gitHubRelease).exec();
         }
+
         reply->deleteLater();
     });
     UpdateUtil::checkUpdate(networkAccessManager);
@@ -156,7 +158,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
     exitApp = true;
     int subWindowCount = ui->mdiArea->subWindowList().count();
-    while(subWindowCount-->0){
+    while (subWindowCount-->0) {
         ui->listDocument->setCurrentRow(subWindowCount);
         if (ui->mdiArea->subWindowList().last()->close()) {
             ui->mdiArea->removeSubWindow(ui->mdiArea->subWindowList().last());
@@ -167,7 +169,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             return;
         }
     }
-    if(event->isAccepted()) {
+    if (event->isAccepted()) {
         qApp->exit();
     }
 }
@@ -218,12 +220,12 @@ void MainWindow::on_actionSave_triggered() {
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
     QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
                                                     activeWindow->getName(), tr("PNG文件(*.png);;JPG文件(*.jpg);;BMP文件(*.bmp)"));
-    if (filePath != "") savePicture(filePath);
+    if (!filePath.isEmpty()) savePicture(filePath);
 }
 
 void MainWindow::savePicture(QString filePath) {
     QDir *dir;
-    if (filePath != "") {
+    if (!filePath.isEmpty()) {
         dir = new QDir(filePath.left(filePath.lastIndexOf('/') + 1));
     } else {
         dir = new QDir(filePath);
@@ -333,8 +335,8 @@ void MainWindow::commonSnapAction(int index, bool isHotKey) {
                                                           ActiveWindowSnap,
                                                           PublicData::includeCursor,
                                                           0, 0/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  activeWindowRect.right - activeWindowRect.left,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  activeWindowRect.bottom - activeWindowRect.top*/);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              activeWindowRect.right - activeWindowRect.left,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              activeWindowRect.bottom - activeWindowRect.top*/);
             windowIndex = createMDIWindow();
             activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
             ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(activeWindowPicture);
@@ -436,8 +438,7 @@ void MainWindow::initSystemTray()
     systemTray.setContextMenu(&systemTrayMenu);
 
     connect(&systemTray, &QSystemTrayIcon::activated, [=](QSystemTrayIcon::ActivationReason reason){
-        switch (reason)
-        {
+        switch (reason) {
         case QSystemTrayIcon::Context:
             systemTrayMenu.show();
             break;
@@ -556,6 +557,6 @@ void MainWindow::on_actionPrint_triggered()
 
 void MainWindow::on_actionGIF_triggered()
 {
-    GIFDialog *gifDialog = new GIFDialog;       //构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
+    GIFDialog *gifDialog = new GIFDialog(this);       //构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
     gifDialog->show();
 }
