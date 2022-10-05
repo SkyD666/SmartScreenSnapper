@@ -21,6 +21,9 @@ SOURCES += \
     src/aboutdialog.cpp \
     src/application.cpp \
     src/const.cpp \
+    src/freesnap/freesnapgraphicsview.cpp \
+    src/freesnap/freesnaprect.cpp \
+    src/freesnap/freesnapscene.cpp \
     src/freesnapdialog.cpp \
     src/gif-h/gif.cpp \
     src/gifdialog.cpp \
@@ -42,6 +45,9 @@ HEADERS += \
     src/aboutdialog.h \
     src/application.h \
     src/const.h \
+    src/freesnap/freesnapgraphicsview.h \
+    src/freesnap/freesnaprect.h \
+    src/freesnap/freesnapscene.h \
     src/freesnapdialog.h \
     src/gif-h/gif.h \
     src/gifdialog.h \
