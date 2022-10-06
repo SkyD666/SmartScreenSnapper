@@ -6,6 +6,8 @@
 #include "MyWinEventFilter.h"
 #include <QKeySequence>
 #include <QHash>
+#include "src/screenshothelper.h"
+
 class MyGlobalShortCut;
 
 
@@ -13,13 +15,13 @@ class MyGlobalShortCut : public QObject
 {
     Q_OBJECT
 signals:
-    void activatedHotKey(int);
+    void activatedHotKey(ScreenShotHelper::ShotType shotType);
 public:
     MyGlobalShortCut();
     MyGlobalShortCut(QWidget* parent);
     MyGlobalShortCut(QString key,QWidget* parent, bool reportError);
     ~MyGlobalShortCut();
-    void activateShortcut(int i);
+    void activateShortcut(ScreenShotHelper::ShotType shotType);
     bool registerHotKey();
     bool unregisterHotKey();
     QHash<QPair<quint32, quint32>, MyGlobalShortCut*> shortcuts;

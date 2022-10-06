@@ -40,8 +40,6 @@ bool MainWindow::exitApp = false;
 bool MainWindow::noToAllClicked = false;
 bool MainWindow::closeAllNotSave = false;
 
-void wait(int msec);
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow) {
@@ -175,10 +173,10 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_actionNew_triggered() {
-    createMDIWindow();
+
 }
 
-int MainWindow::createMDIWindow() {
+MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     MdiWindow *child = new MdiWindow(this);
     QGraphicsScene* graphicsScene = new QGraphicsScene(child);
     GraphicsView * graphicsView = new GraphicsView(child);
@@ -213,7 +211,8 @@ int MainWindow::createMDIWindow() {
     });
 
     PublicData::activeWindowIndex = ui->mdiArea->subWindowList().size() - 1;
-    return PublicData::activeWindowIndex;
+    windowIndex = PublicData::activeWindowIndex;
+    return child;
 }
 
 void MainWindow::on_actionSave_triggered() {
@@ -223,7 +222,13 @@ void MainWindow::on_actionSave_triggered() {
     if (!filePath.isEmpty()) savePicture(filePath);
 }
 
-void MainWindow::savePicture(QString filePath) {
+void MainWindow::savePicture(QString filePath)
+{
+    QPixmap pixmap = getActiveWindowPixmap();
+    savePicture(filePath, pixmap);
+}
+
+void MainWindow::savePicture(QString filePath, QPixmap pixmap) {
     QDir *dir;
     if (!filePath.isEmpty()) {
         dir = new QDir(filePath.left(filePath.lastIndexOf('/') + 1));
@@ -232,16 +237,23 @@ void MainWindow::savePicture(QString filePath) {
     }
     if (!dir->exists()) dir->mkdir(dir->path());
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-    QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
-    QPainter painter(&image);
-    graphicsScene->render(&painter);
-    if (image.save(filePath)) {
+    if (pixmap.save(filePath)) {
         activeWindow->setSaved(true);
     } else {
         QMessageBox::critical(this, tr("警告"), tr("保存图片失败"), QMessageBox::Ok);
     }
     delete dir;
+}
+
+QPixmap MainWindow::getActiveWindowPixmap()
+{
+    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+    QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
+    QPixmap pixmap(graphicsScene->width(), graphicsScene->height());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    graphicsScene->render(&painter);
+    return pixmap;
 }
 
 void MainWindow::on_actionExit_triggered() {
@@ -308,107 +320,67 @@ void MainWindow::initStatusBar() {
     ui->statusbar->addPermanentWidget(tbtnZoom);
 }
 
-void MainWindow::commonSnapAction(int index, bool isHotKey) {
-    int windowIndex = 0;
-    MdiWindow* activeWindow = NULL;
-    QString name;
-    switch (index) {
-    case ScreenSnap: {
-        if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[ScreenSnap].waitTime * 1000);
-        windowIndex = createMDIWindow();
-        activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
-        name = tr("全屏截图") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
-        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(getWindowPixmap((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor));
-        break;
-    }
-    case ActiveWindowSnap: {
-        int result = QMessageBox::Yes;
-        if (!isHotKey || !PublicData::hotKeyNoWait) {
-            result = QMessageBox::information(this, tr("活动窗口截图"),
-                                              tr("点击确定%1秒后截图").arg(QString::number(PublicData::snapType[ActiveWindowSnap].waitTime)),
+void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey) {
+    MdiWindow* activeWindow = nullptr;
+    QPixmap* pixmap = nullptr;
+
+    if (shotType == ScreenShotHelper::ActiveWindowShot) {
+        int result = QMessageBox::information(this,
+                                              tr("活动窗口截图"),
+                                              tr("点击确定%1秒后截图").arg(QString::number(PublicData::snapTypeItems[shotType].waitTime)),
                                               QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
-        }
-        if (result == QMessageBox::Yes) {
-            if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[ActiveWindowSnap].waitTime * 1000);
-            HWND activeWindowHwnd = GetForegroundWindow();
-            QPixmap activeWindowPicture = getWindowPixmap(activeWindowHwnd,
-                                                          ActiveWindowSnap,
-                                                          PublicData::includeCursor,
-                                                          0, 0/*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              activeWindowRect.right - activeWindowRect.left,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              activeWindowRect.bottom - activeWindowRect.top*/);
-            windowIndex = createMDIWindow();
-            activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
-            ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(activeWindowPicture);
+        if (result != QMessageBox::Yes) return;
+    }
 
-        } else {
-            return;
-        }
-        break;
-    }
-    case CursorSnap: {
-        if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[CursorSnap].waitTime * 1000);
-        windowIndex = createMDIWindow();
-        activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
-        name = tr("截取光标") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
-        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(
-                    getWindowPixmap((HWND)activeWindow->widget()->winId(), CursorSnap, true
-                                    , 0, 0, GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR)));
-        break;
-    }
-    case FreeSnap: {
-        if (!isHotKey || !PublicData::hotKeyNoWait) wait(PublicData::snapType[FreeSnap].waitTime * 1000);
-        QPixmap* picture = new QPixmap;
-        FreeSnapDialog freeSnapDialog(getWindowPixmap((HWND)QApplication::desktop()->winId(), ScreenSnap, PublicData::includeCursor),
-                                      picture, this);
+    if (shotType == ScreenShotHelper::FreeShot) {
+        pixmap = new QPixmap;
+        bool captured = true;
+        FreeSnapDialog freeSnapDialog(ScreenShotHelper::getWindowPixmap(
+                                          (HWND)QApplication::desktop()->winId(),
+                                          shotType,
+                                          PublicData::includeCursor
+                                          ),
+                                      pixmap, captured, this);
         freeSnapDialog.exec();
-        if (picture == NULL)
-            return;
-        windowIndex = createMDIWindow();
-        activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(windowIndex));
-        name = tr("自由截图") + " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
-        ((QGraphicsView*)(activeWindow->widget()))->scene()->addPixmap(*picture);
-        delete picture;
-        break;
-    }
+        if (!captured) return;
+    } else {
+        pixmap = new QPixmap(ScreenShotHelper::screenshot(shotType, isHotKey));
     }
 
-    activeWindow->setWindowTitle(name);
+    QString name = ScreenShotHelper::getPictureName(shotType);
+    int windowIndex = -1;
+    activeWindow = createMDIWindow(windowIndex);
     activeWindow->setName(name);
-    activeWindow->setListItemName(name);
     activeWindow->setSaved(false);
 
-    if(PublicData::copyToClipBoardAfterSnap) ui->actionCopy->trigger();
-    if(PublicData::isPlaySound) PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
+    QGraphicsScene *scene = ((QGraphicsView*)(activeWindow->widget()))->scene();
+    scene->addPixmap(*pixmap);
 
-    if (PublicData::snapType[index].isAutoSave) {
-        QString folderPath = PublicData::snapType[index].autoSavePath + "/";
+    if (PublicData::copyToClipBoardAfterSnap) {
+        QApplication::clipboard()->setPixmap(*pixmap);
+    }
+    if (PublicData::isPlaySound) {
+        PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
+    }
+
+    ShotTypeItem snapTypeItem = PublicData::snapTypeItems[shotType];
+    if (snapTypeItem.isAutoSave) {
+        QString folderPath = snapTypeItem.autoSavePath + "/";
         folderPath.replace("://", ":\\");
-        savePicture(folderPath + activeWindow->getName() + PublicData::snapType[index].autoSaveExtName);
+        savePicture(folderPath + name + snapTypeItem.autoSaveExtName, *pixmap);
     }
-}
 
-QPixmap MainWindow::getWindowPixmap(HWND winId, int type, bool includeCursor, int x, int y, int w , int h) {
-    if (type == CursorSnap) return ScreenShotHelper::grabWindow(0, winId, type, includeCursor, x, y, w, h);
-    switch (PublicData::snapMethod) {
-    case 1: {
-        return ScreenShotHelper::grabWindow(1, winId, type, includeCursor, x, y, w, h);
-    }
-    case 0:
-    default: {
-        return ScreenShotHelper::grabWindow(0, winId, type, includeCursor, x, y, w, h);
-    }
-    }
+    delete pixmap;
 }
 
 void MainWindow::on_actionScreenSnap_triggered()
 {
-    commonSnapAction(ScreenSnap, false);
+    commonSnapAction(ScreenShotHelper::ScreenShot, false);
 }
 
 void MainWindow::on_actionActiveWindowSnap_triggered()
 {
-    commonSnapAction(ActiveWindowSnap, false);
+    commonSnapAction(ScreenShotHelper::ActiveWindowShot, false);
 }
 
 void MainWindow::exitCancel()
@@ -465,13 +437,6 @@ void MainWindow::setSettings()
     }
 }
 
-void wait(int msec)
-{
-    QEventLoop loop;            //定义一个新的事件循环
-    QTimer::singleShot(msec, &loop, SLOT(quit()));//创建单次定时器，槽函数为事件循环的退出函数
-    loop.exec();                    //事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
-}
-
 void MainWindow::on_actionSetting_triggered()
 {
     SettingDialog settingDialog(this);
@@ -483,14 +448,14 @@ void MainWindow::on_actionSetting_triggered()
     PublicData::registerAllHotKey(this);
 }
 
-void MainWindow::hotKeyPressed(int i)
+void MainWindow::hotKeyPressed(ScreenShotHelper::ShotType shotType)
 {
-    commonSnapAction(i, true);
+    commonSnapAction(shotType, true);
 }
 
 void MainWindow::on_actionCursorSnap_triggered()
 {
-    commonSnapAction(CursorSnap, false);
+    commonSnapAction(ScreenShotHelper::CursorShot, false);
 }
 
 void MainWindow::on_actionCloseAllNotSave_triggered()
@@ -511,19 +476,17 @@ void MainWindow::on_actionOpenSource_triggered()
 void MainWindow::on_actionCopy_triggered()
 {
     if (!ui->listDocument->count()) return;
-    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    if (activeWindow) {
-        QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-        QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
-        QPainter painter(&image);
-        graphicsScene->render(&painter);
-        QApplication::clipboard()->setImage(image);
-    }
+    QPixmap pixmap = getActiveWindowPixmap();
+    QImage image = pixmap.toImage();
+    QMimeData *data = new QMimeData;
+    data->setImageData(image);
+    QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
+    QApplication::clipboard()->setImage(image);
 }
 
 void MainWindow::on_actionFreeSnap_triggered()
 {
-    commonSnapAction(FreeSnap, false);
+    commonSnapAction(ScreenShotHelper::FreeShot, false);
 }
 
 void MainWindow::on_actionUpdate_triggered()
@@ -540,18 +503,15 @@ void MainWindow::on_actionPrint_triggered()
     if(printDialog.exec() == QPrintDialog::Accepted) {
         QPrinter* printer = printDialog.printer();
         //printer->setOutputFileName(activeWindow->getName());        //文件名
-        QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-        QImage image(QSize(graphicsScene->width(), graphicsScene->height()),QImage::Format_ARGB32);
-        QPainter painter(&image);
-        graphicsScene->render(&painter);
+        QPixmap pixmap = getActiveWindowPixmap();
 
         QPainter painter2(printer);
         QRect rect = painter2.viewport();                           //painter2矩形区域
-        QSize size = image.size();                                      //图片的大小
+        QSize size = pixmap.size();                                      //图片的大小
         size.scale(rect.size(), Qt :: KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
         painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
-        painter2.setWindow(image.rect());
-        painter2.drawImage(0, 0, image);
+        painter2.setWindow(pixmap.rect());
+        painter2.drawPixmap(0, 0, pixmap);
     }
 }
 

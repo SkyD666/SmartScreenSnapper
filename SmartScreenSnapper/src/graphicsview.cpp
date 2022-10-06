@@ -4,7 +4,7 @@
 #include <QDrag>
 #include <QBuffer>
 
-GraphicsView::GraphicsView(QWidget *parent): QGraphicsView(parent), mimeData(NULL)
+GraphicsView::GraphicsView(QWidget *parent): QGraphicsView(parent), mimeData(nullptr)
 {
     this->mousePressed = false;
     lastMousePoint.setX(-1);
@@ -42,13 +42,14 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     lastMousePoint.setX(event->x());
     lastMousePoint.setY(event->y());
 
-    if (event->buttons() & Qt::RightButton) {       //准备右键拖出时的图片
-        QImage image(QSize(scene()->width(), scene()->height()), QImage::Format_ARGB32);
-        QPainter painter(&image);
+    if (event->buttons() & Qt::RightButton) {       // 准备右键拖出时的图片
+        QPixmap pixmap(scene()->width(), scene()->height());
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
         scene()->render(&painter);
         mimeData = new QMimeData();
         mimeData->clear();
-        mimeData->setImageData(QImage(image));
+        mimeData->setImageData(pixmap.toImage());
     }
 }
 

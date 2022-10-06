@@ -28,11 +28,12 @@ bool MyWinEventFilter::nativeEventFilter(const QByteArray &eventType, void *mess
             bool res = m_shortcut->shortcuts.value(qMakePair(keycode, modifiers));
             if (res) {
                 for (int i = 0; i < PublicData::hotKey.size(); i++) {
-                    for (int j = 0; j < PublicData::hotKey.at(i).size(); j++) {
-                        if (MyGlobalShortCut::nativeKeycode(PublicData::hotKey.at(i).at(j)->key) == HIWORD(msg->lParam) &&
-                               MyGlobalShortCut::nativeModifiers(PublicData::hotKey.at(i).at(j)->mods) == LOWORD(msg->lParam)) {
-                            m_shortcut ->activateShortcut(i);
-                            //break;
+                    ScreenShotHelper::ShotType shotType = PublicData::hotKey.keys().at(i);
+                    QList<MyGlobalShortCut*> hotKey = PublicData::hotKey.value(shotType);
+                    for (int j = 0; j < hotKey.size(); j++){
+                        if (MyGlobalShortCut::nativeKeycode(hotKey.at(j)->key) == HIWORD(msg->lParam) &&
+                                MyGlobalShortCut::nativeModifiers(hotKey.at(j)->mods) == LOWORD(msg->lParam)) {
+                            m_shortcut->activateShortcut(shotType);
                         }
                     }
                 }

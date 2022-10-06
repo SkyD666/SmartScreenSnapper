@@ -6,10 +6,24 @@
 class ScreenShotHelper
 {
 public:
+
+    enum ShotType {
+        ScreenShot, ActiveWindowShot, CursorShot, FreeShot
+    };
+
     ScreenShotHelper();
 
     static QPixmap grabWindow(int snapMethod, HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
 
+    static QPixmap grabCursor();
+
+    static QPixmap screenshot(ShotType shotType, bool isHotKey);
+
+    static bool savePicture(QString filePath, QPixmap pixmap);
+
+    static QPixmap getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
+
+    static QString getPictureName(ShotType shotType);
 };
 
 #endif // SCREENSHOTHELPER_H

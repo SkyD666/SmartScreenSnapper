@@ -27,7 +27,7 @@ class FreeSnapDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *parent = nullptr);
+    explicit FreeSnapDialog(QPixmap picture, QPixmap* result, bool &captured, QWidget *parent = nullptr);
     ~FreeSnapDialog();
 
 private:
@@ -47,7 +47,9 @@ private:
 
     QColor* pixelColor;
 
-    QPixmap*& resultRef;
+    QPixmap* resultPixmap;
+
+    bool &captured;
 
     int rectLineWidth;
     int pointRadius;

@@ -14,7 +14,7 @@
    <string>SmartScreenSnapper</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res.qrc">
+   <iconset resource="../res/res.qrc">
     <normaloff>:/image/icon.png</normaloff>:/image/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -168,13 +168,16 @@
    <property name="toolTip">
     <string>保存文档</string>
    </property>
+   <property name="statusTip">
+    <string>保存当前选择的截图到文件</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionScreenSnap">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/ScreenSnap.png</normaloff>:/image/ScreenSnap.png</iconset>
    </property>
    <property name="text">
@@ -183,20 +186,29 @@
    <property name="toolTip">
     <string>全屏截图</string>
    </property>
+   <property name="statusTip">
+    <string>截取全屏</string>
+   </property>
   </action>
   <action name="actionExit">
    <property name="text">
     <string>退出(&amp;E)</string>
+   </property>
+   <property name="statusTip">
+    <string>完全退出软件</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
     <string>关于(&amp;A)...</string>
    </property>
+   <property name="statusTip">
+    <string>关于此软件</string>
+   </property>
   </action>
   <action name="actionActiveWindowSnap">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/ActiveWindow.png</normaloff>:/image/ActiveWindow.png</iconset>
    </property>
    <property name="text">
@@ -205,14 +217,20 @@
    <property name="toolTip">
     <string>活动窗口截图</string>
    </property>
+   <property name="statusTip">
+    <string>截取当前焦点窗口</string>
+   </property>
   </action>
   <action name="actionSetting">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/Setting.svg</normaloff>:/image/Setting.svg</iconset>
    </property>
    <property name="text">
     <string>设置(&amp;S)...</string>
+   </property>
+   <property name="statusTip">
+    <string>打开设置界面</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -220,7 +238,7 @@
   </action>
   <action name="actionCursorSnap">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/CursorSnap.png</normaloff>:/image/CursorSnap.png</iconset>
    </property>
    <property name="text">
@@ -229,24 +247,36 @@
    <property name="toolTip">
     <string>截取光标</string>
    </property>
+   <property name="statusTip">
+    <string>截取鼠标图像</string>
+   </property>
   </action>
   <action name="actionCloseAllNotSave">
    <property name="text">
     <string>关闭所有文档且不保存...</string>
    </property>
+   <property name="statusTip">
+    <string>关闭所有截图窗口，未保存的截图会被丢弃</string>
+   </property>
   </action>
   <action name="actionOpenSource">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/GitHub.svg</normaloff>:/image/GitHub.svg</iconset>
    </property>
    <property name="text">
     <string>代码开源...</string>
    </property>
+   <property name="statusTip">
+    <string>访问GitHub仓库，请点个Star</string>
+   </property>
   </action>
   <action name="actionCopy">
    <property name="text">
     <string>复制(&amp;C)</string>
+   </property>
+   <property name="statusTip">
+    <string>复制当前选择的截图到粘贴板</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -254,7 +284,7 @@
   </action>
   <action name="actionFreeSnap">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/FreeSnap.png</normaloff>:/image/FreeSnap.png</iconset>
    </property>
    <property name="text">
@@ -262,6 +292,9 @@
    </property>
    <property name="toolTip">
     <string>自由截图</string>
+   </property>
+   <property name="statusTip">
+    <string>自由框选截图</string>
    </property>
   </action>
   <action name="actionUpdate">
@@ -271,6 +304,9 @@
    <property name="toolTip">
     <string>检查更新</string>
    </property>
+   <property name="statusTip">
+    <string>连接GitHub检查更新</string>
+   </property>
   </action>
   <action name="actionPrint">
    <property name="text">
@@ -279,7 +315,7 @@
   </action>
   <action name="actionGIF">
    <property name="icon">
-    <iconset resource="res.qrc">
+    <iconset resource="../res/res.qrc">
      <normaloff>:/image/GIFRecord.png</normaloff>:/image/GIFRecord.png</iconset>
    </property>
    <property name="text">
@@ -288,10 +324,13 @@
    <property name="toolTip">
     <string>录制GIF</string>
    </property>
+   <property name="statusTip">
+    <string>选择区域并录制GIF</string>
+   </property>
   </action>
  </widget>
  <resources>
-  <include location="res.qrc"/>
+  <include location="../res/res.qrc"/>
  </resources>
  <connections/>
 </ui>
