@@ -1,6 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "mdiwindow.h"
+#include "screenshothelper.h"
+
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QSystemTrayIcon>
@@ -26,7 +29,7 @@ public:
 
     ~MainWindow();
 
-    int createMDIWindow();
+    MdiWindow *createMDIWindow(int &windowIndex);
 
     void initSystemTray();
 
@@ -36,7 +39,7 @@ public:
 
     void setSettings();
 
-    void commonSnapAction(int index, bool isHotKey);
+    void commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey);
 
     static bool exitApp;
 
@@ -58,11 +61,13 @@ private slots:
 
     void on_actionSetting_triggered();
 
-    void hotKeyPressed(int);
-
-    QPixmap getWindowPixmap(HWND winId, int type, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
+    void hotKeyPressed(ScreenShotHelper::ShotType shotType);
 
     void savePicture(QString filePath);
+
+    void savePicture(QString filePath, QPixmap pixmap);
+
+    QPixmap getActiveWindowPixmap();
 
     void on_actionCursorSnap_triggered();
 

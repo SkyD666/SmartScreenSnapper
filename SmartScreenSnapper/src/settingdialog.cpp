@@ -33,16 +33,16 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     //此处的信号有重载
     connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        if(index <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapType[index].waitTime) + tr("s"));
-            ui->horizontalSliderWaitTime->setValue(PublicData::snapType[index].waitTime);
-            ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapType[index].hotKey));
-            ui->lineEditAutoSavePath->setText(PublicData::snapType[index].autoSavePath);
-            ui->checkBoxIsAutoSave->setChecked(PublicData::snapType[index].isAutoSave);
-            ui->comboBoxAutoSaveExtName->setCurrentText(PublicData::snapType[index].autoSaveExtName);
-            ui->lineEditAutoSavePath->setEnabled(PublicData::snapType[index].isAutoSave);
-            ui->toolButtonAutoSavePath->setEnabled(PublicData::snapType[index].isAutoSave);
-            ui->comboBoxAutoSaveExtName->setEnabled(PublicData::snapType[index].isAutoSave);
+        if(index <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapTypeItems[index].waitTime) + tr("s"));
+            ui->horizontalSliderWaitTime->setValue(PublicData::snapTypeItems[index].waitTime);
+            ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[index].hotKey));
+            ui->lineEditAutoSavePath->setText(PublicData::snapTypeItems[index].autoSavePath);
+            ui->checkBoxIsAutoSave->setChecked(PublicData::snapTypeItems[index].isAutoSave);
+            ui->comboBoxAutoSaveExtName->setCurrentText(PublicData::snapTypeItems[index].autoSaveExtName);
+            ui->lineEditAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
+            ui->toolButtonAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
+            ui->comboBoxAutoSaveExtName->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
         }
     });
 
@@ -54,10 +54,10 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->comboBoxSnapType->addItem(QIcon(":/image/FreeSnap.png"), tr("自由截图"));
 
     connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, [=](const QKeySequence &keySequence){
-        PublicData::snapType[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
+        PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
     });
 
-    ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapType[ui->comboBoxSnapType->currentIndex()].hotKey));
+    ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey));
 
     ui->comboBoxSnapMethod->addItem(tr("方式1"));
     ui->comboBoxSnapMethod->addItem(tr("方式2"));
@@ -72,22 +72,20 @@ SettingDialog::SettingDialog(QWidget *parent) :
     //要在read之前
     connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, [=](int state){
         PublicData::noBorder = state;
-        ui->checkBoxIncludeShadow->setEnabled(!state);
-        if (state != Qt::Unchecked) ui->checkBoxIncludeShadow->setCheckState(Qt::Unchecked);
     });
 
     readSettings(); //注意调用顺序，上面是进行初始设置，下面是在控件状态（选中、值等）发生改变时改变PublicData里的值
 
     connect(ui->horizontalSliderWaitTime, &QAbstractSlider::valueChanged, [=](int value){
         ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(value) + tr("s"));
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].waitTime = value;
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].waitTime = value;
         }
     });
 
     connect(ui->checkBoxIsAutoSave, &QCheckBox::stateChanged, [=](int state){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].isAutoSave = state;
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].isAutoSave = state;
         }
         ui->lineEditAutoSavePath->setEnabled(state);
         ui->toolButtonAutoSavePath->setEnabled(state);
@@ -95,14 +93,14 @@ SettingDialog::SettingDialog(QWidget *parent) :
     });
 
     connect(ui->lineEditAutoSavePath, &QLineEdit::editingFinished, [=](){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSavePath = ui->lineEditAutoSavePath->text();
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath = ui->lineEditAutoSavePath->text();
         }
     });
 
     connect(ui->lineEditAutoSavePath, &QLineEdit::textChanged, [=](const QString &text){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSavePath = text;
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath = text;
         }
     });
 
@@ -116,8 +114,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     //自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapType)/sizeof(SnapType))) {
-            PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index];
+        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index];
         }
     });
 
@@ -140,10 +138,6 @@ SettingDialog::SettingDialog(QWidget *parent) :
     connect(ui->checkBoxCopyToClipBoardAfterSnap, &QCheckBox::stateChanged, [=](int state){
         PublicData::copyToClipBoardAfterSnap = state;
     });
-
-    connect(ui->checkBoxIncludeShadow, &QCheckBox::stateChanged, [=](int state){
-        PublicData::includeShadow = state;
-    });
 }
 
 SettingDialog::~SettingDialog()
@@ -161,7 +155,6 @@ void SettingDialog::readSettings()
     ui->checkBoxHotKeyNoWait->setChecked(PublicData::hotKeyNoWait);
     ui->checkBoxIncludeCursor->setChecked(PublicData::includeCursor);
     ui->checkBoxNoBorder->setChecked(PublicData::noBorder);
-    ui->checkBoxIncludeShadow->setChecked(PublicData::includeShadow);
     ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
     ui->comboBoxSnapMethod->setCurrentIndex(PublicData::snapMethod);
     ui->lineEditQssPath->setText(PublicData::qssPath);
@@ -185,7 +178,7 @@ void SettingDialog::on_pushButtonDeleteHotKey_clicked()
 void SettingDialog::on_toolButtonAutoSavePath_clicked()
 {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("选择目录"),
-                                                        PublicData::snapType[ui->comboBoxSnapType->currentIndex()].autoSavePath, QFileDialog::ShowDirsOnly);
+                                                        PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath, QFileDialog::ShowDirsOnly);
     if (dirPath != "") {
         ui->lineEditAutoSavePath->setText(dirPath);
     }

@@ -25,6 +25,13 @@ QString MdiWindow::getName() {
 
 void MdiWindow::setName(QString name) {
     this->name = name;
+    if (saved) {
+        setWindowTitle(name);
+        setListItemName(name);
+    } else {
+        setWindowTitle(name + "*");
+        setListItemName(name + "*");
+    }
 }
 
 bool MdiWindow::isSaved() {
@@ -33,6 +40,13 @@ bool MdiWindow::isSaved() {
 
 void MdiWindow::setSaved(bool saved) {
     this->saved = saved;
+    if (saved) {
+        setWindowTitle(name);
+        setListItemName(name);
+    } else {
+        setWindowTitle(name + "*");
+        setListItemName(name + "*");
+    }
 }
 
 void MdiWindow::closeEvent(QCloseEvent *event) {

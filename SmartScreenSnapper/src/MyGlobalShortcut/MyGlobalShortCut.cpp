@@ -22,10 +22,11 @@ MyGlobalShortCut::MyGlobalShortCut(QString key, QWidget *parent, bool reportErro
                                                 tr("失败，请检查该热键是否被占用！"));
 }
 
-void MyGlobalShortCut::activateShortcut(int i)
+void MyGlobalShortCut::activateShortcut(ScreenShotHelper::ShotType shotType)
 {
-    emit activatedHotKey(i);
+    emit activatedHotKey(shotType);
 }
+
 bool  MyGlobalShortCut::registerHotKey()
 {
     Qt::KeyboardModifiers allMods = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier;

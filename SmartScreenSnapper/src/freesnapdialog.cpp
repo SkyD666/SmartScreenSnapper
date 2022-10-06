@@ -12,7 +12,7 @@
 #include <QClipboard>
 #include <QString>
 
-FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *parent) :
+FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap* result, bool &captured, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::FreeSnapDialog),
     grayColor(0, 0, 0, 180),
@@ -20,7 +20,8 @@ FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *paren
     previewZoomRate(3.2f),
     picture(picture),
     pixelColor(nullptr),
-    resultRef(result),
+    resultPixmap(result),
+    captured(captured),
     rectLineWidth(1),
     pointRadius(9),
     deltaHeight(0),
@@ -96,11 +97,14 @@ FreeSnapDialog::FreeSnapDialog(QPixmap picture, QPixmap*& result, QWidget *paren
     setRectVisible(false);
     refreshPointPos();
     refreshGrayArea();
+    update();
 }
 
 FreeSnapDialog::~FreeSnapDialog()
 {
-    resultRef = NULL;
+    scene->removeItem(grayItem);
+    delete grayItem;
+    resultPixmap = nullptr;
     delete ui;
 }
 
@@ -463,12 +467,12 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
 void FreeSnapDialog::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        *this->resultRef = picture.copy(ui->frameRect->geometry());
+        *this->resultPixmap = picture.copy(ui->frameRect->geometry());
+        captured = true;
         close();
         return;
     } else if (event->key() == Qt::Key_Escape) {
-        delete this->resultRef;
-        this->resultRef = NULL;
+        captured = false;
         close();
         return;
     } else if (event->key() == Qt::Key_C) {         // C键复制颜色

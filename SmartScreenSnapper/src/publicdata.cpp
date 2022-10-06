@@ -14,16 +14,12 @@ bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
-bool PublicData::includeShadow = false;
 QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
 QString PublicData::qssPath = "";
 QString PublicData::imageExtName[] = {".png", ".jpg", ".bmp"};
-SnapType PublicData::snapType[SNAPTYPECOUNT] = {{0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
-                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
-                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]},
-                                                {0, "", false, QApplication::applicationDirPath(), imageExtName[0]}};
-QList<QList<MyGlobalShortCut*>> PublicData::hotKey;
+ShotTypeItem PublicData::snapTypeItems[SNAPTYPECOUNT] = {};
+QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
 {
@@ -43,11 +39,12 @@ void PublicData::readSettings()
 
     for (int i = 0; i < size; i++) {
         qSettings.setArrayIndex(i);
-        snapType[i].waitTime = qSettings.value("WaitTime", 0).toInt();
-        snapType[i].hotKey = qSettings.value("HotKey", "").toString();
-        snapType[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
-        snapType[i].autoSavePath = qSettings.value("AutoSavePath", QApplication::applicationDirPath()).toString();
-        snapType[i].autoSaveExtName = qSettings.value("AutoSaveExtName", imageExtName[0]).toString();
+        snapTypeItems[i].shotType = ScreenShotHelper::ShotType(qSettings.value("ShotType", i).toInt());
+        snapTypeItems[i].waitTime = qSettings.value("WaitTime", 0).toInt();
+        snapTypeItems[i].hotKey = qSettings.value("HotKey", "").toString();
+        snapTypeItems[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
+        snapTypeItems[i].autoSavePath = qSettings.value("AutoSavePath", QApplication::applicationDirPath()).toString();
+        snapTypeItems[i].autoSaveExtName = qSettings.value("AutoSaveExtName", imageExtName[0]).toString();
     }
     qSettings.endArray();
 
@@ -69,15 +66,15 @@ void PublicData::writeSettings()
 
     qSettings.beginWriteArray("SnapType");
 
-    int size = sizeof(snapType) / sizeof(SnapType);
+    int size = sizeof(snapTypeItems) / sizeof(ShotTypeItem);
 
     for (int i = 0; i < size; i++) {
         qSettings.setArrayIndex(i);
-        qSettings.setValue("WaitTime", snapType[i].waitTime);
-        qSettings.setValue("HotKey", snapType[i].hotKey);
-        qSettings.setValue("IsAutoSave", snapType[i].isAutoSave);
-        qSettings.setValue("AutoSavePath", snapType[i].autoSavePath);
-        qSettings.setValue("AutoSaveExtName", snapType[i].autoSaveExtName);
+        qSettings.setValue("WaitTime", snapTypeItems[i].waitTime);
+        qSettings.setValue("HotKey", snapTypeItems[i].hotKey);
+        qSettings.setValue("IsAutoSave", snapTypeItems[i].isAutoSave);
+        qSettings.setValue("AutoSavePath", snapTypeItems[i].autoSavePath);
+        qSettings.setValue("AutoSaveExtName", snapTypeItems[i].autoSaveExtName);
     }
     qSettings.endArray();
 
@@ -96,9 +93,9 @@ void PublicData::writeSettings()
 void PublicData::registerAllHotKey(QWidget* parent)
 {
     QStringList registeredKeyList;    //记录次热键是否被本程序注册，如果注册过了就不再注册了
-    for (int i = 0; i < (int)(sizeof(PublicData::snapType)/sizeof(SnapType)); i++){
+    for (int i = 0; i < (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem)); i++){
         QList<MyGlobalShortCut*> hotKey;
-        QStringList keys = PublicData::snapType[i].hotKey.split(", ");
+        QStringList keys = PublicData::snapTypeItems[i].hotKey.split(", ");
         for (int j = 0; j < keys.size(); j++) {
             QString key = keys.at(j);
             if (key == "") continue;
@@ -110,21 +107,25 @@ void PublicData::registerAllHotKey(QWidget* parent)
                 shortcut = new MyGlobalShortCut(key, parent, true);
             }
             hotKey.push_back(shortcut);
-            QObject::connect(shortcut, SIGNAL(activatedHotKey(int)), parent, SLOT(hotKeyPressed(int)));
+            QObject::connect(shortcut,
+                             SIGNAL(activatedHotKey(ScreenShotHelper::ShotType)),
+                             parent,
+                             SLOT(hotKeyPressed(ScreenShotHelper::ShotType)));
         }
-        PublicData::hotKey.push_back(hotKey);
+        PublicData::hotKey.insert(PublicData::snapTypeItems[i].shotType, hotKey);
     }
 }
 
 void PublicData::unregisterAllHotKey()
 {
-    for (int i = 0; i < PublicData::hotKey.size(); i++){
-        for (int j = 0; j < PublicData::hotKey.at(i).size(); j++){
-            PublicData::hotKey.at(i).at(j)->unregisterHotKey();
-            delete PublicData::hotKey.at(i).at(j);
+    while (!PublicData::hotKey.isEmpty()) {
+        QList<MyGlobalShortCut*> hotKey = PublicData::hotKey.begin().value();
+        for (int i = 0; i < hotKey.size(); i++){
+            hotKey.at(i)->unregisterHotKey();
+            delete hotKey.at(i);
         }
+        PublicData::hotKey.remove(PublicData::hotKey.begin().key());
     }
-    PublicData::hotKey.clear();
 }
 
 bool PublicData::applyQss()

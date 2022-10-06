@@ -2,6 +2,8 @@
 #define PUBLICDATA_H
 
 #include <QList>
+#include <QHash>
+#include "screenshothelper.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 
 #define SNAPTYPECOUNT 4
@@ -10,14 +12,11 @@
 #define SNAPMETHOD 2
 
 enum {
-    ScreenSnap = 0, ActiveWindowSnap = 1, CursorSnap = 2, FreeSnap = 3
-};
-
-enum {
     SnapMethod1 = 0, SnapMethod2 = 1
 };
 
-struct SnapType{
+struct ShotTypeItem {
+    ScreenShotHelper::ShotType shotType;
     int waitTime;
     QString hotKey;
     bool isAutoSave;
@@ -53,15 +52,13 @@ public:
 
     static bool noBorder;
 
-    static bool includeShadow;
-
     //0原始方法，1全屏截图再截取
     static int snapMethod;
 
     static bool copyToClipBoardAfterSnap;
 
     //0全屏截图，1活动窗口截图，2截取光标
-    static SnapType snapType[SNAPTYPECOUNT];
+    static ShotTypeItem snapTypeItems[SNAPTYPECOUNT];
 
     static QString imageExtName[3];
 
@@ -76,7 +73,7 @@ public:
     static void unregisterAllHotKey();
 
     //0全屏，1活动窗口截图
-    static QList<QList<MyGlobalShortCut*>> hotKey;
+    static QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> hotKey;
 
     static bool applyQss();
 };
