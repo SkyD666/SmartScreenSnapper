@@ -6,7 +6,7 @@
 #include "screenshothelper.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 
-#define SNAPTYPECOUNT 4
+#define SNAPTYPECOUNT ScreenShotHelper::Count
 #define MDIWINBKCOLOR RGB(160, 160, 160)
 
 #define SNAPMETHOD 2

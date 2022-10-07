@@ -8,7 +8,7 @@ class ScreenShotHelper
 public:
 
     enum ShotType {
-        ScreenShot, ActiveWindowShot, CursorShot, FreeShot
+        ScreenShot, ActiveWindowShot, CursorShot, FreeShot, FreeHandShot, LongShot, Count
     };
 
     ScreenShotHelper();
@@ -24,6 +24,8 @@ public:
     static QPixmap getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
 
     static QString getPictureName(ShotType shotType);
+
+    static QPixmap getFullScreen();
 };
 
 #endif // SCREENSHOTHELPER_H

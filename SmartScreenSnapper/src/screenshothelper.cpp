@@ -191,6 +191,13 @@ QString ScreenShotHelper::getPictureName(ShotType shotType)
         typeName = "自由截图";
         break;
     }
+    case FreeHandShot:{
+        typeName = "徒手截图";
+        break;
+    }
+    default:{
+        typeName = "截图";
+    }
     }
     return typeName + time;
 }
@@ -207,4 +214,12 @@ bool ScreenShotHelper::savePicture(QString filePath, QPixmap pixmap) {
     saved = pixmap.save(filePath);
     delete dir;
     return saved;
+}
+
+QPixmap ScreenShotHelper::getFullScreen()
+{
+    return getWindowPixmap(
+                (HWND)QApplication::desktop()->winId(),
+                ScreenShot,
+                PublicData::includeCursor);
 }
