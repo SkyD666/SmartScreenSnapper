@@ -33,6 +33,16 @@ QString PublicData::getConfigFilePath()
 
 void PublicData::readSettings()
 {
+    // 初始化数据，防止qSettings.beginReadArray("SnapType")是0导致数据不完整
+    for (int i = 0; i < ScreenShotHelper::Count; i++) {
+        snapTypeItems[i].shotType = ScreenShotHelper::ShotType(i);
+        snapTypeItems[i].waitTime = 0;
+        snapTypeItems[i].hotKey = "";
+        snapTypeItems[i].isAutoSave = false;
+        snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
+        snapTypeItems[i].autoSaveExtName = imageExtName[0];
+    }
+
     QSettings qSettings(getConfigFilePath(), QSettings::IniFormat);
 
     int size = qSettings.beginReadArray("SnapType");
@@ -43,8 +53,14 @@ void PublicData::readSettings()
         snapTypeItems[i].waitTime = qSettings.value("WaitTime", 0).toInt();
         snapTypeItems[i].hotKey = qSettings.value("HotKey", "").toString();
         snapTypeItems[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
-        snapTypeItems[i].autoSavePath = qSettings.value("AutoSavePath", QApplication::applicationDirPath()).toString();
-        snapTypeItems[i].autoSaveExtName = qSettings.value("AutoSaveExtName", imageExtName[0]).toString();
+        snapTypeItems[i].autoSavePath = qSettings.value("AutoSavePath").toString();
+        if (snapTypeItems[i].autoSavePath.isEmpty()) {          // 字符串类型配置值不能自动识别为空串
+            snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
+        }
+        snapTypeItems[i].autoSaveExtName = qSettings.value("AutoSaveExtName").toString();
+        if (snapTypeItems[i].autoSaveExtName.isEmpty()) {       // 字符串类型配置值不能自动识别为空串
+            snapTypeItems[i].autoSaveExtName = imageExtName[0];
+        }
     }
     qSettings.endArray();
 
@@ -70,6 +86,7 @@ void PublicData::writeSettings()
 
     for (int i = 0; i < size; i++) {
         qSettings.setArrayIndex(i);
+        qSettings.setValue("ShotType", snapTypeItems[i].shotType);
         qSettings.setValue("WaitTime", snapTypeItems[i].waitTime);
         qSettings.setValue("HotKey", snapTypeItems[i].hotKey);
         qSettings.setValue("IsAutoSave", snapTypeItems[i].isAutoSave);

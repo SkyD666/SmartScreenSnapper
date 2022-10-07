@@ -113,6 +113,7 @@
    <addaction name="actionCursorSnap"/>
    <addaction name="actionFreeSnap"/>
    <addaction name="actionGIF"/>
+   <addaction name="actionFreeHandSnap"/>
   </widget>
   <widget class="QDockWidget" name="dockDocumentList">
    <property name="minimumSize">
@@ -326,6 +327,36 @@
    </property>
    <property name="statusTip">
     <string>选择区域并录制GIF</string>
+   </property>
+  </action>
+  <action name="actionLongSnap">
+   <property name="icon">
+    <iconset resource="../res/res.qrc">
+     <normaloff>:/image/GIFRecord.png</normaloff>:/image/GIFRecord.png</iconset>
+   </property>
+   <property name="text">
+    <string>滚动区域长截图</string>
+   </property>
+   <property name="toolTip">
+    <string>滚动区域长截图</string>
+   </property>
+   <property name="statusTip">
+    <string>滚动区域长截图</string>
+   </property>
+  </action>
+  <action name="actionFreeHandSnap">
+   <property name="icon">
+    <iconset resource="../res/res.qrc">
+     <normaloff>:/image/FreeHandSnap.svg</normaloff>:/image/FreeHandSnap.svg</iconset>
+   </property>
+   <property name="text">
+    <string>徒手截图</string>
+   </property>
+   <property name="toolTip">
+    <string>徒手截图</string>
+   </property>
+   <property name="statusTip">
+    <string>徒手绘制区域截图</string>
    </property>
   </action>
  </widget>

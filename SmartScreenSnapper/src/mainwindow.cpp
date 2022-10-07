@@ -33,6 +33,8 @@
 #include "gifdialog.h"
 #include "updateutil.h"
 #include "const.h"
+#include "longsnapdialog.h"
+#include "freehandsnapdialog.h"
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
@@ -76,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     networkAccessManager = new QNetworkAccessManager();
-    connect(networkAccessManager, &QNetworkAccessManager::finished, this , [=] (QNetworkReply *reply) {
+    connect(networkAccessManager, &QNetworkAccessManager::finished, this, [=] (QNetworkReply *reply) {
         GitHubRelease* gitHubRelease = UpdateUtil::getData(this, reply->readAll());
 
         if (gitHubRelease && UpdateUtil::isNewVersion(gitHubRelease->name)) {
@@ -321,10 +323,7 @@ void MainWindow::initStatusBar() {
 }
 
 void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey) {
-    MdiWindow* activeWindow = nullptr;
-    QPixmap* pixmap = nullptr;
-
-    if (shotType == ScreenShotHelper::ActiveWindowShot) {
+    if (shotType == ScreenShotHelper::ActiveWindowShot && !isHotKey) {
         int result = QMessageBox::information(this,
                                               tr("活动窗口截图"),
                                               tr("点击确定%1秒后截图").arg(QString::number(PublicData::snapTypeItems[shotType].waitTime)),
@@ -333,20 +332,37 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
     }
 
     if (shotType == ScreenShotHelper::FreeShot) {
-        pixmap = new QPixmap;
+        QPixmap pixmap;
         bool captured = true;
         FreeSnapDialog freeSnapDialog(ScreenShotHelper::getWindowPixmap(
                                           (HWND)QApplication::desktop()->winId(),
                                           shotType,
                                           PublicData::includeCursor
                                           ),
-                                      pixmap, captured, this);
+                                      &pixmap, captured, this);
         freeSnapDialog.exec();
         if (!captured) return;
+        snapSuccessCallback(shotType, pixmap);
+    } else if (shotType == ScreenShotHelper::LongShot) {
+        LongSnapDialog longSnapDialog(this);
+        connect(&longSnapDialog, &LongSnapDialog::captured, this, [=](QPixmap pixmap){
+            snapSuccessCallback(shotType, pixmap);
+        });
+        longSnapDialog.exec();
+    } else if (shotType == ScreenShotHelper::FreeHandShot) {
+        FreeHandSnapDialog freeHandSnapDialog(this);
+        connect(&freeHandSnapDialog, &FreeHandSnapDialog::captured, this, [=](QPixmap pixmap){
+            snapSuccessCallback(shotType, pixmap);
+        });
+        freeHandSnapDialog.exec();
     } else {
-        pixmap = new QPixmap(ScreenShotHelper::screenshot(shotType, isHotKey));
+        snapSuccessCallback(shotType, ScreenShotHelper::screenshot(shotType, isHotKey));
     }
+}
 
+void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixmap pixmap)
+{
+    MdiWindow* activeWindow = nullptr;
     QString name = ScreenShotHelper::getPictureName(shotType);
     int windowIndex = -1;
     activeWindow = createMDIWindow(windowIndex);
@@ -354,10 +370,10 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
     activeWindow->setSaved(false);
 
     QGraphicsScene *scene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-    scene->addPixmap(*pixmap);
+    scene->addPixmap(pixmap);
 
     if (PublicData::copyToClipBoardAfterSnap) {
-        QApplication::clipboard()->setPixmap(*pixmap);
+        QApplication::clipboard()->setPixmap(pixmap);
     }
     if (PublicData::isPlaySound) {
         PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
@@ -367,10 +383,8 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
     if (snapTypeItem.isAutoSave) {
         QString folderPath = snapTypeItem.autoSavePath + "/";
         folderPath.replace("://", ":\\");
-        savePicture(folderPath + name + snapTypeItem.autoSaveExtName, *pixmap);
+        savePicture(folderPath + name + snapTypeItem.autoSaveExtName, pixmap);
     }
-
-    delete pixmap;
 }
 
 void MainWindow::on_actionScreenSnap_triggered()
@@ -440,7 +454,7 @@ void MainWindow::setSettings()
 void MainWindow::on_actionSetting_triggered()
 {
     SettingDialog settingDialog(this);
-    PublicData::unregisterAllHotKey();      //进入设置页面前取消热键
+    PublicData::unregisterAllHotKey();      // 进入设置页面前取消热键
     settingDialog.exec();
     if (cbPlaySound) {
         cbPlaySound->setChecked(PublicData::isPlaySound);
@@ -519,4 +533,14 @@ void MainWindow::on_actionGIF_triggered()
 {
     GIFDialog *gifDialog = new GIFDialog(this);       //构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
     gifDialog->show();
+}
+
+void MainWindow::on_actionLongSnap_triggered()
+{
+    commonSnapAction(ScreenShotHelper::LongShot, false);
+}
+
+void MainWindow::on_actionFreeHandSnap_triggered()
+{
+    commonSnapAction(ScreenShotHelper::FreeHandShot, false);
 }

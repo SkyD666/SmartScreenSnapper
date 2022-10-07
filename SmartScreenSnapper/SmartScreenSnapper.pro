@@ -21,6 +21,8 @@ SOURCES += \
     src/aboutdialog.cpp \
     src/application.cpp \
     src/const.cpp \
+    src/freehandsnapdialog.cpp \
+    src/freehandsnap/freehandsnapgraphicsscene.cpp \
     src/freesnap/freesnapgraphicsview.cpp \
     src/freesnap/freesnaprect.cpp \
     src/freesnap/freesnapscene.cpp \
@@ -28,6 +30,7 @@ SOURCES += \
     src/gif-h/gif.cpp \
     src/gifdialog.cpp \
     src/graphicsview.cpp \
+    src/longsnapdialog.cpp \
     src/main.cpp \
     src/mainwindow.cpp \
     src/mdiwindow.cpp \
@@ -45,6 +48,8 @@ HEADERS += \
     src/aboutdialog.h \
     src/application.h \
     src/const.h \
+    src/freehandsnapdialog.h \
+    src/freehandsnap/freehandsnapgraphicsscene.h \
     src/freesnap/freesnapgraphicsview.h \
     src/freesnap/freesnaprect.h \
     src/freesnap/freesnapscene.h \
@@ -52,6 +57,7 @@ HEADERS += \
     src/gif-h/gif.h \
     src/gifdialog.h \
     src/graphicsview.h \
+    src/longsnapdialog.h \
     src/mainwindow.h \
     src/mdiwindow.h \
     src/minifmod.h \
@@ -64,6 +70,8 @@ HEADERS += \
     src/windowsinfo.h
 
 FORMS += \
+    ui/freehandsnapdialog.ui \
+    ui/longsnapdialog.ui \
     ui/aboutdialog.ui \
     ui/freesnapdialog.ui \
     ui/gifdialog.ui \

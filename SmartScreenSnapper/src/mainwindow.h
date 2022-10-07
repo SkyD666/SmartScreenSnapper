@@ -41,6 +41,9 @@ public:
 
     void commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey);
 
+    // 获取到截图后回调函数，用来更新mdiwindow
+    void snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixmap pixmap);
+
     static bool exitApp;
 
     static bool noToAllClicked;
@@ -84,6 +87,10 @@ private slots:
     void on_actionPrint_triggered();
 
     void on_actionGIF_triggered();
+
+    void on_actionLongSnap_triggered();
+
+    void on_actionFreeHandSnap_triggered();
 
 private:
     Ui::MainWindow *ui;
