@@ -9,5 +9,6 @@
         <file>image/Setting.svg</file>
         <file>image/GitHub.svg</file>
         <file>image/FreeHandSnap.svg</file>
+        <file>image/Background1.svg</file>
     </qresource>
 </RCC>

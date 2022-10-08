@@ -11,8 +11,8 @@ DAZIJI		SOUND "sound/DAZIJI.wav"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 1,2,0,0
-    PRODUCTVERSION 1,2,0,0
+    FILEVERSION 1,3,0,0
+    PRODUCTVERSION 1,3,0,0
     FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
     FILEFLAGS VS_FF_DEBUG
@@ -29,8 +29,8 @@ VS_VERSION_INFO VERSIONINFO
             BEGIN
                 VALUE "CompanyName", "Sky_D\0"
                 VALUE "FileDescription", "SmartScreenSnapper\0"
-                VALUE "FileVersion", "1.2.0.0\0"
-                VALUE "ProductVersion", "1.2.0.0\0"
+                VALUE "FileVersion", "1.3.0.0\0"
+                VALUE "ProductVersion", "1.3.0.0\0"
                 VALUE "LegalCopyright", "\0"
                 VALUE "LegalTrademarks", "\0"
                 VALUE "OriginalFilename", "SmartScreenSnapper.exe\0"

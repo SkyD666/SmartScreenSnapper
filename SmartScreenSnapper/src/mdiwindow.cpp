@@ -1,7 +1,9 @@
+#include <QGraphicsScene>
 #include <QMessageBox>
 #include <QSlider>
 #include "mdiwindow.h"
 #include "mainwindow.h"
+#include "graphicsview.h"
 
 MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(parent, flags)
 {
@@ -9,6 +11,22 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(paren
     this->saved = true;
     this->xScale = 1;
     this->yScale = 1;
+
+    QPalette p = palette();
+    p.setBrush(QPalette::Background, QBrush(QPixmap(":/image/Background1.svg")));
+    setPalette(p);
+
+    QGraphicsScene* graphicsScene = new QGraphicsScene(this);
+    GraphicsView * graphicsView = new GraphicsView(this);
+    graphicsView->setObjectName("graphicsView");
+    graphicsView->setScene(graphicsScene);
+    graphicsView->setStyleSheet("#graphicsView { background: transparent; }");
+    setWidget(graphicsView);
+    setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(graphicsView, &GraphicsView::zoom, [=](int n){
+        emit zoom(n);
+    });
 }
 
 void MdiWindow::setListItemName(QString name) {

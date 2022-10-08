@@ -60,7 +60,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey));
 
-    ui->comboBoxSnapMethod->addItem(tr("方式1"));
+    ui->comboBoxSnapMethod->addItem(tr("方式1\n(Aero开启时部分区域会透明；截取例如QQ等部分窗体为黑色)"));
     ui->comboBoxSnapMethod->addItem(tr("方式2"));
 
     //此处的信号有重载

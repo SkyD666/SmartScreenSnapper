@@ -22,6 +22,9 @@
      <height>192</height>
     </rect>
    </property>
+   <property name="cursor" stdset="0">
+    <cursorShape>CrossCursor</cursorShape>
+   </property>
    <property name="frameShape">
     <enum>QFrame::NoFrame</enum>
    </property>

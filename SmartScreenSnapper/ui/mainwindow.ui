@@ -234,7 +234,7 @@
     <string>打开设置界面</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
+    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="actionCursorSnap">
