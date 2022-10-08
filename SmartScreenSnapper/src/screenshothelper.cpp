@@ -89,7 +89,7 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND winId, int type, bool 
     SelectObject(bitmapDC, null_bitmap);
     DeleteDC(bitmapDC);
 
-    QPixmap pixmap = QtWin::fromHBITMAP(bitmap);
+    QPixmap pixmap = QtWin::fromHBITMAP(bitmap, QtWin::HBitmapPremultipliedAlpha);
 
     DeleteObject(bitmap);
 

@@ -180,12 +180,6 @@ void MainWindow::on_actionNew_triggered() {
 
 MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     MdiWindow *child = new MdiWindow(this);
-    QGraphicsScene* graphicsScene = new QGraphicsScene(child);
-    GraphicsView * graphicsView = new GraphicsView(child);
-    graphicsView->setScene(graphicsScene);
-    graphicsView->setBackgroundBrush(QBrush(MDIWINBKCOLOR));
-    child->setWidget(graphicsView);
-    child->setAttribute(Qt::WA_DeleteOnClose);
     ui->mdiArea->addSubWindow(child);
     child->show();
 
@@ -201,7 +195,7 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     child->setListItemName(name);
     child->setName(name);
 
-    connect(graphicsView, &GraphicsView::zoom, [=](int n){
+    connect(child, &MdiWindow::zoom, [=](int n){
         sliderZoom->setValue(sliderZoom->value() + n);
     });
 
