@@ -53,7 +53,7 @@ void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
     mousePressed = false;
 
     if (hasNewUnsuredPath) {
-        path = new QPainterPath(*unsuredPath);
+        path->lineTo(unsuredPath->currentPosition());
         hasNewUnsuredPath = false;
         refreshPathItem(*path);
     }
@@ -65,7 +65,12 @@ void FreeHandSnapGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         path->lineTo(event->scenePos());
         refreshPathItem(*path);
     } else if (path) {
-        unsuredPath = new QPainterPath(*path);
+        if (unsuredPath) {
+            unsuredPath->clear();
+            unsuredPath->addPath(*path);
+        } else {
+            unsuredPath = new QPainterPath(*path);
+        }
         unsuredPath->lineTo(event->scenePos());
         hasNewUnsuredPath = true;
         refreshPathItem(*unsuredPath);
@@ -77,10 +82,10 @@ void FreeHandSnapGraphicsScene::refreshPathItem(QPainterPath path)
 {
     refreshGrayArea();
     if (pathItem) {
-        removeItem(pathItem);
-        delete pathItem;
+        pathItem->setPath(path);
+    } else {
+        pathItem = addPath(path, QPen(QBrush(Qt::yellow), 5));
     }
-    pathItem = addPath(path, QPen(QBrush(Qt::yellow), 5));
 }
 
 
@@ -88,18 +93,8 @@ void FreeHandSnapGraphicsScene::refreshPathItem(QPainterPath path)
 void FreeHandSnapGraphicsScene::refreshGrayArea()
 {
     if (grayItem) {
-        removeItem(grayItem);
-        delete grayItem;
+        grayItem->setPolygon(QPolygonF(sceneRect()).subtracted(path->toFillPolygon()));
+    } else {
+        grayItem = addPolygon(QPolygonF(sceneRect()), QPen(Qt::transparent), QBrush(grayColor));
     }
-
-    if (!path) {
-        grayItem = addRect(sceneRect(),
-                           QPen(Qt::transparent),
-                           QBrush(grayColor));
-        return;
-    }
-
-    grayItem = addPolygon(QPolygonF(sceneRect()).subtracted(path->toFillPolygon()),
-                          QPen(Qt::transparent),
-                          QBrush(grayColor));
 }

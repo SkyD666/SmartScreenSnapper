@@ -27,8 +27,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
 
     //下面的for循环要在下面的第一关connect之前调用
-    for (unsigned int i = 0; i < sizeof(PublicData::imageExtName) / sizeof(PublicData::imageExtName[0]); i++) {
-        ui->comboBoxAutoSaveExtName->addItem(PublicData::imageExtName[i]);
+    for (auto item : PublicData::imageExtName) {
+        ui->comboBoxAutoSaveExtName->addItem(item.second + " (*" + item.first + ")");
     }
 
     //此处的信号有重载
@@ -116,7 +116,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
     //自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index];
+            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index].first;
         }
     });
 
@@ -202,7 +202,7 @@ void SettingDialog::on_checkBoxRunWithWindows_stateChanged(int state)
 void SettingDialog::on_toolButtonQssPath_clicked()
 {
     QString dirPath = QFileDialog::getOpenFileName(this, tr("选择QSS文件"),
-                                                        PublicData::qssPath, tr("QSS文件(*.qss);;CSS文件(*.css);;所有文件(*.*)"));
+                                                   PublicData::qssPath, tr("QSS文件(*.qss);;CSS文件(*.css);;所有文件(*.*)"));
     if (dirPath != "") {
         ui->lineEditQssPath->setText(dirPath);
     }
