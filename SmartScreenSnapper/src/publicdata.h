@@ -60,7 +60,9 @@ public:
     //0全屏截图，1活动窗口截图，2截取光标
     static ShotTypeItem snapTypeItems[SNAPTYPECOUNT];
 
-    static QString imageExtName[3];
+    static QPair<QString, QString> imageExtName[6];
+
+    static QString getSaveExtFilter();
 
     static QString getConfigFilePath();
 

@@ -17,13 +17,30 @@ bool PublicData::copyToClipBoardAfterSnap = false;
 QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
 QString PublicData::qssPath = "";
-QString PublicData::imageExtName[] = {".png", ".jpg", ".bmp"};
+QPair<QString, QString> PublicData::imageExtName[] = {{".png", QObject::tr("PNG 便携网络图形")},
+                                                      {".jpg", QObject::tr("JPG")},
+                                                      {".bmp", QObject::tr("BMP 位图")},
+                                                      {".tiff", QObject::tr("TIFF 标签图像文件")},
+                                                      {".webp", QObject::tr("WebP")},
+                                                      {".ico", QObject::tr("ICO 图标")}};
 ShotTypeItem PublicData::snapTypeItems[SNAPTYPECOUNT] = {};
 QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
 {
 
+}
+
+QString PublicData::getSaveExtFilter()
+{
+    QString s;
+    for (auto item : imageExtName) {
+        s += item.second + " (*" + item.first + ");;";
+    }
+    if (s.endsWith(";;")) {
+        s.remove(s.length() - 2, 2);
+    }
+    return s;
 }
 
 QString PublicData::getConfigFilePath()
@@ -40,7 +57,7 @@ void PublicData::readSettings()
         snapTypeItems[i].hotKey = "";
         snapTypeItems[i].isAutoSave = false;
         snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
-        snapTypeItems[i].autoSaveExtName = imageExtName[0];
+        snapTypeItems[i].autoSaveExtName = imageExtName[0].first;
     }
 
     QSettings qSettings(getConfigFilePath(), QSettings::IniFormat);
@@ -59,7 +76,7 @@ void PublicData::readSettings()
         }
         snapTypeItems[i].autoSaveExtName = qSettings.value("AutoSaveExtName").toString();
         if (snapTypeItems[i].autoSaveExtName.isEmpty()) {       // 字符串类型配置值不能自动识别为空串
-            snapTypeItems[i].autoSaveExtName = imageExtName[0];
+            snapTypeItems[i].autoSaveExtName = imageExtName[0].first;
         }
     }
     qSettings.endArray();

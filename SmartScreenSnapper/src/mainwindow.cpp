@@ -214,7 +214,8 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
 void MainWindow::on_actionSave_triggered() {
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
     QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
-                                                    activeWindow->getName(), tr("PNG文件(*.png);;JPG文件(*.jpg);;BMP文件(*.bmp)"));
+                                                    activeWindow->getName(),
+                                                    PublicData::getSaveExtFilter());
     if (!filePath.isEmpty()) savePicture(filePath);
 }
 

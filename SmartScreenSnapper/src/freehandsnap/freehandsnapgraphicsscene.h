@@ -27,8 +27,8 @@ private:
     QPainterPath* unsuredPath;
     bool hasNewUnsuredPath;
     QPainterPath* path;
-    QGraphicsItem* pathItem;
-    QGraphicsItem* grayItem;
+    QGraphicsPathItem* pathItem;
+    QGraphicsPolygonItem* grayItem;
     QColor grayColor;
 };
 
