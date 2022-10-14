@@ -7,17 +7,28 @@
 #include <QDesktopWidget>
 #include <QDir>
 #include <QDateTime>
+#include <QMessageBox>
+#include <QDebug>
+#include <QRandomGenerator>
 #include "freesnapdialog.h"
 #include "publicdata.h"
 #include "windowsinfo.h"
+#include "util.h"
+
+unsigned long ScreenShotHelper::lastPId = 0L;
 
 ScreenShotHelper::ScreenShotHelper()
 {
 
 }
 
-QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND winId, int type, bool includeCursor, int x, int y, int w , int h)
+QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w , int h)
 {
+    GetWindowThreadProcessId(hwnd, &lastPId);
+//    std::wstring title(GetWindowTextLength(hwnd) + 1, L'\0');
+//    GetWindowTextW(hwnd, &title[0], title.size());
+//    lastProcessName = QString::fromStdWString(title);
+
     RECT r = {0, 0, 0, 0};
 
     // 多屏支持
@@ -27,18 +38,18 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND winId, int type, bool 
         r.right = GetSystemMetrics(SM_CXVIRTUALSCREEN) + r.left;
         r.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN) + r.top;
     } else {
-        GetWindowRect(winId, &r);
+        GetWindowRect(hwnd, &r);
     }
 
     if (w < 0) w = r.right - r.left;
     if (h < 0) h = r.bottom - r.top;
 
     long xBorder, yBorder, captionBorder;
-    WindowsInfo::getWindowBorderSize(winId, &xBorder, &yBorder, &captionBorder);
+    WindowsInfo::getWindowBorderSize(hwnd, &xBorder, &yBorder, &captionBorder);
 
     HDC displayDC = nullptr;
     if (snapMethod == 0) {
-        displayDC = GetWindowDC(winId);
+        displayDC = GetWindowDC(hwnd);
     } else if (snapMethod == 1) {
         displayDC = GetWindowDC(0);
     }
@@ -85,7 +96,7 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND winId, int type, bool 
     }
 
     // clean up all but bitmap
-    ReleaseDC(winId, displayDC);
+    ReleaseDC(hwnd, displayDC);
     SelectObject(bitmapDC, null_bitmap);
     DeleteDC(bitmapDC);
 
@@ -172,7 +183,32 @@ QPixmap ScreenShotHelper::getWindowPixmap(HWND winId, ShotType shotType, bool in
 
 QString ScreenShotHelper::getPictureName(ShotType shotType)
 {
-    QString time = " - " + QDateTime::currentDateTime().toString("yyyy-MM-dd hhmmss_zzz");
+    QString defaultTemplate = "<Capture> - <yyyy>-<MM>-<dd>_<HH><mm><ss>_<Rand>";
+    QString fileNameTemplate = PublicData::fileNameTemplate;
+    if (fileNameTemplate.isEmpty()) {
+        fileNameTemplate = defaultTemplate;
+    }
+    QHash<QString, QString> kv;
+    QDateTime dt = QDateTime::currentDateTime();
+    kv["yyyy"] = dt.toString("yyyy");
+    kv["MM"] = dt.toString("MM");
+    kv["dd"] = dt.toString("dd");
+    kv["Capture"] = getSnapTypeName(shotType);
+    kv["AP"] = dt.time().toString("AP");
+    kv["HH"] = dt.toString("HH");
+    kv["mm"] = dt.toString("mm");
+    kv["ss"] = dt.toString("ss");
+    kv["zzz"] = dt.toString("zzz");
+    kv["ActivePId"] = QString::number(GetWindowThreadProcessId(GetForegroundWindow(), &lastPId));
+    kv["Rand"] = QString::number(QRandomGenerator::global()->bounded(100000, 999999));
+
+    QString result = Util::transformTemplateStr(fileNameTemplate, kv);
+    if (result.isEmpty()) result = Util::transformTemplateStr(defaultTemplate, kv);
+    return result;
+}
+
+QString ScreenShotHelper::getSnapTypeName(ScreenShotHelper::ShotType shotType)
+{
     QString typeName;
     switch (shotType) {
     case ScreenShot:{
@@ -199,10 +235,10 @@ QString ScreenShotHelper::getPictureName(ShotType shotType)
         typeName = "截图";
     }
     }
-    return typeName + time;
+    return typeName;
 }
 
-bool ScreenShotHelper::savePicture(QString filePath, QPixmap pixmap) {
+bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPixmap pixmap) {
     QDir *dir;
     bool saved = false;
     if (!filePath.isEmpty()) {
@@ -212,6 +248,9 @@ bool ScreenShotHelper::savePicture(QString filePath, QPixmap pixmap) {
     }
     if (!dir->exists()) dir->mkdir(dir->path());
     saved = pixmap.save(filePath);
+    if (!saved) {
+        QMessageBox::critical(msgBoxParent, QObject::tr("警告"), QObject::tr("保存图片失败"), QMessageBox::Ok);
+    }
     delete dir;
     return saved;
 }

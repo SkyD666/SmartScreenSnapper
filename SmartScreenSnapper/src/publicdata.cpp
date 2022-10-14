@@ -16,6 +16,7 @@ bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
 QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
+QString PublicData::fileNameTemplate = "";
 QString PublicData::qssPath = "";
 QPair<QString, QString> PublicData::imageExtName[] = {{".png", QObject::tr("PNG 便携网络图形")},
                                                       {".jpg", QObject::tr("JPG")},
@@ -88,9 +89,10 @@ void PublicData::readSettings()
     noBorder = qSettings.value("Config/NoBorder", false).toBool();
     snapMethod = qSettings.value("Config/SnapMethod", SnapMethod2).toInt();
     copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
-    gifSavePath =  qSettings.value("Tool/GIFSavePath", "").toString();
-    styleName =  qSettings.value("Config/StyleName", "").toString();
-    qssPath =  qSettings.value("Config/QssPath", "").toString();
+    gifSavePath = qSettings.value("Tool/GIFSavePath", "").toString();
+    styleName = qSettings.value("Config/StyleName", "").toString();
+    fileNameTemplate = qSettings.value("Config/FileNameTemplate", "").toString();
+    qssPath = qSettings.value("Config/QssPath", "").toString();
 }
 
 void PublicData::writeSettings()
@@ -121,6 +123,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
     qSettings.setValue("Tool/GIFSavePath", gifSavePath);
     qSettings.setValue("Config/StyleName", styleName);
+    qSettings.setValue("Config/FileNameTemplate", fileNameTemplate);
     qSettings.setValue("Config/QssPath", qssPath);
 }
 

@@ -12,12 +12,11 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(paren
     this->xScale = 1;
     this->yScale = 1;
 
-    QPalette p = palette();
-    p.setBrush(QPalette::Background, QBrush(QPixmap(":/image/Background1.svg")));
-    setPalette(p);
+    setObjectName("mdiWindow");
+    setStyleSheet("#mdiWindow { background: url(:/image/Background1.svg); }");
 
-    QGraphicsScene* graphicsScene = new QGraphicsScene(this);
     GraphicsView * graphicsView = new GraphicsView(this);
+    QGraphicsScene* graphicsScene = new QGraphicsScene(graphicsView);
     graphicsView->setObjectName("graphicsView");
     graphicsView->setScene(graphicsScene);
     graphicsView->setStyleSheet("#graphicsView { background: transparent; }");
