@@ -34,11 +34,13 @@ public:
 
     static QString gifSavePath;
 
-    static QString styleName;       //外观主题名称
+    static QString styleName;       // 外观主题名称
+
+    static QString fileNameTemplate;       // 文件名模板
 
     static int activeWindowIndex;
 
-    static int totalWindowCount;        //只增不减
+    static int totalWindowCount;        // 只增不减
 
     static bool isPlaySound;
 

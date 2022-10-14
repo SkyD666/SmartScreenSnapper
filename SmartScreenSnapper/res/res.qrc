@@ -10,5 +10,10 @@
         <file>image/GitHub.svg</file>
         <file>image/FreeHandSnap.svg</file>
         <file>image/Background1.svg</file>
+        <file>image/File.svg</file>
+        <file>image/Save.svg</file>
+        <file>image/Printer.svg</file>
+        <file>image/Copy.svg</file>
+        <file>image/Exit.svg</file>
     </qresource>
 </RCC>

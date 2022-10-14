@@ -40,6 +40,7 @@ SOURCES += \
     src/star.cpp \
     src/updatedialog.cpp \
     src/updateutil.cpp \
+    src/util.cpp \
     src/windowsinfo.cpp
 
 HEADERS += \
@@ -67,6 +68,7 @@ HEADERS += \
     src/star.h \
     src/updatedialog.h \
     src/updateutil.h \
+    src/util.h \
     src/windowsinfo.h
 
 FORMS += \

@@ -19,12 +19,12 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/icon.png"), tr("常规"), ui->listWidgetSetting));
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/ActiveWindow.png"), tr("捕捉"), ui->listWidgetSetting));
+    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/File.svg"), tr("文件名模板"), ui->listWidgetSetting));
     ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/Setting.svg"), tr("高级"), ui->listWidgetSetting));
 
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
     });
-
 
     //下面的for循环要在下面的第一关connect之前调用
     for (auto item : PublicData::imageExtName) {
@@ -113,7 +113,19 @@ SettingDialog::SettingDialog(QWidget *parent) :
         PublicData::qssPath = text;
     });
 
-    //自动保存格式，有信号重载
+    connect(ui->lineEditFileNameTemplate, &QLineEdit::editingFinished, [=](){
+        PublicData::fileNameTemplate = ui->lineEditFileNameTemplate->text();
+    });
+
+    connect(ui->lineEditFileNameTemplate, &QLineEdit::textChanged, [=](const QString &text){
+        PublicData::fileNameTemplate = text;
+        ui->lineEditFileNamePreview->setText(
+                    ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
+    });
+
+    ui->lineEditFileNameTemplate->setValidator(new QRegExpValidator(QRegExp("^[^/*?\"\\\\:|]+$"), this));
+
+    // 自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index].first;
@@ -159,6 +171,8 @@ void SettingDialog::readSettings()
     ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
     ui->comboBoxSnapMethod->setCurrentIndex(PublicData::snapMethod);
     ui->lineEditQssPath->setText(PublicData::qssPath);
+    ui->lineEditFileNameTemplate->setText(PublicData::fileNameTemplate);
+    ui->lineEditFileNamePreview->setText(ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
 
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString value = qSettings.value(QApplication::applicationName()).toString();

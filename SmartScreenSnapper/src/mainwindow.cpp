@@ -180,11 +180,10 @@ void MainWindow::on_actionNew_triggered() {
 
 MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     MdiWindow *child = new MdiWindow(this);
-    ui->mdiArea->addSubWindow(child);
-    child->show();
-
     ui->listDocument->addItem(&(child->getListItem()));
     ui->listDocument->setCurrentItem(&child->getListItem());
+    ui->mdiArea->addSubWindow(child);
+    child->show();
 
     labCount->setText(
                 tr("共%1张, 选中第%2张")
@@ -226,20 +225,10 @@ void MainWindow::savePicture(QString filePath)
 }
 
 void MainWindow::savePicture(QString filePath, QPixmap pixmap) {
-    QDir *dir;
-    if (!filePath.isEmpty()) {
-        dir = new QDir(filePath.left(filePath.lastIndexOf('/') + 1));
-    } else {
-        dir = new QDir(filePath);
-    }
-    if (!dir->exists()) dir->mkdir(dir->path());
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    if (pixmap.save(filePath)) {
+    if (ScreenShotHelper::savePicture(this, filePath, pixmap)) {
         activeWindow->setSaved(true);
-    } else {
-        QMessageBox::critical(this, tr("警告"), tr("保存图片失败"), QMessageBox::Ok);
     }
-    delete dir;
 }
 
 QPixmap MainWindow::getActiveWindowPixmap()
@@ -267,43 +256,37 @@ void MainWindow::initStatusBar() {
     cbPlaySound = new QCheckBox(this);
     labCount = new QLabel(this);
     sliderZoom = new QSlider(Qt::Horizontal, this);
-    tbtnZoom = new QToolButton(this);
+    sbZoom = new QSpinBox(this);
+
+    connect(sliderZoom, &QAbstractSlider::valueChanged, this, [=](int value){
+        sbZoom->setValue(value);
+        MdiWindow* activeWindow = dynamic_cast<MdiWindow*>(ui->mdiArea->activeSubWindow());
+        if (activeWindow) {
+            QGraphicsView* graphicsView = dynamic_cast<QGraphicsView*>(activeWindow->widget());
+            double xScale = value / 100.0;
+            double yScale = value / 100.0;
+            graphicsView->scale(xScale / activeWindow->getXScale(), yScale / activeWindow->getYScale());
+            activeWindow->setXScale(xScale);
+            activeWindow->setYScale(yScale);
+        }
+    });
+
+    connect(sbZoom, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int value){
+        sliderZoom->setValue(value);
+    });
 
     cbPlaySound->setText(tr("播放提示音"));
     sliderZoom->setMaximum(1000);
     sliderZoom->setMinimum(1);
     sliderZoom->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed));
     sliderZoom->setSingleStep(5);
+    sbZoom->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    sbZoom->setSuffix("%");
+    sbZoom->setRange(sliderZoom->minimum(), sliderZoom->maximum());
     sliderZoom->setValue(100);
-    tbtnZoom->setAutoRaise(true);
-    tbtnZoom->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    tbtnZoom->setText(QString::number(sliderZoom->value()) + "%");
 
-    connect(cbPlaySound, &QCheckBox::stateChanged, [=](int state){
+    connect(cbPlaySound, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::isPlaySound = (state == Qt::Checked);
-    });
-
-    connect(sliderZoom, &QAbstractSlider::valueChanged, [=](int value){
-        MdiWindow* activeWindow = dynamic_cast<MdiWindow*>(ui->mdiArea->activeSubWindow());
-        if (activeWindow) {
-            QGraphicsView* graphicsView = dynamic_cast<QGraphicsView*>(activeWindow->widget());
-            double xScale = value / 100.0;
-            double yScale = value / 100.0;
-            graphicsView->scale( xScale / activeWindow->getXScale(), yScale / activeWindow->getYScale() );
-            activeWindow->setXScale(xScale);
-            activeWindow->setYScale(yScale);
-
-            tbtnZoom->setText(QString::number(value) + "%");
-        }
-    });
-
-    connect(tbtnZoom, &QAbstractButton::clicked, [=](){
-        QPropertyAnimation *animation = new QPropertyAnimation(sliderZoom, "value");
-        animation->setDuration(700);
-        animation->setEasingCurve(QEasingCurve::OutElastic);
-        animation->setStartValue(sliderZoom->value());
-        animation->setEndValue(100);
-        animation->start();
     });
 
     labCount->setText(
@@ -314,7 +297,7 @@ void MainWindow::initStatusBar() {
     ui->statusbar->addPermanentWidget(cbPlaySound);
     ui->statusbar->addPermanentWidget(labCount);
     ui->statusbar->addPermanentWidget(sliderZoom);
-    ui->statusbar->addPermanentWidget(tbtnZoom);
+    ui->statusbar->addPermanentWidget(sbZoom);
 }
 
 void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey) {
@@ -399,20 +382,16 @@ void MainWindow::exitCancel()
 
 void MainWindow::initSystemTray()
 {
-    systemTrayMenuActions[0].setText(tr("显示界面"));
-    connect(&systemTrayMenuActions[0], &QAction::triggered, [=](){
-        this->show();
-    });
-    systemTrayMenuActions[1].setText(tr("退出"));
-    connect(&systemTrayMenuActions[1], &QAction::triggered, [=](){
-        PublicData::ignoreClickCloseToTray = true;
-        this->show();
-        close();
-    });
-
-    systemTrayMenu.addAction(&systemTrayMenuActions[0]);
+    systemTrayMenu.addAction(ui->actionShow);
     systemTrayMenu.addSeparator();
-    systemTrayMenu.addAction(&systemTrayMenuActions[1]);
+    systemTrayMenu.addAction(ui->actionScreenSnap);
+    systemTrayMenu.addAction(ui->actionActiveWindowSnap);
+    systemTrayMenu.addAction(ui->actionCursorSnap);
+    systemTrayMenu.addAction(ui->actionFreeSnap);
+    systemTrayMenu.addAction(ui->actionGIF);
+    systemTrayMenu.addAction(ui->actionFreeHandSnap);
+    systemTrayMenu.addSeparator();
+    systemTrayMenu.addAction(ui->actionExit);
 
     systemTray.setIcon(QIcon(":/image/icon.png"));
     systemTray.setToolTip(QApplication::applicationName());
@@ -538,4 +517,9 @@ void MainWindow::on_actionLongSnap_triggered()
 void MainWindow::on_actionFreeHandSnap_triggered()
 {
     commonSnapAction(ScreenShotHelper::FreeHandShot, false);
+}
+
+void MainWindow::on_actionShow_triggered()
+{
+    this->show();
 }

@@ -15,6 +15,7 @@
 #include <QToolButton>
 #include <windows.h>
 #include <Mmsystem.h>
+#include <QSpinBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -92,19 +93,19 @@ private slots:
 
     void on_actionFreeHandSnap_triggered();
 
+    void on_actionShow_triggered();
+
 private:
     Ui::MainWindow *ui;
 
     QCheckBox* cbPlaySound;
     QLabel* labCount;
     QSlider* sliderZoom;
-    QToolButton* tbtnZoom;
+    QSpinBox* sbZoom;
 
     QSystemTrayIcon systemTray;
 
     QMenu systemTrayMenu;
-
-    QAction systemTrayMenuActions[2];
 
     QNetworkAccessManager *networkAccessManager;
 
