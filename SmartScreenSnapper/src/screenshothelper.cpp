@@ -25,9 +25,6 @@ ScreenShotHelper::ScreenShotHelper()
 QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w , int h)
 {
     GetWindowThreadProcessId(hwnd, &lastPId);
-//    std::wstring title(GetWindowTextLength(hwnd) + 1, L'\0');
-//    GetWindowTextW(hwnd, &title[0], title.size());
-//    lastProcessName = QString::fromStdWString(title);
 
     RECT r = {0, 0, 0, 0};
 
@@ -135,6 +132,11 @@ QPixmap ScreenShotHelper::grabCursor()
     return p;
 }
 
+QPixmap ScreenShotHelper::grabByHdc()
+{
+
+}
+
 void wait(int msec)
 {
     QEventLoop loop;            //定义一个新的事件循环
@@ -229,6 +231,10 @@ QString ScreenShotHelper::getSnapTypeName(ScreenShotHelper::ShotType shotType)
     }
     case FreeHandShot:{
         typeName = "徒手截图";
+        break;
+    }
+    case ShotByPoint:{
+        typeName = "窗体控件截图";
         break;
     }
     default:{

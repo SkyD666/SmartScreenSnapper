@@ -35,6 +35,7 @@
 #include "const.h"
 #include "longsnapdialog.h"
 #include "freehandsnapdialog.h"
+#include "snapfrompointdialog.h"
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 
@@ -333,6 +334,12 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
             snapSuccessCallback(shotType, pixmap);
         });
         freeHandSnapDialog.exec();
+    } else if (shotType == ScreenShotHelper::ShotByPoint) {
+        SnapByPointDialog snapFromPointDialog(this);
+        connect(&snapFromPointDialog, &SnapByPointDialog::captured, this, [=](QPixmap pixmap){
+            snapSuccessCallback(shotType, pixmap);
+        });
+        snapFromPointDialog.exec();
     } else {
         snapSuccessCallback(shotType, ScreenShotHelper::screenshot(shotType, isHotKey));
     }
@@ -390,6 +397,7 @@ void MainWindow::initSystemTray()
     systemTrayMenu.addAction(ui->actionFreeSnap);
     systemTrayMenu.addAction(ui->actionGIF);
     systemTrayMenu.addAction(ui->actionFreeHandSnap);
+    systemTrayMenu.addAction(ui->actionSnapByPoint);
     systemTrayMenu.addSeparator();
     systemTrayMenu.addAction(ui->actionExit);
 
@@ -522,4 +530,9 @@ void MainWindow::on_actionFreeHandSnap_triggered()
 void MainWindow::on_actionShow_triggered()
 {
     this->show();
+}
+
+void MainWindow::on_actionSnapByPoint_triggered()
+{
+    commonSnapAction(ScreenShotHelper::ShotByPoint, false);
 }

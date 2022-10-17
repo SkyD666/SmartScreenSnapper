@@ -27,6 +27,7 @@ SOURCES += \
     src/freesnap/freesnaprect.cpp \
     src/freesnap/freesnapscene.cpp \
     src/freesnapdialog.cpp \
+    src/snapbypoint/snapbypointgraphicsscene.cpp \
     src/gif-h/gif.cpp \
     src/gifdialog.cpp \
     src/graphicsview.cpp \
@@ -37,6 +38,7 @@ SOURCES += \
     src/publicdata.cpp \
     src/screenshothelper.cpp \
     src/settingdialog.cpp \
+    src/snapfrompointdialog.cpp \
     src/star.cpp \
     src/updatedialog.cpp \
     src/updateutil.cpp \
@@ -65,6 +67,8 @@ HEADERS += \
     src/publicdata.h \
     src/screenshothelper.h \
     src/settingdialog.h \
+    src/snapbypoint/snapbypointgraphicsscene.h \
+    src/snapfrompointdialog.h \
     src/star.h \
     src/updatedialog.h \
     src/updateutil.h \
@@ -72,6 +76,7 @@ HEADERS += \
     src/windowsinfo.h
 
 FORMS += \
+    ui/snapfrompointdialog.ui \
     ui/freehandsnapdialog.ui \
     ui/longsnapdialog.ui \
     ui/aboutdialog.ui \

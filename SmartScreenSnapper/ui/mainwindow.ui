@@ -114,6 +114,7 @@
    <addaction name="actionFreeSnap"/>
    <addaction name="actionGIF"/>
    <addaction name="actionFreeHandSnap"/>
+   <addaction name="actionSnapByPoint"/>
   </widget>
   <widget class="QDockWidget" name="dockDocumentList">
    <property name="minimumSize">
@@ -385,6 +386,21 @@
    </property>
    <property name="toolTip">
     <string>打开</string>
+   </property>
+  </action>
+  <action name="actionSnapByPoint">
+   <property name="icon">
+    <iconset resource="../res/res.qrc">
+     <normaloff>:/image/FreeHandSnap.svg</normaloff>:/image/FreeHandSnap.svg</iconset>
+   </property>
+   <property name="text">
+    <string>窗体控件截图...</string>
+   </property>
+   <property name="toolTip">
+    <string>窗体控件截图</string>
+   </property>
+   <property name="statusTip">
+    <string>截取鼠标位置所在的窗体或控件</string>
    </property>
   </action>
  </widget>
