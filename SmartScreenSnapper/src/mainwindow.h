@@ -95,6 +95,8 @@ private slots:
 
     void on_actionShow_triggered();
 
+    void on_actionSnapByPoint_triggered();
+
 private:
     Ui::MainWindow *ui;
 
