@@ -60,19 +60,23 @@
 
 ![ic_freehandsnap_dialog](image/screenshot/ic_freehandsnap_dialog.png)
 
-#### **徒手绘制**区域截图效果
-
 ![ic_freehandsnap_result](image/screenshot/ic_freehandsnap_result.png)
 
 #### 录制GIF
 
 ![ic_gif_dialog](image/screenshot/ic_gif_dialog.png)
 
+#### 窗体控件截图
+
+![ic_snapbyhand_dialog](image/screenshot/ic_snapbyhand_dialog.png)
+
+![ic_snapbyhand_result](image/screenshot/ic_snapbyhand_result.png)
+
 #### 常规设置
 
 ![ic_setting_dialog](image/screenshot/ic_setting_dialog.png)
 
-#### 捕捉设置
+#### 文件名模板
 
 ![ic_setting_dialog_2](image/screenshot/ic_setting_dialog_2.png)
 
