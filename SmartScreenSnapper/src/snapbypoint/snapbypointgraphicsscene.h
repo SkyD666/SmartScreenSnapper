@@ -27,7 +27,7 @@ private:
 
     QGraphicsRectItem* rectItem;
 
-    QList<QRect> windowRectList;
+    QList<QPair<HWND, QRect>> windowRectList;
 };
 
 #endif // SNAPBYPOINTGRAPHICSVIEW_H

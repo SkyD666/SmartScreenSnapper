@@ -391,7 +391,7 @@
   <action name="actionSnapByPoint">
    <property name="icon">
     <iconset resource="../res/res.qrc">
-     <normaloff>:/image/FreeHandSnap.svg</normaloff>:/image/FreeHandSnap.svg</iconset>
+     <normaloff>:/image/SnapByPoint.svg</normaloff>:/image/SnapByPoint.svg</iconset>
    </property>
    <property name="text">
     <string>窗体控件截图...</string>

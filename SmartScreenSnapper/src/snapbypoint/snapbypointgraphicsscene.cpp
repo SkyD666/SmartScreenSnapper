@@ -11,7 +11,7 @@
 SnapByPointGraphicsScene::SnapByPointGraphicsScene(QWidget *parent) :
     QGraphicsScene(parent),
     rectItem(nullptr),
-    windowRectList(QList<QRect>())
+    windowRectList(QList<QPair<HWND, QRect>>())
 {
     // 获得桌面窗口
     HWND desktopWnd = GetDesktopWindow();
@@ -21,10 +21,14 @@ SnapByPointGraphicsScene::SnapByPointGraphicsScene(QWidget *parent) :
     RECT r = {0, 0, 0, 0};
     HWND window = (HWND)(parent->winId());
     while (cWnd) {
-        if (IsWindowVisible(cWnd) && cWnd != window) {
+        long exStyle = GetWindowLong(cWnd, GWL_EXSTYLE);
+        if (IsWindowVisible(cWnd) && !(exStyle & WS_EX_TRANSPARENT)
+                && !(exStyle & WS_EX_LAYERED)
+                && !(exStyle & WS_EX_NOINHERITLAYOUT)
+                && cWnd != window) {
             windowRectList.append(Util::getAllChildWindowRect(cWnd));
             GetWindowRect(cWnd, &r);
-            windowRectList.append(QRect(r.left, r.top, r.right - r.left, r.bottom - r.top));
+            windowRectList.append(qMakePair(cWnd, QRect(r.left, r.top, r.right - r.left, r.bottom - r.top)));
         }
 
         // 下一个子窗口（z减小）
@@ -50,11 +54,11 @@ void SnapByPointGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void SnapByPointGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     for (auto r : windowRectList) {
-        if (r.contains(event->scenePos().toPoint())) {
+        if (r.second.contains(event->scenePos().toPoint())) {
             if (rectItem) {
-                rectItem->setRect(r);
+                rectItem->setRect(r.second);
             } else {
-                rectItem = addRect(r, QPen(QBrush(Qt::red), 5));
+                rectItem = addRect(r.second, QPen(QBrush(Qt::red), 5));
             }
             break;
         }
