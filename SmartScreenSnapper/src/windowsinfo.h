@@ -14,8 +14,6 @@ public:
 
     static unsigned long long getAvailMemorySize();
 
-    static QString getWindowsVersion();
-
     static QString getCPU();
 
     static QString getGPU();

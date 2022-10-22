@@ -1,10 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <winuser.h>
 #include <QWidget>
 #include <QClipboard>
 #include <QGraphicsView>
-#include <QDesktopWidget>
 #include <QDateTime>
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -14,15 +12,14 @@
 #include <QTimer>
 #include <QDebug>
 #include <QToolButton>
-#include <QtWinExtras/qwinfunctions.h>
 #include <QPropertyAnimation>
 #include <QDesktopServices>
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QStyleFactory>
 #include <QNetworkReply>
-#include "graphicsview.h"
-#include "windowsinfo.h"
+#include <QSoundEffect>
+#include <QMimeData>
 #include "publicdata.h"
 #include "mdiwindow.h"
 #include "aboutdialog.h"
@@ -313,12 +310,7 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
     if (shotType == ScreenShotHelper::FreeShot) {
         QPixmap pixmap;
         bool captured = true;
-        FreeSnapDialog freeSnapDialog(ScreenShotHelper::getWindowPixmap(
-                                          (HWND)QApplication::desktop()->winId(),
-                                          shotType,
-                                          PublicData::includeCursor
-                                          ),
-                                      &pixmap, captured, this);
+        FreeSnapDialog freeSnapDialog(&pixmap, captured, this);
         freeSnapDialog.exec();
         if (!captured) return;
         snapSuccessCallback(shotType, pixmap);
@@ -361,7 +353,9 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
         QApplication::clipboard()->setPixmap(pixmap);
     }
     if (PublicData::isPlaySound) {
-        PlaySound(TEXT("DAZIJI"), NULL, SND_RESOURCE | SND_ASYNC);
+        QSoundEffect *startSound = new QSoundEffect(this);
+        startSound->setSource(QUrl::fromLocalFile(":/sound/typewriter.wav"));
+        startSound->play();
     }
 
     ShotTypeItem snapTypeItem = PublicData::snapTypeItems[shotType];

@@ -1,7 +1,7 @@
 #include "MyWinEventFilter.h"
 #include "MyGlobalShortCut.h"
 #include "../publicdata.h"
-//#include <qt_windows.h>
+
 MyWinEventFilter::MyWinEventFilter()
 {
 
@@ -18,7 +18,7 @@ MyWinEventFilter::MyWinEventFilter(MyGlobalShortCut *shortcut)
 }
 
 
-bool MyWinEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, long *)
+bool MyWinEventFilter::nativeEventFilter(const QByteArray &eventType, void *message, qintptr*)
 {
     if(eventType == "windows_generic_MSG") {
         MSG *msg = static_cast<MSG *>(message);

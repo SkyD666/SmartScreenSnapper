@@ -48,7 +48,7 @@ void FreeHandSnapGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     mousePressed = false;
 

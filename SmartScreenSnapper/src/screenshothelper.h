@@ -20,8 +20,6 @@ public:
 
     static QPixmap grabCursor();
 
-    static QPixmap grabByHdc();
-
     static QPixmap screenshot(ShotType shotType, bool isHotKey);
 
     static bool savePicture(QWidget *msgBoxParent, QString filePath, QPixmap pixmap);

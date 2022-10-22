@@ -27,7 +27,7 @@ class FreeSnapDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FreeSnapDialog(QPixmap picture, QPixmap* result, bool &captured, QWidget *parent = nullptr);
+    explicit FreeSnapDialog(QPixmap* result, bool &captured, QWidget *parent = nullptr);
     ~FreeSnapDialog();
 
 private:

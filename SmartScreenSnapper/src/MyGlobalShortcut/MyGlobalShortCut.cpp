@@ -30,8 +30,8 @@ void MyGlobalShortCut::activateShortcut(ScreenShotHelper::ShotType shotType)
 bool  MyGlobalShortCut::registerHotKey()
 {
     Qt::KeyboardModifiers allMods = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier;
-    key = (m_key.isEmpty() ? Qt::Key(0) : Qt::Key((m_key[0] ^ allMods) & m_key[0]));
-    mods = m_key.isEmpty() ? Qt::KeyboardModifiers(0) : Qt::KeyboardModifiers(m_key[0] & allMods);
+    key = (m_key.isEmpty() ? Qt::Key(0) : Qt::Key((m_key[0].toCombined() ^ allMods) & m_key[0].toCombined()));
+    mods = m_key.isEmpty() ? Qt::KeyboardModifiers(0) : Qt::KeyboardModifiers(m_key[0].toCombined() & allMods);
     const quint32 nativeKey = nativeKeycode(key);
     const quint32 nativeMods = nativeModifiers(mods);
 

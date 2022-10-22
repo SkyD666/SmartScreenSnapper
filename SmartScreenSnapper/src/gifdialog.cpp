@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QRandomGenerator>
 #include <QProcess>
 #include <QDebug>
 #include <windows.h>
@@ -56,34 +57,6 @@ void GIFDialog::closeEvent(QCloseEvent*)
     }
 }
 
-void GIFDialog::resizeEvent(QResizeEvent *event)
-{
-}
-
-void GIFDialog::paintEvent(QPaintEvent *)
-{
-    /*QPainter painter(this);
-    //        QRect r = ui->labelRecordScreen->rect();
-    QRect recordScreenRect;
-    //    painter.fillRect(lastRect, QColor(1, 255, 0));
-    //    qDebug() << lastRect.height() << " " << r.height();
-    recordScreenRect.setTopLeft(ui->labelRecordScreen->pos());
-    //    recordScreenRect.setX(ui->labelRecordScreen->mapToGlobal());
-    //    recordScreenRect.setY(ui->labelRecordScreen->pos().y());
-    recordScreenRect.setHeight(ui->labelRecordScreen->frameGeometry().height());
-    recordScreenRect.setWidth(ui->labelRecordScreen->frameGeometry().width());
-    //    painter.fillRect(r, QColor(0, 255, 0));
-    //    lastRect = r;
-    QRect windowRect;
-    //windowRect.setTopLeft(pos());
-    windowRect.setX(x()-geometry().x());
-    windowRect.setY(y()-geometry().y());
-    windowRect.setHeight(frameGeometry().height());
-    windowRect.setWidth(frameGeometry().width());
-    qDebug() << recordScreenRect << windowRect << QRegion(windowRect).xored(QRegion(recordScreenRect));
-    setMask(QRegion(windowRect).xored(QRegion(ui->labelRecordScreen->rect())));*/
-}
-
 void GIFDialog::on_pushButtonStart_clicked()
 {
     if (recordGif->isRunning()) {
@@ -127,11 +100,9 @@ void GIFDialog::on_pushButtonStart_clicked()
         //录制开始，锁定大小
         setMinimumSize(width(), height());
         setMaximumSize(width(), height());
-        //文件名带随机数
-        qsrand(time(NULL));
         QString path = PublicData::gifSavePath;
         recordGif->startThread();
-        recordGif->gifBegin(path.replace(".gif", "_" + QString::number(qrand() % 999999) + ".gif"), gifWidth, gifHeight, 1);
+        recordGif->gifBegin(path.replace(".gif", "_" + QString::number(QRandomGenerator::global()->bounded(100000, 999999)) + ".gif"), gifWidth, gifHeight, 1);
     }
 }
 

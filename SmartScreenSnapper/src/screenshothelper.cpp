@@ -1,16 +1,14 @@
 #include "screenshothelper.h"
-#include <QtWinExtras/qwinfunctions.h>
 #include <QTimer>
 #include <windows.h>
 #include <QApplication>
 #include <QClipboard>
-#include <QDesktopWidget>
 #include <QDir>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QScreen>
 #include <QDebug>
 #include <QRandomGenerator>
-#include "freesnapdialog.h"
 #include "publicdata.h"
 #include "windowsinfo.h"
 #include "util.h"
@@ -97,12 +95,30 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool i
     SelectObject(bitmapDC, null_bitmap);
     DeleteDC(bitmapDC);
 
-    QPixmap pixmap = QtWin::fromHBITMAP(bitmap, QtWin::HBitmapPremultipliedAlpha);
+    QImage image = QImage::fromHBITMAP(bitmap);
+    image.reinterpretAsFormat(QImage::QImage::Format_ARGB32_Premultiplied);
+    QPixmap pixmap = QPixmap::fromImage(image);
 
     DeleteObject(bitmap);
 
     return pixmap;
 }
+
+/**
+ * @brief qt_pixmapFromWinHBITMAP
+ * https://github.com/qt/qtbase/blob/067b53864112c084587fa9a507eb4bde3d50a6e1/src/gui/image/qpixmap_win.cpp
+ * QImage::fromHBITMAP(hbmCanvas);会丢失透明度（默认不透明），因此需要手动调用qt_pixmapFromWinHBITMAP
+ * @param bitmap
+ * @param hbitmapFormat
+ * enum HBitmapFormat
+ * {
+ *     HBitmapNoAlpha = 0,
+ *     HBitmapPremultipliedAlpha = 1,
+ *     HBitmapAlpha = 2
+ * };
+ * @return QPixmap
+ */
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHBITMAP(HBITMAP bitmap, int hbitmapFormat = 0);
 
 QPixmap ScreenShotHelper::grabCursor()
 {
@@ -122,7 +138,7 @@ QPixmap ScreenShotHelper::grabCursor()
     DrawIconEx(hdcMem, 0, 0, ci.hCursor,
                0, 0, 0, NULL, DI_NORMAL);
 
-    QPixmap p = QtWin::fromHBITMAP(hbmCanvas, QtWin::HBitmapPremultipliedAlpha);
+    QPixmap p = qt_pixmapFromWinHBITMAP(hbmCanvas, 1);
 
     SelectObject(hdcMem, hbmOld);
     DeleteObject(hbmCanvas);
@@ -130,11 +146,6 @@ QPixmap ScreenShotHelper::grabCursor()
     ReleaseDC(0, hdcScreen);
 
     return p;
-}
-
-QPixmap ScreenShotHelper::grabByHdc()
-{
-
 }
 
 void wait(int msec)
@@ -154,7 +165,7 @@ QPixmap ScreenShotHelper::screenshot(ShotType shotType, bool isHotKey)
     }
     switch (shotType) {
     case ScreenShot: {
-        pixmap = getWindowPixmap((HWND)QApplication::desktop()->winId(),
+        pixmap = getWindowPixmap((HWND)QGuiApplication::primaryScreen()->handle(),
                                  shotType,
                                  PublicData::includeCursor);
         break;
@@ -264,7 +275,7 @@ bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPix
 QPixmap ScreenShotHelper::getFullScreen()
 {
     return getWindowPixmap(
-                (HWND)QApplication::desktop()->winId(),
+                (HWND)QGuiApplication::primaryScreen()->handle(),
                 ScreenShot,
                 PublicData::includeCursor);
 }
