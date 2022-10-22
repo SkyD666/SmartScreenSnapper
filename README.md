@@ -10,17 +10,18 @@
         <a href="https://github.com/SkyD666/SmartScreenSnapper/releases/latest" style="text-decoration:none" >
             <img src="https://img.shields.io/github/downloads/SkyD666/SmartScreenSnapper/total" alt="GitHub all downloads"/>
         </a>
-        <a href="https://img.shields.io/badge/Windows->=7-brightgreen" style="text-decoration:none" >
-            <img src="https://img.shields.io/badge/Windows->=7-brightgreen" alt="Windows version"/>
+        <a href="https://img.shields.io/badge/platform-Windows >= 10 x64-brightgreen" style="text-decoration:none" >
+            <img src="https://img.shields.io/badge/platform-Windows >= 10 x64-brightgreen" alt="Windows version"/>
         </a>
         <a href="https://github.com/SkyD666/SmartScreenSnapper/blob/master/LICENSE" style="text-decoration:none" >
             <img src="https://img.shields.io/github/license/SkyD666/SmartScreenSnapper" alt="GitHub license"/>
         </a>
 	</p>
     <p>
-        一个小巧实用的<b>截图工具</b>，使用Qt5编写。
+        一个小巧实用的<b>截图工具</b>，使用 Qt 6 编写。
     </p>
 </div>
+
 
 
 
@@ -82,9 +83,8 @@
 
 ## 🎉特别感谢
 
-1. minifmod播放**.xm音乐**组件
-2. [MyGlobalShortcut](https://github.com/mario206/MyGlobalShortcut)注册**全局热键**(有修改)
-3. [gif-h](https://github.com/charlietangora/gif-h)创建**GIF文件**(有修改)
+1. [MyGlobalShortcut](https://github.com/mario206/MyGlobalShortcut)注册**全局热键**(有修改)
+2. [gif-h](https://github.com/charlietangora/gif-h)创建**GIF文件**(有修改)
 
 ## 📃许可证
 

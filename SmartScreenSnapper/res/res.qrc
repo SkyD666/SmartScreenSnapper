@@ -16,5 +16,7 @@
         <file>image/Copy.svg</file>
         <file>image/Exit.svg</file>
         <file>image/SnapByPoint.svg</file>
+        <file>sound/typewriter.wav</file>
+        <file>license/LICENSE</file>
     </qresource>
 </RCC>

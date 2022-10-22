@@ -14,11 +14,10 @@ class AboutDialog : public QDialog
 
 public:
     explicit AboutDialog(QWidget *parent = nullptr);
+
     ~AboutDialog();
 private slots:
     void on_pushButtonOk_clicked();
-
-    void on_checkBoxMusic_toggled(bool checked);
 
     void on_pushButtonSystemInfo_clicked();
 

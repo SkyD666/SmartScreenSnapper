@@ -1,6 +1,5 @@
 #include "settingdialog.h"
 #include "publicdata.h"
-#include "mainwindow.h"
 #include "ui_settingdialog.h"
 #include <QCheckBox>
 #include <QFileDialog>
@@ -8,6 +7,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QRegularExpression>
 
 SettingDialog::SettingDialog(QWidget *parent) :
     QDialog(parent),
@@ -124,7 +124,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
                     ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
     });
 
-    ui->lineEditFileNameTemplate->setValidator(new QRegExpValidator(QRegExp("^[^/*?\"\\\\:|]+$"), this));
+    ui->lineEditFileNameTemplate->setValidator(new QRegularExpressionValidator(QRegularExpression("^[^/*?\"\\\\:|]+$"), this));
 
     // 自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){

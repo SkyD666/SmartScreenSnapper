@@ -75,9 +75,7 @@ class GIFDialog : public QDialog
 public:
     explicit GIFDialog(QWidget *parent = nullptr);
     ~GIFDialog();
-    void paintEvent(QPaintEvent *event) override;
     void closeEvent(QCloseEvent* event) override;
-    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void on_pushButtonStart_clicked();

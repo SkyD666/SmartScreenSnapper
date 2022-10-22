@@ -1,7 +1,7 @@
 #include "freesnaprect.h"
 #include <QMouseEvent>
 
-FreeSnapRect::FreeSnapRect(QWidget* parent, Qt::WindowFlags f) : QFrame(parent)
+FreeSnapRect::FreeSnapRect(QWidget* parent, Qt::WindowFlags) : QFrame(parent)
 {
     setMouseTracking(true);
 }

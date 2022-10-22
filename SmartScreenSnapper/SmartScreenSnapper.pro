@@ -1,4 +1,4 @@
-QT       += core gui winextras printsupport svg network
+QT       += core gui printsupport svg network multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -39,7 +39,6 @@ SOURCES += \
     src/screenshothelper.cpp \
     src/settingdialog.cpp \
     src/snapfrompointdialog.cpp \
-    src/star.cpp \
     src/updatedialog.cpp \
     src/updateutil.cpp \
     src/util.cpp \
@@ -63,13 +62,11 @@ HEADERS += \
     src/longsnapdialog.h \
     src/mainwindow.h \
     src/mdiwindow.h \
-    src/minifmod.h \
     src/publicdata.h \
     src/screenshothelper.h \
     src/settingdialog.h \
     src/snapbypoint/snapbypointgraphicsscene.h \
     src/snapfrompointdialog.h \
-    src/star.h \
     src/updatedialog.h \
     src/updateutil.h \
     src/util.h \
@@ -97,8 +94,6 @@ RESOURCES += \
 RC_FILE += res/RCData.rc
 
 unix|win32: LIBS += \
-    -L$$PWD/./lib/ -lminifmod \
-    -L$$PWD/./lib/ -lWinMM \
     -L$$PWD/./lib/ -lGDI32 \
 
 INCLUDEPATH += $$PWD/./lib/

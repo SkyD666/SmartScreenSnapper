@@ -3,6 +3,7 @@
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 #include <QSettings>
 #include <QApplication>
+#include <QFile>
 
 int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;

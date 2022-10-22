@@ -1,7 +1,6 @@
 #include "longsnapdialog.h"
 #include "ui_longsnapdialog.h"
 #include <windows.h>
-#include <QDesktopWidget>
 #include <QCloseEvent>
 #include <QtMath>
 #include <QDebug>
@@ -48,7 +47,7 @@ LongSnapDialog::~LongSnapDialog()
 QPixmap LongSnapDialog::getFullScreen()
 {
     return ScreenShotHelper::getWindowPixmap(
-                (HWND)QApplication::desktop()->winId(),
+                (HWND)QGuiApplication::primaryScreen()->handle(),
                 ScreenShotHelper::ScreenShot,
                 PublicData::includeCursor
                 );
@@ -105,7 +104,7 @@ QPixmap LongSnapDialog::capture()
     QImage finalPixmap;
     do {
         currentRegion = ScreenShotHelper::getWindowPixmap(
-                    (HWND)QApplication::desktop()->winId(),
+                    (HWND)QGuiApplication::primaryScreen()->handle(),
                     ScreenShotHelper::ScreenShot,
                     PublicData::includeCursor,
                     region->x(),

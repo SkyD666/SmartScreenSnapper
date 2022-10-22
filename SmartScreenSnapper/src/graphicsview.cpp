@@ -26,7 +26,7 @@ void GraphicsView::wheelEvent(QWheelEvent *event)
         }  else if (event->modifiers() == Qt::ShiftModifier) {
             if (numDegrees.y() != 0) {
                 this->horizontalScrollBar()->setSliderPosition(this->horizontalScrollBar()->sliderPosition() -
-                                                               event->delta());
+                                                               event->angleDelta().y());
             }
             event->accept();
             return;
@@ -39,8 +39,8 @@ void GraphicsView::wheelEvent(QWheelEvent *event)
 void GraphicsView::mousePressEvent(QMouseEvent *event)
 {
     mousePressed = true;
-    lastMousePoint.setX(event->x());
-    lastMousePoint.setY(event->y());
+    lastMousePoint.setX(event->position().x());
+    lastMousePoint.setY(event->position().y());
 
     if (event->buttons() & Qt::RightButton) {       // 准备右键拖出时的图片
         QPixmap pixmap(scene()->width(), scene()->height());
@@ -53,7 +53,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
+void GraphicsView::mouseReleaseEvent(QMouseEvent *)
 {
     mousePressed = false;
 }
@@ -63,9 +63,9 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event)
     if (event->buttons() & Qt::LeftButton) {
         if (mousePressed) {
             this->horizontalScrollBar()->setSliderPosition(this->horizontalScrollBar()->sliderPosition() -
-                                                           event->x() + lastMousePoint.x());
+                                                           event->position().x() + lastMousePoint.x());
             this->verticalScrollBar()->setSliderPosition(this->verticalScrollBar()->sliderPosition() -
-                                                         event->y() + lastMousePoint.y());
+                                                         event->position().y() + lastMousePoint.y());
         }
     }
     if (event->buttons() & Qt::RightButton) {
@@ -74,6 +74,6 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event)
         drag->setHotSpot(event->pos());
         drag->exec(Qt::CopyAction, Qt::CopyAction);
     }
-    lastMousePoint.setX(event->x());
-    lastMousePoint.setY(event->y());
+    lastMousePoint.setX(event->position().x());
+    lastMousePoint.setY(event->position().y());
 }
