@@ -18,6 +18,10 @@ UpdateDialog::UpdateDialog(QWidget *parent, GitHubRelease *githubRelease) :
 
     ui->labelCurrentVersion->setText(tr("当前版本：") + QApplication::applicationVersion());
 
+    connect(ui->pushButtonDownloadManual, &QPushButton::toggled, this, [githubRelease](){
+        QDesktopServices::openUrl(QUrl(githubRelease->htmlUrl));
+    });
+
     manager = new QNetworkAccessManager(this);
     connect(manager, &QNetworkAccessManager::finished, this, [=](QNetworkReply* reply) {
         QByteArray data = reply->readAll();
@@ -52,7 +56,7 @@ UpdateDialog::~UpdateDialog()
 }
 
 void UpdateDialog::UpdateVersionInfo() {
-    if (!githubRelease) return
+    if (!githubRelease) return;
 
     ui->progressBar->setMinimum(0);
     ui->progressBar->setMaximum(100);
@@ -67,9 +71,4 @@ void UpdateDialog::UpdateVersionInfo() {
     } else {
         ui->labelTips->setText(tr("当前已是最新版本！"));
     }
-}
-
-void UpdateDialog::on_pushButtonDownloadManual_clicked()
-{
-    QDesktopServices::openUrl(QUrl(githubRelease->htmlUrl));
 }

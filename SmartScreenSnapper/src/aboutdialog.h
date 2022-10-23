@@ -16,15 +16,9 @@ public:
     explicit AboutDialog(QWidget *parent = nullptr);
 
     ~AboutDialog();
-private slots:
-    void on_pushButtonOk_clicked();
-
-    void on_pushButtonSystemInfo_clicked();
 
 private:
     Ui::AboutDialog *ui;
-
-    void updateQLabelData(QLabel *label);
 };
 
 #endif // ABOUTDIALOG_H

@@ -50,52 +50,15 @@ public:
     static bool noToAllClicked;
 
     static bool closeAllNotSave;
-private slots:
-    void on_actionNew_triggered();
-
-    void on_actionScreenSnap_triggered();
-
-    void on_actionSave_triggered();
-
-    void on_actionExit_triggered();
-
-    void on_actionAbout_triggered();
-
-    void on_actionActiveWindowSnap_triggered();
-
-    void on_actionSetting_triggered();
 
     void hotKeyPressed(ScreenShotHelper::ShotType shotType);
+private slots:
 
     void savePicture(QString filePath);
 
     void savePicture(QString filePath, QPixmap pixmap);
 
     QPixmap getActiveWindowPixmap();
-
-    void on_actionCursorSnap_triggered();
-
-    void on_actionCloseAllNotSave_triggered();
-
-    void on_actionOpenSource_triggered();
-
-    void on_actionCopy_triggered();
-
-    void on_actionFreeSnap_triggered();
-
-    void on_actionUpdate_triggered();
-
-    void on_actionPrint_triggered();
-
-    void on_actionGIF_triggered();
-
-    void on_actionLongSnap_triggered();
-
-    void on_actionFreeHandSnap_triggered();
-
-    void on_actionShow_triggered();
-
-    void on_actionSnapByPoint_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -114,5 +77,7 @@ private:
 protected:
 
     void closeEvent(QCloseEvent *event);
+
+    void connectActionSlots();
 };
 #endif // MAINWINDOW_H

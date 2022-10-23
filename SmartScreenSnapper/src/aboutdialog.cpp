@@ -29,37 +29,11 @@ AboutDialog::AboutDialog(QWidget *parent) :
     if (license.open(QFile::ReadOnly)) {
         ui->textEditLicense->setText(QTextStream(&license).readAll());
     }
+    connect(ui->pushButtonOk, &QPushButton::toggled, this, [this](){ close(); });
 }
 
 
 AboutDialog::~AboutDialog()
 {
     delete ui;
-}
-
-void AboutDialog::on_pushButtonOk_clicked()
-{
-    close();
-}
-
-//此函数目前未使用
-void AboutDialog::updateQLabelData(QLabel *label)
-{
-    QString newText = label->text();
-
-    QFontMetrics font(this->font());
-    int fontSize = font.horizontalAdvance(newText);
-    //int resizeWidth(width);
-    if(fontSize > label->width())
-    {
-        newText = font.elidedText(label->text(), Qt::ElideRight, label->width());//返回一个带有省略号的字符串
-    }
-
-    label->setText(newText);
-}
-
-void AboutDialog::on_pushButtonSystemInfo_clicked()
-{
-    if (!QProcess::startDetached("MSINFO32.EXE"))
-        QMessageBox::warning(this, tr("警告"), tr("系统信息调用失败！"));
 }

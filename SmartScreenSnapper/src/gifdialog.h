@@ -77,13 +77,6 @@ public:
     ~GIFDialog();
     void closeEvent(QCloseEvent* event) override;
 
-private slots:
-    void on_pushButtonStart_clicked();
-
-    void on_pushButtonPath_clicked();
-
-    void on_pushButtonOpenPath_clicked();
-
 private:
     Ui::GIFDialog *ui;
 
@@ -102,6 +95,10 @@ private:
     QSize maxWindowSize;
 
     QRect lastRect;
+
+    void startRecord();
+
+    void stopRecord();
 };
 
 #endif // GIFDIALOG_H

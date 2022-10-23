@@ -9,7 +9,7 @@ class Application: public QApplication, public QAbstractNativeEventFilter
 public:
     Application(int argc, char *argv[]);
 
-    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result);
+    bool nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result);
 };
 
 #endif // APPLICATION_H
