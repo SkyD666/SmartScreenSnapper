@@ -8,9 +8,6 @@
 #include <QHash>
 #include "src/screenshothelper.h"
 
-class MyGlobalShortCut;
-
-
 class MyGlobalShortCut : public QObject
 {
     Q_OBJECT

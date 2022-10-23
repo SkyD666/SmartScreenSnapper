@@ -52,13 +52,8 @@ public:
     static bool closeAllNotSave;
 
     void hotKeyPressed(ScreenShotHelper::ShotType shotType);
-private slots:
 
-    void savePicture(QString filePath);
-
-    void savePicture(QString filePath, QPixmap pixmap);
-
-    QPixmap getActiveWindowPixmap();
+    MdiWindow* getActiveWindow();
 
 private:
     Ui::MainWindow *ui;

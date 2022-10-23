@@ -59,6 +59,7 @@ void PublicData::readSettings()
         snapTypeItems[i].waitTime = 0;
         snapTypeItems[i].hotKey = "";
         snapTypeItems[i].isAutoSave = false;
+        snapTypeItems[i].isManualSave = false;
         snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
         snapTypeItems[i].autoSaveExtName = imageExtName[0].first;
     }
@@ -73,6 +74,7 @@ void PublicData::readSettings()
         snapTypeItems[i].waitTime = qSettings.value("WaitTime", 0).toInt();
         snapTypeItems[i].hotKey = qSettings.value("HotKey", "").toString();
         snapTypeItems[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
+        snapTypeItems[i].isManualSave = qSettings.value("IsManualSave", false).toBool();
         snapTypeItems[i].autoSavePath = qSettings.value("AutoSavePath").toString();
         if (snapTypeItems[i].autoSavePath.isEmpty()) {          // 字符串类型配置值不能自动识别为空串
             snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
@@ -111,6 +113,7 @@ void PublicData::writeSettings()
         qSettings.setValue("WaitTime", snapTypeItems[i].waitTime);
         qSettings.setValue("HotKey", snapTypeItems[i].hotKey);
         qSettings.setValue("IsAutoSave", snapTypeItems[i].isAutoSave);
+        qSettings.setValue("IsManualSave", snapTypeItems[i].isManualSave);
         qSettings.setValue("AutoSavePath", snapTypeItems[i].autoSavePath);
         qSettings.setValue("AutoSaveExtName", snapTypeItems[i].autoSaveExtName);
     }

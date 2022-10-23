@@ -186,22 +186,17 @@ void MainWindow::connectActionSlots()
     });
     // 保存
     connect(ui->actionSave, &QAction::triggered, this, [=](){
-        MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-        QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
-                                                        activeWindow->getName(),
-                                                        PublicData::getSaveExtFilter());
-        if (!filePath.isEmpty()) savePicture(filePath);
+        getActiveWindow()->saveByDialog();
     });
     // 打印
     connect(ui->actionPrint, &QAction::triggered, this, [=](){
-        MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+        MdiWindow* activeWindow = getActiveWindow();
         if (!activeWindow) return;
         QPrintDialog printDialog(this);
         printDialog.setWindowTitle(tr("打印"));
         if(printDialog.exec() == QPrintDialog::Accepted) {
             QPrinter* printer = printDialog.printer();
-            //printer->setOutputFileName(activeWindow->getName());        //文件名
-            QPixmap pixmap = getActiveWindowPixmap();
+            QPixmap pixmap = activeWindow->getPixmap();
 
             QPainter painter2(printer);
             QRect rect = painter2.viewport();                           //painter2矩形区域
@@ -224,7 +219,7 @@ void MainWindow::connectActionSlots()
     // 复制
     connect(ui->actionCopy, &QAction::triggered, this, [=](){
         if (!ui->listDocument->count()) return;
-        QPixmap pixmap = getActiveWindowPixmap();
+        QPixmap pixmap = getActiveWindow()->getPixmap();
         QImage image = pixmap.toImage();
         QMimeData *data = new QMimeData;
         data->setImageData(image);
@@ -319,28 +314,10 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     return child;
 }
 
-void MainWindow::savePicture(QString filePath)
-{
-    QPixmap pixmap = getActiveWindowPixmap();
-    savePicture(filePath, pixmap);
-}
-
-void MainWindow::savePicture(QString filePath, QPixmap pixmap) {
-    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    if (ScreenShotHelper::savePicture(this, filePath, pixmap)) {
-        activeWindow->setSaved(true);
-    }
-}
-
-QPixmap MainWindow::getActiveWindowPixmap()
+MdiWindow* MainWindow::getActiveWindow()
 {
     MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    QGraphicsScene* graphicsScene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-    QPixmap pixmap(graphicsScene->width(), graphicsScene->height());
-    pixmap.fill(Qt::transparent);
-    QPainter painter(&pixmap);
-    graphicsScene->render(&painter);
-    return pixmap;
+    return activeWindow;
 }
 
 void MainWindow::initStatusBar() {
@@ -455,7 +432,10 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     if (snapTypeItem.isAutoSave) {
         QString folderPath = snapTypeItem.autoSavePath + "/";
         folderPath.replace("://", ":\\");
-        savePicture(folderPath + name + snapTypeItem.autoSaveExtName, pixmap);
+        activeWindow->saveByPath(folderPath + name + snapTypeItem.autoSaveExtName);
+    }
+    if (snapTypeItem.isManualSave) {
+        activeWindow->saveByDialog();
     }
 }
 

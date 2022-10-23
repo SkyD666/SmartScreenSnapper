@@ -8,15 +8,7 @@
 #include <QPainter>
 #include <QRect>
 
-#include <src/freesnap/freesnapscene.h>
 #include <src/freesnap/freesnapgraphicsview.h>
-
-#define GRAYCOLOR grayColor
-#define RECTCOLOR rectColor
-#define RECTPOINTCOLOR rectPointColor
-#define RECTPENWIDTH 2
-#define RECTPOINTPENWIDTH 6
-#define RECTPOINTPENHEIGHT 6
 
 namespace Ui {
 class FreeSnapDialog;
@@ -39,7 +31,7 @@ private:
 
     float previewZoomRate;
 
-    FreeSnapScene* scene;
+    QGraphicsScene* scene;
 
     QPixmap picture;
 

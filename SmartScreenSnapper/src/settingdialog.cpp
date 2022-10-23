@@ -38,7 +38,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
             ui->horizontalSliderWaitTime->setValue(PublicData::snapTypeItems[index].waitTime);
             ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[index].hotKey));
             ui->lineEditAutoSavePath->setText(PublicData::snapTypeItems[index].autoSavePath);
-            ui->checkBoxIsAutoSave->setChecked(PublicData::snapTypeItems[index].isAutoSave);
+            ui->cbManualSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isManualSave);
+            ui->cbAutoSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isAutoSave);
             ui->comboBoxAutoSaveExtName->setCurrentText(PublicData::snapTypeItems[index].autoSaveExtName);
             ui->lineEditAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
             ui->toolButtonAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
@@ -85,9 +86,17 @@ SettingDialog::SettingDialog(QWidget *parent) :
         }
     });
 
-    connect(ui->checkBoxIsAutoSave, &QCheckBox::stateChanged, [=](int state){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].isAutoSave = state;
+    connect(ui->cbManualSaveAfterShot, &QCheckBox::stateChanged, [=](int state){
+        int index = ui->comboBoxSnapType->currentIndex();
+        if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[index].isManualSave = state;
+        }
+    });
+
+    connect(ui->cbAutoSaveAfterShot, &QCheckBox::stateChanged, [=](int state){
+        int index = ui->comboBoxSnapType->currentIndex();
+        if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[index].isAutoSave = state;
         }
         ui->lineEditAutoSavePath->setEnabled(state);
         ui->toolButtonAutoSavePath->setEnabled(state);
@@ -95,14 +104,16 @@ SettingDialog::SettingDialog(QWidget *parent) :
     });
 
     connect(ui->lineEditAutoSavePath, &QLineEdit::editingFinished, [=](){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath = ui->lineEditAutoSavePath->text();
+        int index = ui->comboBoxSnapType->currentIndex();
+        if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[index].autoSavePath = ui->lineEditAutoSavePath->text();
         }
     });
 
     connect(ui->lineEditAutoSavePath, &QLineEdit::textChanged, [=](const QString &text){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath = text;
+        int index = ui->comboBoxSnapType->currentIndex();
+        if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[index].autoSavePath = text;
         }
     });
 
@@ -128,8 +139,9 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     // 自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSaveExtName = PublicData::imageExtName[index].first;
+        int i = ui->comboBoxSnapType->currentIndex();
+        if (i <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
+            PublicData::snapTypeItems[i].autoSaveExtName = PublicData::imageExtName[index].first;
         }
     });
 
@@ -205,7 +217,6 @@ void SettingDialog::on_checkBoxRunWithWindows_stateChanged(int state)
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString appPath = QApplication::applicationFilePath();
     QString appName = QApplication::applicationName();
-    QString val = qSettings.value(appName).toString();
     appPath = appPath.replace("/","\\");
     if (state) {
         qSettings.setValue(appName, "\"" + appPath + "\"" + " -autorun");

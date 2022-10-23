@@ -55,7 +55,7 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool &captured, QWidget *parent)
     // 可在不点击鼠标的情况下捕获移动事件
     setMouseTracking(true);
 
-    scene = new FreeSnapScene(this);
+    scene = new QGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
     scene->setBackgroundBrush(QBrush(picture));
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);

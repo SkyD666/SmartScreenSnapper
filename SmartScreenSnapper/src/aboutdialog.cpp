@@ -29,7 +29,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
     if (license.open(QFile::ReadOnly)) {
         ui->textEditLicense->setText(QTextStream(&license).readAll());
     }
-    connect(ui->pushButtonOk, &QPushButton::toggled, this, [this](){ close(); });
+    connect(ui->pushButtonOk, &QPushButton::clicked, this, [this](){ close(); });
 }
 
 

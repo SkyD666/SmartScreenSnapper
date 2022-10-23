@@ -25,7 +25,6 @@ SOURCES += \
     src/freehandsnap/freehandsnapgraphicsscene.cpp \
     src/freesnap/freesnapgraphicsview.cpp \
     src/freesnap/freesnaprect.cpp \
-    src/freesnap/freesnapscene.cpp \
     src/freesnapdialog.cpp \
     src/snapbypoint/snapbypointgraphicsscene.cpp \
     src/gif-h/gif.cpp \
@@ -54,7 +53,6 @@ HEADERS += \
     src/freehandsnap/freehandsnapgraphicsscene.h \
     src/freesnap/freesnapgraphicsview.h \
     src/freesnap/freesnaprect.h \
-    src/freesnap/freesnapscene.h \
     src/freesnapdialog.h \
     src/gif-h/gif.h \
     src/gifdialog.h \
