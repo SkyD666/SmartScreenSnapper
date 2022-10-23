@@ -18,7 +18,7 @@ UpdateDialog::UpdateDialog(QWidget *parent, GitHubRelease *githubRelease) :
 
     ui->labelCurrentVersion->setText(tr("当前版本：") + QApplication::applicationVersion());
 
-    connect(ui->pushButtonDownloadManual, &QPushButton::toggled, this, [githubRelease](){
+    connect(ui->pushButtonDownloadManual, &QPushButton::clicked, this, [githubRelease](){
         QDesktopServices::openUrl(QUrl(githubRelease->htmlUrl));
     });
 

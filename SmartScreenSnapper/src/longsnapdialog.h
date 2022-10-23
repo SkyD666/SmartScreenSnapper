@@ -2,7 +2,6 @@
 #define LONGSNAPDIALOG_H
 
 #include <QDialog>
-#include "screenshothelper.h"
 
 namespace Ui {
 class LongSnapDialog;

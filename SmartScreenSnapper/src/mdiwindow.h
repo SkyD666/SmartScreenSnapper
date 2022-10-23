@@ -39,6 +39,12 @@ public:
 
     double getYScale();
 
+    QPixmap getPixmap();
+
+    bool saveByDialog();
+
+    bool saveByPath(QString filePath);
+
 private:
     QListWidgetItem listItem;
 

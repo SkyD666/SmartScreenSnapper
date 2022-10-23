@@ -20,6 +20,7 @@ struct ShotTypeItem {
     int waitTime;
     QString hotKey;
     bool isAutoSave;
+    bool isManualSave;
     QString autoSavePath;
     QString autoSaveExtName;
 };

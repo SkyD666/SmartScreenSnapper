@@ -5,7 +5,6 @@
 #include <QRect>
 #include <windows.h>
 
-
 class Util
 {
 public:

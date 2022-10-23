@@ -1,11 +1,13 @@
+#include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QSlider>
 #include "mdiwindow.h"
 #include "mainwindow.h"
 #include "graphicsview.h"
+#include "publicdata.h"
 
-MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(parent, flags)
+MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) : QMdiSubWindow(parent, flags)
 {
     this->parent = parent;
     this->saved = true;
@@ -15,7 +17,7 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags):QMdiSubWindow(paren
     setObjectName("mdiWindow");
     setStyleSheet("#mdiWindow { background: url(:/image/Background1.svg); }");
 
-    GraphicsView * graphicsView = new GraphicsView(this);
+    GraphicsView* graphicsView = new GraphicsView(this);
     QGraphicsScene* graphicsScene = new QGraphicsScene(graphicsView);
     graphicsView->setObjectName("graphicsView");
     graphicsView->setScene(graphicsScene);
@@ -120,4 +122,35 @@ void MdiWindow::setYScale(double yScale)
 double MdiWindow::getYScale()
 {
     return this->yScale;
+}
+
+QPixmap MdiWindow::getPixmap()
+{
+    QGraphicsScene* graphicsScene = ((QGraphicsView*)widget())->scene();
+    QPixmap pixmap(graphicsScene->width(), graphicsScene->height());
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    graphicsScene->render(&painter);
+    return pixmap;
+}
+
+bool MdiWindow::saveByDialog()
+{
+    QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
+                                                    getName(),
+                                                    PublicData::getSaveExtFilter());
+    return saveByPath(filePath);
+}
+
+bool MdiWindow::saveByPath(QString filePath)
+{
+    if (!filePath.isEmpty()) {
+        if (ScreenShotHelper::savePicture(this, filePath, getPixmap())) {
+            setSaved(true);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return false;
 }

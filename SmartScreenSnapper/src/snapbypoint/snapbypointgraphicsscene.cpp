@@ -41,7 +41,6 @@ SnapByPointGraphicsScene::~SnapByPointGraphicsScene()
 
 }
 
-
 void SnapByPointGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->buttons() & Qt::RightButton) {
