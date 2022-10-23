@@ -20,9 +20,6 @@ public:
 public slots:
     void UpdateVersionInfo();
 
-private slots:
-    void on_pushButtonDownloadManual_clicked();
-
 private:
     Ui::UpdateDialog *ui;
 

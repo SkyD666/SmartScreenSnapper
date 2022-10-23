@@ -1,6 +1,5 @@
 #include "mainwindow.h"
-#include "publicdata.h"
-#include "application.h"
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {

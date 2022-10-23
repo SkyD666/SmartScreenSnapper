@@ -108,34 +108,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionSave->setEnabled(false);
     ui->actionCloseAllNotSave->setEnabled(false);
     ui->actionPrint->setEnabled(false);
-
-    //动态添加皮肤菜单-------------------------
-    int styleCount = QStyleFactory::keys().count();
-    QMenu *styleMenu = new QMenu(this);
-    styleMenu->setTitle(tr("外观"));
-    connect(styleMenu, &QMenu::triggered, [=](QAction *action){
-        QList<QAction*> actions = styleMenu->actions();
-        for (int i = 0; i < actions.count(); i++) {
-            actions.at(i)->setChecked(false);
-        }
-        action->setChecked(true);
-        PublicData::styleName = action->text();
-        qApp->setStyle(action->text());
-    });
-    for(int i = 0; i < styleCount; i++) {
-        QAction *action = new QAction(QStyleFactory::keys().at(i), this);
-
-        action->setCheckable(true);
-        styleMenu->addAction(action);
-
-        if (action->text() == PublicData::styleName) {
-            action->setChecked(true);
-            qApp->setStyle(action->text());
-        }
-    }
-    ui->menuTool->insertMenu(ui->actionSetting, styleMenu);
-    ui->menuTool->insertSeparator(ui->actionSetting);
     //------------------------------------------------
+    connectActionSlots();
 }
 
 MainWindow::~MainWindow() {
@@ -172,8 +146,145 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 }
 
-void MainWindow::on_actionNew_triggered() {
+void MainWindow::connectActionSlots()
+{
+    // 全屏截图
+    connect(ui->actionScreenSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::ScreenShot, false);
+    });
+    // 活动窗口截图
+    connect(ui->actionActiveWindowSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::ActiveWindowShot, false);
+    });
+    // 截取光标
+    connect(ui->actionCursorSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::CursorShot, false);
+    });
+    // 自由截图
+    connect(ui->actionFreeSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::FreeShot, false);
+    });
+    // 截取窗体/控件
+    connect(ui->actionSnapByPoint, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::ShotByPoint, false);
+    });
+    // 徒手截图
+    connect(ui->actionFreeHandSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::FreeHandShot, false);
+    });
+    // 长截屏
+    connect(ui->actionLongSnap, &QAction::triggered, this, [=](){
+        commonSnapAction(ScreenShotHelper::LongShot, false);
+    });
+    // 录制GIF
+    connect(ui->actionGIF, &QAction::triggered, this, [=](){
+        (new GIFDialog(this))->show();       // 构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
+    });
+    // 显示
+    connect(ui->actionShow, &QAction::triggered, this, [=](){
+        show();
+    });
+    // 保存
+    connect(ui->actionSave, &QAction::triggered, this, [=](){
+        MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+        QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
+                                                        activeWindow->getName(),
+                                                        PublicData::getSaveExtFilter());
+        if (!filePath.isEmpty()) savePicture(filePath);
+    });
+    // 打印
+    connect(ui->actionPrint, &QAction::triggered, this, [=](){
+        MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
+        if (!activeWindow) return;
+        QPrintDialog printDialog(this);
+        printDialog.setWindowTitle(tr("打印"));
+        if(printDialog.exec() == QPrintDialog::Accepted) {
+            QPrinter* printer = printDialog.printer();
+            //printer->setOutputFileName(activeWindow->getName());        //文件名
+            QPixmap pixmap = getActiveWindowPixmap();
 
+            QPainter painter2(printer);
+            QRect rect = painter2.viewport();                           //painter2矩形区域
+            QSize size = pixmap.size();                                      //图片的大小
+            size.scale(rect.size(), Qt :: KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
+            painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
+            painter2.setWindow(pixmap.rect());
+            painter2.drawPixmap(0, 0, pixmap);
+        }
+    });
+    // 关闭所有文档且不保存
+    connect(ui->actionCloseAllNotSave, &QAction::triggered, this, [=](){
+        if (QMessageBox::warning(this, tr("警告"), tr("确认是否要关闭所有文档且不保存"),
+                                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
+            closeAllNotSave = true;
+            ui->mdiArea->closeAllSubWindows();
+            closeAllNotSave = false;
+        }
+    });
+    // 复制
+    connect(ui->actionCopy, &QAction::triggered, this, [=](){
+        if (!ui->listDocument->count()) return;
+        QPixmap pixmap = getActiveWindowPixmap();
+        QImage image = pixmap.toImage();
+        QMimeData *data = new QMimeData;
+        data->setImageData(image);
+        QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
+        QApplication::clipboard()->setImage(image);
+    });
+    // 退出
+    connect(ui->actionExit, &QAction::triggered, this, [=](){
+        PublicData::ignoreClickCloseToTray = true;
+        close();
+    });
+    // 检查更新
+    connect(ui->actionUpdate, &QAction::triggered, this, [=](){
+        UpdateDialog().exec();
+    });
+    // 开放源码
+    connect(ui->actionOpenSource, &QAction::triggered, this, [=](){
+        QDesktopServices::openUrl(QUrl(Const::githubRepository));
+    });
+    // 关于
+    connect(ui->actionAbout, &QAction::triggered, this, [=](){
+        AboutDialog aboutDialog;
+        aboutDialog.exec();
+    });
+    // 设置
+    connect(ui->actionSetting, &QAction::triggered, this, [=](){
+        SettingDialog settingDialog(this);
+        PublicData::unregisterAllHotKey();      // 进入设置页面前取消热键
+        settingDialog.exec();
+        if (cbPlaySound) {
+            cbPlaySound->setChecked(PublicData::isPlaySound);
+        }
+        PublicData::registerAllHotKey(this);
+    });
+    // 动态添加皮肤菜单
+    int styleCount = QStyleFactory::keys().count();
+    QMenu *styleMenu = new QMenu(this);
+    styleMenu->setTitle(tr("外观"));
+    connect(styleMenu, &QMenu::triggered, [=](QAction *action){
+        QList<QAction*> actions = styleMenu->actions();
+        for (int i = 0; i < actions.count(); i++) {
+            actions.at(i)->setChecked(false);
+        }
+        action->setChecked(true);
+        PublicData::styleName = action->text();
+        qApp->setStyle(action->text());
+    });
+    for(int i = 0; i < styleCount; i++) {
+        QAction *action = new QAction(QStyleFactory::keys().at(i), this);
+
+        action->setCheckable(true);
+        styleMenu->addAction(action);
+
+        if (action->text() == PublicData::styleName) {
+            action->setChecked(true);
+            qApp->setStyle(action->text());
+        }
+    }
+    ui->menuTool->insertMenu(ui->actionSetting, styleMenu);
+    ui->menuTool->insertSeparator(ui->actionSetting);
 }
 
 MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
@@ -196,7 +307,7 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
         sliderZoom->setValue(sliderZoom->value() + n);
     });
 
-    connect(child, &MdiWindow::save, this, &MainWindow::on_actionSave_triggered);
+    connect(child, &MdiWindow::save, ui->actionSave, &QAction::trigger);
 
     connect(child, &MdiWindow::close, [=](){
         if(ui->mdiArea->subWindowList().size() > 1)
@@ -206,14 +317,6 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     PublicData::activeWindowIndex = ui->mdiArea->subWindowList().size() - 1;
     windowIndex = PublicData::activeWindowIndex;
     return child;
-}
-
-void MainWindow::on_actionSave_triggered() {
-    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    QString filePath = QFileDialog::getSaveFileName(this, tr("保存"),
-                                                    activeWindow->getName(),
-                                                    PublicData::getSaveExtFilter());
-    if (!filePath.isEmpty()) savePicture(filePath);
 }
 
 void MainWindow::savePicture(QString filePath)
@@ -238,16 +341,6 @@ QPixmap MainWindow::getActiveWindowPixmap()
     QPainter painter(&pixmap);
     graphicsScene->render(&painter);
     return pixmap;
-}
-
-void MainWindow::on_actionExit_triggered() {
-    PublicData::ignoreClickCloseToTray = true;
-    close();
-}
-
-void MainWindow::on_actionAbout_triggered() {
-    AboutDialog aboutDialog;
-    aboutDialog.exec();
 }
 
 void MainWindow::initStatusBar() {
@@ -366,16 +459,6 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     }
 }
 
-void MainWindow::on_actionScreenSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::ScreenShot, false);
-}
-
-void MainWindow::on_actionActiveWindowSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::ActiveWindowShot, false);
-}
-
 void MainWindow::exitCancel()
 {
     exitApp = false;
@@ -427,106 +510,7 @@ void MainWindow::setSettings()
     }
 }
 
-void MainWindow::on_actionSetting_triggered()
-{
-    SettingDialog settingDialog(this);
-    PublicData::unregisterAllHotKey();      // 进入设置页面前取消热键
-    settingDialog.exec();
-    if (cbPlaySound) {
-        cbPlaySound->setChecked(PublicData::isPlaySound);
-    }
-    PublicData::registerAllHotKey(this);
-}
-
 void MainWindow::hotKeyPressed(ScreenShotHelper::ShotType shotType)
 {
     commonSnapAction(shotType, true);
-}
-
-void MainWindow::on_actionCursorSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::CursorShot, false);
-}
-
-void MainWindow::on_actionCloseAllNotSave_triggered()
-{
-    if (QMessageBox::warning(this, tr("警告"), tr("确认是否要关闭所有文档且不保存"),
-                             QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
-        closeAllNotSave = true;
-        ui->mdiArea->closeAllSubWindows();
-        closeAllNotSave = false;
-    }
-}
-
-void MainWindow::on_actionOpenSource_triggered()
-{
-    QDesktopServices::openUrl(QUrl(Const::githubRepository));
-}
-
-void MainWindow::on_actionCopy_triggered()
-{
-    if (!ui->listDocument->count()) return;
-    QPixmap pixmap = getActiveWindowPixmap();
-    QImage image = pixmap.toImage();
-    QMimeData *data = new QMimeData;
-    data->setImageData(image);
-    QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
-    QApplication::clipboard()->setImage(image);
-}
-
-void MainWindow::on_actionFreeSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::FreeShot, false);
-}
-
-void MainWindow::on_actionUpdate_triggered()
-{
-    UpdateDialog().exec();
-}
-
-void MainWindow::on_actionPrint_triggered()
-{
-    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    if (!activeWindow) return;
-    QPrintDialog printDialog(this);
-    printDialog.setWindowTitle(tr("打印"));
-    if(printDialog.exec() == QPrintDialog::Accepted) {
-        QPrinter* printer = printDialog.printer();
-        //printer->setOutputFileName(activeWindow->getName());        //文件名
-        QPixmap pixmap = getActiveWindowPixmap();
-
-        QPainter painter2(printer);
-        QRect rect = painter2.viewport();                           //painter2矩形区域
-        QSize size = pixmap.size();                                      //图片的大小
-        size.scale(rect.size(), Qt :: KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
-        painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
-        painter2.setWindow(pixmap.rect());
-        painter2.drawPixmap(0, 0, pixmap);
-    }
-}
-
-void MainWindow::on_actionGIF_triggered()
-{
-    GIFDialog *gifDialog = new GIFDialog(this);       //构造函数里有setAttribute(Qt::WA_DeleteOnClose);无需手动delete
-    gifDialog->show();
-}
-
-void MainWindow::on_actionLongSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::LongShot, false);
-}
-
-void MainWindow::on_actionFreeHandSnap_triggered()
-{
-    commonSnapAction(ScreenShotHelper::FreeHandShot, false);
-}
-
-void MainWindow::on_actionShow_triggered()
-{
-    this->show();
-}
-
-void MainWindow::on_actionSnapByPoint_triggered()
-{
-    commonSnapAction(ScreenShotHelper::ShotByPoint, false);
 }

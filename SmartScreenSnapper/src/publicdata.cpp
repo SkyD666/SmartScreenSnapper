@@ -1,8 +1,10 @@
 #include "publicdata.h"
+#include "mainwindow.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 #include <QSettings>
 #include <QApplication>
 #include <QFile>
+#include <QDir>
 
 int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;
@@ -171,9 +173,9 @@ bool PublicData::applyQss()
         qApp->setStyleSheet("");
         return true;
     }
-    QFile qssFile(PublicData::qssPath);
+    QFile qssFile("file:///" + PublicData::qssPath);
     if (qssFile.open(QFile::ReadOnly)) {
-        qApp->setStyleSheet("file:///" + qssFile.fileName());
+        qApp->setStyleSheet(qssFile.fileName());
         qssFile.close();
         return true;
     }
