@@ -1,5 +1,4 @@
 #include "publicdata.h"
-#include "mainwindow.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 #include <QSettings>
 #include <QApplication>
@@ -173,9 +172,8 @@ bool PublicData::applyQss()
         return true;
     }
     QFile qssFile(PublicData::qssPath);
-    qssFile.open(QFile::ReadOnly);
-    if(qssFile.isOpen()) {
-        qApp->setStyleSheet(QLatin1String(qssFile.readAll()));
+    if (qssFile.open(QFile::ReadOnly)) {
+        qApp->setStyleSheet("file:///" + qssFile.fileName());
         qssFile.close();
         return true;
     }
