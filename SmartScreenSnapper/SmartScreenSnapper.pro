@@ -71,6 +71,7 @@ HEADERS += \
     src/windowsinfo.h
 
 FORMS += \
+    ui/mdiwindowwidget.ui \
     ui/snapfrompointdialog.ui \
     ui/freehandsnapdialog.ui \
     ui/longsnapdialog.ui \

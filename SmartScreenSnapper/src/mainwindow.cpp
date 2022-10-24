@@ -34,8 +34,6 @@
 #include "freehandsnapdialog.h"
 #include "snapfrompointdialog.h"
 
-Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
-
 bool MainWindow::exitApp = false;
 bool MainWindow::noToAllClicked = false;
 bool MainWindow::closeAllNotSave = false;
@@ -55,13 +53,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     setSettings();
 
-    connect(ui->listDocument, &QListWidget::itemClicked, [=](){
+    connect(ui->listDocument, &QListWidget::itemClicked, this, [=](){
         if (ui->listDocument->count() > 0) {
             ui->mdiArea->subWindowList().at(ui->listDocument->currentRow())->setFocus();
         }
     });
 
-    connect(ui->listDocument, &QListWidget::currentRowChanged, [=](int currentRow){
+    connect(ui->listDocument, &QListWidget::currentRowChanged, this, [=](int currentRow){
         if (!MainWindow::exitApp) {
             if (currentRow == -1) {
                 ui->actionSave->setEnabled(false);
@@ -87,16 +85,17 @@ MainWindow::MainWindow(QWidget *parent)
     });
     UpdateUtil::checkUpdate(networkAccessManager);
 
-    connect(ui->mdiArea, &QMdiArea::subWindowActivated, [=](QMdiSubWindow *window){
+    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [=](QMdiSubWindow *window){
+        MdiWindow *mdiWindow = qobject_cast<MdiWindow*>(window);
         if (ui->listDocument->count() > 0 && window) {
-            QListWidgetItem *item = &((MdiWindow*)window)->getListItem();
+            QListWidgetItem *item = &mdiWindow->getListItem();
             ui->listDocument->setCurrentItem(item);
 
             labCount->setText(
                         tr("共%1张, 选中第%2张")
                         .arg(ui->listDocument->count())
                         .arg(ui->listDocument->row(item) + 1));
-            sliderZoom->setValue(((MdiWindow*)window)->getXScale() * 100);
+            sliderZoom->setValue(mdiWindow->getScale() * 100);
         } else {
             labCount->setText(
                         tr("共%1张, 选中第%2张")
@@ -114,7 +113,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     PublicData::writeSettings();
-
     PublicData::unregisterAllHotKey();
 
     delete ui;
@@ -201,7 +199,7 @@ void MainWindow::connectActionSlots()
             QPainter painter2(printer);
             QRect rect = painter2.viewport();                           //painter2矩形区域
             QSize size = pixmap.size();                                      //图片的大小
-            size.scale(rect.size(), Qt :: KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
+            size.scale(rect.size(), Qt::KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
             painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
             painter2.setWindow(pixmap.rect());
             painter2.drawPixmap(0, 0, pixmap);
@@ -284,7 +282,7 @@ void MainWindow::connectActionSlots()
 
 MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     MdiWindow *child = new MdiWindow(this);
-    ui->listDocument->addItem(&(child->getListItem()));
+    ui->listDocument->addItem(&child->getListItem());
     ui->listDocument->setCurrentItem(&child->getListItem());
     ui->mdiArea->addSubWindow(child);
     child->show();
@@ -298,26 +296,25 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
     child->setListItemName(name);
     child->setName(name);
 
-    connect(child, &MdiWindow::zoom, [=](int n){
+    connect(child, &MdiWindow::zoom, this, [=](int n){
         sliderZoom->setValue(sliderZoom->value() + n);
     });
 
     connect(child, &MdiWindow::save, ui->actionSave, &QAction::trigger);
 
-    connect(child, &MdiWindow::close, [=](){
-        if(ui->mdiArea->subWindowList().size() > 1)
+    connect(child, &MdiWindow::close, this, [=](){
+        if (ui->mdiArea->subWindowList().size() > 1)
             ui->listDocument->setCurrentRow(ui->listDocument->count() - 2);
     });
 
-    PublicData::activeWindowIndex = ui->mdiArea->subWindowList().size() - 1;
+    PublicData::activeWindowIndex = ui->mdiArea->subWindowList().indexOf(child);
     windowIndex = PublicData::activeWindowIndex;
     return child;
 }
 
 MdiWindow* MainWindow::getActiveWindow()
 {
-    MdiWindow* activeWindow = (MdiWindow*)(ui->mdiArea->subWindowList().at(ui->listDocument->currentRow()));
-    return activeWindow;
+    return qobject_cast<MdiWindow*>(ui->mdiArea->currentSubWindow());
 }
 
 void MainWindow::initStatusBar() {
@@ -328,14 +325,9 @@ void MainWindow::initStatusBar() {
 
     connect(sliderZoom, &QAbstractSlider::valueChanged, this, [=](int value){
         sbZoom->setValue(value);
-        MdiWindow* activeWindow = dynamic_cast<MdiWindow*>(ui->mdiArea->activeSubWindow());
+        MdiWindow* activeWindow = getActiveWindow();
         if (activeWindow) {
-            QGraphicsView* graphicsView = dynamic_cast<QGraphicsView*>(activeWindow->widget());
-            double xScale = value / 100.0;
-            double yScale = value / 100.0;
-            graphicsView->scale(xScale / activeWindow->getXScale(), yScale / activeWindow->getYScale());
-            activeWindow->setXScale(xScale);
-            activeWindow->setYScale(yScale);
+            activeWindow->setScale(value / 100.0);
         }
     });
 
@@ -414,10 +406,7 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     int windowIndex = -1;
     activeWindow = createMDIWindow(windowIndex);
     activeWindow->setName(name);
-    activeWindow->setSaved(false);
-
-    QGraphicsScene *scene = ((QGraphicsView*)(activeWindow->widget()))->scene();
-    scene->addPixmap(pixmap);
+    activeWindow->setPixmap(pixmap);
 
     if (PublicData::copyToClipBoardAfterSnap) {
         QApplication::clipboard()->setPixmap(pixmap);

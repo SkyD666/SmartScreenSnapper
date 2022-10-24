@@ -1,41 +1,45 @@
+#include "mdiwindow.h"
+#include "ui_mdiwindowwidget.h"
 #include <QFileDialog>
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QSlider>
-#include "mdiwindow.h"
 #include "mainwindow.h"
 #include "graphicsview.h"
 #include "publicdata.h"
 
-MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) : QMdiSubWindow(parent, flags)
+MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
+    QMdiSubWindow(parent, flags),
+    ui(new Ui::MdiWindowWidget),
+    listItem(),
+    saved(true),
+    imageScale(1)
 {
-    this->parent = parent;
-    this->saved = true;
-    this->xScale = 1;
-    this->yScale = 1;
+    containerWidget = new QWidget(this);
+    ui->setupUi(containerWidget);
 
-    setObjectName("mdiWindow");
-    setStyleSheet("#mdiWindow { background: url(:/image/Background1.svg); }");
-
-    GraphicsView* graphicsView = new GraphicsView(this);
-    QGraphicsScene* graphicsScene = new QGraphicsScene(graphicsView);
-    graphicsView->setObjectName("graphicsView");
-    graphicsView->setScene(graphicsScene);
-    graphicsView->setStyleSheet("#graphicsView { background: transparent; }");
-    setWidget(graphicsView);
+    QGraphicsScene* graphicsScene = new QGraphicsScene(ui->graphicsView);
+    ui->graphicsView->setScene(graphicsScene);
+    setWidget(containerWidget);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    connect(graphicsView, &GraphicsView::zoom, [=](int n){
+    connect(ui->graphicsView, &GraphicsView::zoom, this, [=](int n){
         emit zoom(n);
     });
 }
 
+void MdiWindow::setPixmap(QPixmap pixmap)
+{
+    setSaved(false);
+    ui->graphicsView->scene()->addPixmap(pixmap);
+}
+
 void MdiWindow::setListItemName(QString name) {
-    this->listItem.setText(name);
+    listItem.setText(name);
 }
 
 QListWidgetItem & MdiWindow::getListItem() {
-    return this->listItem;
+    return listItem;
 }
 
 QString MdiWindow::getName() {
@@ -104,29 +108,20 @@ void MdiWindow::closeEvent(QCloseEvent *event) {
     }
 }
 
-void MdiWindow::setXScale(double xScale)
+void MdiWindow::setScale(double scale)
 {
-    this->xScale = xScale;
+    ui->graphicsView->scale(scale / imageScale, scale / imageScale);
+    imageScale = scale;
 }
 
-double MdiWindow::getXScale()
+double MdiWindow::getScale()
 {
-    return this->xScale;
-}
-
-void MdiWindow::setYScale(double yScale)
-{
-    this->yScale = yScale;
-}
-
-double MdiWindow::getYScale()
-{
-    return this->yScale;
+    return imageScale;
 }
 
 QPixmap MdiWindow::getPixmap()
 {
-    QGraphicsScene* graphicsScene = ((QGraphicsView*)widget())->scene();
+    QGraphicsScene* graphicsScene = ui->graphicsView->scene();
     QPixmap pixmap(graphicsScene->width(), graphicsScene->height());
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
