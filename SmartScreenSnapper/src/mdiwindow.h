@@ -5,6 +5,10 @@
 #include <QListWidgetItem>
 #include <QCloseEvent>
 
+namespace Ui {
+class MdiWindowWidget;
+}
+
 class MdiWindow : public QMdiSubWindow
 {
     Q_OBJECT
@@ -19,6 +23,8 @@ signals:
 public:
     MdiWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
+    void setPixmap(QPixmap pixmap);
+
     void setListItemName(QString name);
 
     QListWidgetItem & getListItem();
@@ -31,13 +37,9 @@ public:
 
     void setSaved(bool saved);
 
-    void setXScale(double xScale);
+    void setScale(double scale);
 
-    double getXScale();
-
-    void setYScale(double yScale);
-
-    double getYScale();
+    double getScale();
 
     QPixmap getPixmap();
 
@@ -46,18 +48,17 @@ public:
     bool saveByPath(QString filePath);
 
 private:
+    Ui::MdiWindowWidget *ui;
+
     QListWidgetItem listItem;
+
+    QWidget *containerWidget;
 
     QString name;
 
     bool saved;
 
-    //目前xScale和yScale相同
-    double xScale;
-
-    double yScale;
-
-    QWidget* parent;
+    double imageScale;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
