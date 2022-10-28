@@ -44,33 +44,29 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     initSystemTray();
-
-    initStatusBar();        //这句里面有控件初始化，在设置值之前进行
+    initStatusBar();        // 这句里面有控件初始化，在设置值之前进行
 
     PublicData::readSettings();
-
     PublicData::registerAllHotKey(this);
 
     setSettings();
 
-    connect(ui->listDocument, &QListWidget::itemClicked, this, [=](){
-        if (ui->listDocument->count() > 0) {
-            ui->mdiArea->subWindowList().at(ui->listDocument->currentRow())->setFocus();
+    connect(ui->listDocument, &QListWidget::currentItemChanged, this,
+            [=](QListWidgetItem *current, QListWidgetItem *){
+        bool hasDocument = current;
+        if (current) {
+            ui->mdiArea->setActiveSubWindow(current->data(MdiWindow::MdiWindowRole).value<MdiWindow*>());
         }
+        ui->actionSave->setEnabled(hasDocument);
+        ui->actionCloseAllNotSave->setEnabled(hasDocument);
+        ui->actionPrint->setEnabled(hasDocument);
+        updateDocumentCountLabel();
     });
-
-    connect(ui->listDocument, &QListWidget::currentRowChanged, this, [=](int currentRow){
-        if (!MainWindow::exitApp) {
-            if (currentRow == -1) {
-                ui->actionSave->setEnabled(false);
-                ui->actionCloseAllNotSave->setEnabled(false);
-                ui->actionPrint->setEnabled(false);
-            } else {
-                ui->actionSave->setEnabled(true);
-                ui->actionCloseAllNotSave->setEnabled(true);
-                ui->actionPrint->setEnabled(true);
-            }
-        }
+    connect(ui->listDocument->model(), &QAbstractItemModel::rowsRemoved, this, [=](const QModelIndex &, int, int){
+        updateDocumentCountLabel();
+    });
+    connect(ui->listDocument->model(), &QAbstractItemModel::rowsInserted, this, [=](const QModelIndex &, int, int){
+        updateDocumentCountLabel();
     });
 
     networkAccessManager = new QNetworkAccessManager();
@@ -87,20 +83,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [=](QMdiSubWindow *window){
         MdiWindow *mdiWindow = qobject_cast<MdiWindow*>(window);
-        if (ui->listDocument->count() > 0 && window) {
-            QListWidgetItem *item = &mdiWindow->getListItem();
+        QListWidgetItem *item = nullptr;
+        if (ui->listDocument->count() > 0 && mdiWindow) {
+            item = &mdiWindow->getListItem();
             ui->listDocument->setCurrentItem(item);
-
-            labCount->setText(
-                        tr("共%1张, 选中第%2张")
-                        .arg(ui->listDocument->count())
-                        .arg(ui->listDocument->row(item) + 1));
             sliderZoom->setValue(mdiWindow->getScale() * 100);
-        } else {
-            labCount->setText(
-                        tr("共%1张, 选中第%2张")
-                        .arg(ui->listDocument->count())
-                        .arg(0));
         }
     });
 
@@ -118,7 +105,6 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (PublicData::clickCloseToTray && !PublicData::ignoreClickCloseToTray) {
         setVisible(false);
@@ -128,10 +114,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
     exitApp = true;
     int subWindowCount = ui->mdiArea->subWindowList().count();
-    while (subWindowCount-->0) {
-        ui->listDocument->setCurrentRow(subWindowCount);
-        if (ui->mdiArea->subWindowList().last()->close()) {
-            ui->mdiArea->removeSubWindow(ui->mdiArea->subWindowList().last());
+    QMdiSubWindow *currentSubWindow = nullptr;
+    while (subWindowCount-- > 0) {
+        currentSubWindow = ui->mdiArea->currentSubWindow();
+        if (currentSubWindow->close()) {
+            ui->mdiArea->removeSubWindow(currentSubWindow);
         }
         if (!exitApp) {
             PublicData::ignoreClickCloseToTray = false;
@@ -192,17 +179,17 @@ void MainWindow::connectActionSlots()
         if (!activeWindow) return;
         QPrintDialog printDialog(this);
         printDialog.setWindowTitle(tr("打印"));
-        if(printDialog.exec() == QPrintDialog::Accepted) {
+        if (printDialog.exec() == QPrintDialog::Accepted) {
             QPrinter* printer = printDialog.printer();
             QPixmap pixmap = activeWindow->getPixmap();
 
-            QPainter painter2(printer);
-            QRect rect = painter2.viewport();                           //painter2矩形区域
-            QSize size = pixmap.size();                                      //图片的大小
-            size.scale(rect.size(), Qt::KeepAspectRatio);          //按照图形比例大小重新设置视口矩形区域
-            painter2.setViewport(rect.x(), rect.y(), size.width(), size.height());
-            painter2.setWindow(pixmap.rect());
-            painter2.drawPixmap(0, 0, pixmap);
+            QPainter painter(printer);
+            QRect rect = painter.viewport();                       // painter矩形区域
+            QSize size = pixmap.size();                            // 图片的大小
+            size.scale(rect.size(), Qt::KeepAspectRatio);          // 按照图形比例大小重新设置视口矩形区域
+            painter.setViewport(rect.x(), rect.y(), size.width(), size.height());
+            painter.setWindow(pixmap.rect());
+            painter.drawPixmap(0, 0, pixmap);
         }
     });
     // 关闭所有文档且不保存
@@ -256,7 +243,7 @@ void MainWindow::connectActionSlots()
     int styleCount = QStyleFactory::keys().count();
     QMenu *styleMenu = new QMenu(this);
     styleMenu->setTitle(tr("外观"));
-    connect(styleMenu, &QMenu::triggered, [=](QAction *action){
+    connect(styleMenu, &QMenu::triggered, this, [=](QAction *action){
         QList<QAction*> actions = styleMenu->actions();
         for (int i = 0; i < actions.count(); i++) {
             actions.at(i)->setChecked(false);
@@ -265,7 +252,7 @@ void MainWindow::connectActionSlots()
         PublicData::styleName = action->text();
         qApp->setStyle(action->text());
     });
-    for(int i = 0; i < styleCount; i++) {
+    for (int i = 0; i < styleCount; i++) {
         QAction *action = new QAction(QStyleFactory::keys().at(i), this);
 
         action->setCheckable(true);
@@ -280,17 +267,13 @@ void MainWindow::connectActionSlots()
     ui->menuTool->insertSeparator(ui->actionSetting);
 }
 
-MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
-    MdiWindow *child = new MdiWindow(this);
+MdiWindow * MainWindow::createMDIWindow() {
+    MdiWindow *child = new MdiWindow(ui->mdiArea);
     ui->listDocument->addItem(&child->getListItem());
-    ui->listDocument->setCurrentItem(&child->getListItem());
     ui->mdiArea->addSubWindow(child);
+    child->setWindowState(PublicData::mdiWindowInitState);
     child->show();
-
-    labCount->setText(
-                tr("共%1张, 选中第%2张")
-                .arg(ui->listDocument->count())
-                .arg(ui->listDocument->row(&child->getListItem()) + 1));
+    ui->mdiArea->setActiveSubWindow(child);
 
     QString name = tr("文档") + " " + QString::number(++PublicData::totalWindowCount);
     child->setListItemName(name);
@@ -300,21 +283,21 @@ MdiWindow * MainWindow::createMDIWindow(int &windowIndex) {
         sliderZoom->setValue(sliderZoom->value() + n);
     });
 
-    connect(child, &MdiWindow::save, ui->actionSave, &QAction::trigger);
-
-    connect(child, &MdiWindow::close, this, [=](){
-        if (ui->mdiArea->subWindowList().size() > 1)
-            ui->listDocument->setCurrentRow(ui->listDocument->count() - 2);
-    });
-
     PublicData::activeWindowIndex = ui->mdiArea->subWindowList().indexOf(child);
-    windowIndex = PublicData::activeWindowIndex;
     return child;
 }
 
 MdiWindow* MainWindow::getActiveWindow()
 {
     return qobject_cast<MdiWindow*>(ui->mdiArea->currentSubWindow());
+}
+
+void MainWindow::updateDocumentCountLabel()
+{
+    labCount->setText(
+                tr("共%1张, 选中第%2张")
+                .arg(ui->listDocument->count())
+                .arg(ui->listDocument->currentRow() + 1));
 }
 
 void MainWindow::initStatusBar() {
@@ -349,10 +332,7 @@ void MainWindow::initStatusBar() {
         PublicData::isPlaySound = (state == Qt::Checked);
     });
 
-    labCount->setText(
-                tr("共%1张, 选中第%2张")
-                .arg(ui->listDocument->count())
-                .arg(ui->listDocument->currentRow() + 1));
+    updateDocumentCountLabel();
 
     ui->statusbar->addPermanentWidget(cbPlaySound);
     ui->statusbar->addPermanentWidget(labCount);
@@ -403,8 +383,7 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
 {
     MdiWindow* activeWindow = nullptr;
     QString name = ScreenShotHelper::getPictureName(shotType);
-    int windowIndex = -1;
-    activeWindow = createMDIWindow(windowIndex);
+    activeWindow = createMDIWindow();
     activeWindow->setName(name);
     activeWindow->setPixmap(pixmap);
 
@@ -451,7 +430,7 @@ void MainWindow::initSystemTray()
     systemTray.setToolTip(QApplication::applicationName());
     systemTray.setContextMenu(&systemTrayMenu);
 
-    connect(&systemTray, &QSystemTrayIcon::activated, [=](QSystemTrayIcon::ActivationReason reason){
+    connect(&systemTray, &QSystemTrayIcon::activated, this, [=](QSystemTrayIcon::ActivationReason reason){
         switch (reason) {
         case QSystemTrayIcon::Context:
             systemTrayMenu.show();

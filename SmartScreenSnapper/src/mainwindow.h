@@ -30,7 +30,7 @@ public:
 
     ~MainWindow();
 
-    MdiWindow *createMDIWindow(int &windowIndex);
+    MdiWindow *createMDIWindow();
 
     void initSystemTray();
 
@@ -53,7 +53,9 @@ public:
 
     void hotKeyPressed(ScreenShotHelper::ShotType shotType);
 
-    MdiWindow* getActiveWindow();
+    inline MdiWindow* getActiveWindow();
+
+    void updateDocumentCountLabel();
 
 private:
     Ui::MainWindow *ui;

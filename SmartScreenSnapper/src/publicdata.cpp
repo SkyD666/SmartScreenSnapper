@@ -10,6 +10,11 @@ int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;
 int PublicData::snapMethod = 0;
 bool PublicData::isPlaySound = false;
+QHash<Qt::WindowState, QString>
+PublicData::mdiWindowInitStates{{Qt::WindowNoState, QObject::tr("默认")},
+                                {Qt::WindowMaximized, QObject::tr("最大化")},
+                                {Qt::WindowMinimized, QObject::tr("最小化")}};
+Qt::WindowState PublicData::mdiWindowInitState = Qt::WindowNoState;
 bool PublicData::clickCloseToTray = true;
 bool PublicData::ignoreClickCloseToTray = false;
 bool PublicData::hotKeyNoWait = true;
@@ -87,6 +92,7 @@ void PublicData::readSettings()
     qSettings.endArray();
 
     isPlaySound = qSettings.value("Sound/IsPlaySound", false).toBool();
+    mdiWindowInitState = qSettings.value("Config/MdiWindowInitState", Qt::WindowNoState).value<Qt::WindowState>();
     clickCloseToTray = qSettings.value("Config/ClickCloseToTray", true).toBool();
     hotKeyNoWait = qSettings.value("Config/HotKeyNoWait", true).toBool();
     includeCursor = qSettings.value("Config/IncludeCursor", false).toBool();
@@ -120,6 +126,7 @@ void PublicData::writeSettings()
     qSettings.endArray();
 
     qSettings.setValue("Sound/IsPlaySound", isPlaySound);
+    qSettings.setValue("Config/MdiWindowInitState", mdiWindowInitState);
     qSettings.setValue("Config/ClickCloseToTray", clickCloseToTray);
     qSettings.setValue("Config/HotKeyNoWait", hotKeyNoWait);
     qSettings.setValue("Config/IncludeCursor", includeCursor);

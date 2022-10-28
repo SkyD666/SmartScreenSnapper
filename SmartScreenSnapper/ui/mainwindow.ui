@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>1048</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -88,6 +88,9 @@
      <height>0</height>
     </size>
    </property>
+   <property name="sizeGripEnabled">
+    <bool>true</bool>
+   </property>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -119,7 +122,7 @@
   <widget class="QDockWidget" name="dockDocumentList">
    <property name="minimumSize">
     <size>
-     <width>80</width>
+     <width>81</width>
      <height>298</height>
     </size>
    </property>
