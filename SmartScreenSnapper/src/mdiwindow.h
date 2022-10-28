@@ -16,11 +16,11 @@ class MdiWindow : public QMdiSubWindow
 signals:
     void zoom(int n);
 
-    void save();
-
-    void close();
+    void onClose();
 
 public:
+    enum { MdiWindowRole = Qt::UserRole + 1 };
+
     MdiWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
     void setPixmap(QPixmap pixmap);
@@ -35,8 +35,6 @@ public:
 
     bool isSaved();
 
-    void setSaved(bool saved);
-
     void setScale(double scale);
 
     double getScale();
@@ -48,6 +46,9 @@ public:
     bool saveByPath(QString filePath);
 
 private:
+
+    void setSaved(bool saved);
+
     Ui::MdiWindowWidget *ui;
 
     QListWidgetItem listItem;

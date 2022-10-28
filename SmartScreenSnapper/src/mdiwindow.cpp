@@ -4,6 +4,7 @@
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QSlider>
+#include <QVariant>
 #include "mainwindow.h"
 #include "graphicsview.h"
 #include "publicdata.h"
@@ -26,6 +27,8 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
     connect(ui->graphicsView, &GraphicsView::zoom, this, [=](int n){
         emit zoom(n);
     });
+
+    listItem.setData(MdiWindowRole, QVariant::fromValue(this));
 }
 
 void MdiWindow::setPixmap(QPixmap pixmap)
@@ -73,38 +76,39 @@ void MdiWindow::setSaved(bool saved) {
 }
 
 void MdiWindow::closeEvent(QCloseEvent *event) {
-    if (MainWindow::closeAllNotSave || MainWindow::noToAllClicked) {
-        emit close();
-        return;
-    }
-
-    if (this->saved) {
-        emit close();
-    } else {
-        int messageBoxResult = QMessageBox::Cancel;
-        if (MainWindow::exitApp) {
-            messageBoxResult = QMessageBox::question(NULL, tr("退出"), tr("是否保存截图？"), QMessageBox::Yes | QMessageBox::No | QMessageBox::NoToAll | QMessageBox::Cancel, QMessageBox::Yes);
-        } else {
-            messageBoxResult = QMessageBox::question(NULL, tr("退出"), tr("是否保存截图？"), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-        }
+    if (!saved && !MainWindow::closeAllNotSave && !MainWindow::noToAllClicked) {
+        QMessageBox::StandardButton messageBoxResult = QMessageBox::StandardButton(QMessageBox::Cancel);
+        messageBoxResult =
+                QMessageBox::question(nullptr,
+                                      tr("退出"),
+                                      tr("是否保存截图？"),
+                                      QMessageBox::StandardButtons(QMessageBox::Yes |
+                                                                   QMessageBox::No |
+                                                                   (MainWindow::exitApp ?
+                                                                        QMessageBox::NoToAll : 0) |
+                                                                   QMessageBox::Cancel),
+                                      QMessageBox::StandardButton(QMessageBox::Yes));
 
         switch (messageBoxResult) {
         case QMessageBox::Yes:
-            emit save();
-            emit close();
-            break;
-        case QMessageBox::No:
-            emit close();
-            break;
-        case QMessageBox::NoToAll:
-            MainWindow::noToAllClicked = true;
-            emit close();
-            break;
+            if (saveByDialog()) {
+                break;
+            }
+            // 若没保存成功，则取消关闭窗口（执行case QMessageBox::Cancel:）
         case QMessageBox::Cancel:
             MainWindow::exitCancel();
             event->ignore();
             break;
+        case QMessageBox::No:
+            break;
+        case QMessageBox::NoToAll:
+            MainWindow::noToAllClicked = true;
+            break;
+        default:;
         }
+    }
+    if (event->isAccepted()) {
+        emit onClose();
     }
 }
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>609</width>
-    <height>482</height>
+    <width>611</width>
+    <height>524</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,8 +43,12 @@
       <bool>false</bool>
      </property>
      <widget class="QWidget" name="tabGeneral">
+      <attribute name="icon">
+       <iconset resource="../res/res.qrc">
+        <normaloff>:/image/icon.png</normaloff>:/image/icon.png</iconset>
+      </attribute>
       <attribute name="title">
-       <string>General</string>
+       <string>常规</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="leftMargin">
@@ -69,8 +73,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>427</width>
-            <height>434</height>
+            <width>429</width>
+            <height>475</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -104,6 +108,62 @@
              <property name="text">
               <string>开机启动程序</string>
              </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QWidget" name="widget_5" native="true">
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <property name="spacing">
+               <number>9</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="label_8">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>子窗体初始状态</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="comboBoxMdiWindowInitState">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Arial</family>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="editable">
+                 <bool>false</bool>
+                </property>
+                <property name="currentText">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
@@ -521,8 +581,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabSnap">
+      <attribute name="icon">
+       <iconset resource="../res/res.qrc">
+        <normaloff>:/image/ActiveWindow.png</normaloff>:/image/ActiveWindow.png</iconset>
+      </attribute>
       <attribute name="title">
-       <string>Snap</string>
+       <string>捕捉</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_6">
        <property name="leftMargin">
@@ -547,8 +611,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>427</width>
-            <height>434</height>
+            <width>429</width>
+            <height>475</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -672,8 +736,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabFileName">
+      <attribute name="icon">
+       <iconset resource="../res/res.qrc">
+        <normaloff>:/image/File.svg</normaloff>:/image/File.svg</iconset>
+      </attribute>
       <attribute name="title">
-       <string>FileName</string>
+       <string>文件名模板</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <property name="leftMargin">
@@ -698,8 +766,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>427</width>
-            <height>434</height>
+            <width>429</width>
+            <height>475</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -794,8 +862,12 @@ hr { height: 1px; border-width: 0; }
       </layout>
      </widget>
      <widget class="QWidget" name="tabAdvanced">
+      <attribute name="icon">
+       <iconset resource="../res/res.qrc">
+        <normaloff>:/image/Setting.svg</normaloff>:/image/Setting.svg</iconset>
+      </attribute>
       <attribute name="title">
-       <string>Advanced</string>
+       <string>高级</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <property name="leftMargin">
@@ -820,8 +892,8 @@ hr { height: 1px; border-width: 0; }
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>427</width>
-            <height>434</height>
+            <width>429</width>
+            <height>475</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">

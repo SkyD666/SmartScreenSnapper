@@ -17,21 +17,21 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     ui->tabWidgetSetting->tabBar()->hide();
 
-    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/icon.png"), tr("常规"), ui->listWidgetSetting));
-    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/ActiveWindow.png"), tr("捕捉"), ui->listWidgetSetting));
-    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/File.svg"), tr("文件名模板"), ui->listWidgetSetting));
-    ui->listWidgetSetting->addItem(new QListWidgetItem(QIcon(":/image/Setting.svg"), tr("高级"), ui->listWidgetSetting));
+    auto tabBar = ui->tabWidgetSetting->tabBar();
+    for (int i = 0; i < tabBar->count(); i++) {
+        ui->listWidgetSetting->addItem(new QListWidgetItem(tabBar->tabIcon(i), tabBar->tabText(i), ui->listWidgetSetting));
+    }
 
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
     });
 
-    //下面的for循环要在下面的第一关connect之前调用
+    // 下面的for循环要在下面的第一个connect之前调用
     for (auto item : PublicData::imageExtName) {
         ui->comboBoxAutoSaveExtName->addItem(item.second + " (*" + item.first + ")");
     }
 
-    //此处的信号有重载
+    // 此处的信号有重载
     connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
         if(index <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
             ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapTypeItems[index].waitTime) + tr("s"));
@@ -47,8 +47,8 @@ SettingDialog::SettingDialog(QWidget *parent) :
         }
     });
 
-    //注意调用顺序，下面这几句要在connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){下面
-    //保证第一次进入时horizontalSliderWaitTime的connect能调用，有正确的值
+    // 注意调用顺序，下面这几句要在connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){下面
+    // 保证第一次进入时horizontalSliderWaitTime的connect能调用，有正确的值
     ui->comboBoxSnapType->addItem(QIcon(":/image/ScreenSnap.png"), tr("全屏截图"));
     ui->comboBoxSnapType->addItem(QIcon(":/image/ActiveWindow.png"), tr("活动窗口截图"));
     ui->comboBoxSnapType->addItem(QIcon(":/image/CursorSnap.png"), tr("截取光标"));
@@ -67,7 +67,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
 
     //此处的信号有重载
     connect(ui->comboBoxSnapMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
-        if(index < SNAPMETHOD) {
+        if (index < SNAPMETHOD) {
             PublicData::snapMethod = index;
         }
     });
@@ -153,6 +153,10 @@ SettingDialog::SettingDialog(QWidget *parent) :
         PublicData::isPlaySound = state;
     });
 
+    connect(ui->comboBoxMdiWindowInitState, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+        PublicData::mdiWindowInitState = ui->comboBoxMdiWindowInitState->itemData(index).value<Qt::WindowState>();
+    });
+
     connect(ui->checkBoxHotKeyNoWait, &QCheckBox::stateChanged, [=](int state){
         PublicData::hotKeyNoWait = state;
     });
@@ -176,6 +180,11 @@ SettingDialog::~SettingDialog()
 
 void SettingDialog::readSettings()
 {
+    for (auto key : PublicData::mdiWindowInitStates.keys()) {
+        ui->comboBoxMdiWindowInitState->addItem(PublicData::mdiWindowInitStates[key], key);
+    }
+    ui->comboBoxMdiWindowInitState->setCurrentText(PublicData::mdiWindowInitStates[PublicData::mdiWindowInitState]);
+
     ui->checkBoxClickCloseToTray->setChecked(PublicData::clickCloseToTray);
     ui->checkBoxPlaySound->setChecked(PublicData::isPlaySound);
     ui->checkBoxHotKeyNoWait->setChecked(PublicData::hotKeyNoWait);

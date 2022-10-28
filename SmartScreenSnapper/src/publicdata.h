@@ -45,6 +45,9 @@ public:
 
     static bool isPlaySound;
 
+    static QHash<Qt::WindowState, QString> mdiWindowInitStates;
+    static Qt::WindowState mdiWindowInitState;
+
     static bool clickCloseToTray;
 
     static bool ignoreClickCloseToTray;
