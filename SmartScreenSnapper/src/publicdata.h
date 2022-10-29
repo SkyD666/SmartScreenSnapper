@@ -6,7 +6,6 @@
 #include "screenshothelper.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 
-#define SNAPTYPECOUNT ScreenShotHelper::Count
 #define MDIWINBKCOLOR RGB(160, 160, 160)
 
 #define SNAPMETHOD 2
@@ -63,8 +62,7 @@ public:
 
     static bool copyToClipBoardAfterSnap;
 
-    //0全屏截图，1活动窗口截图，2截取光标
-    static ShotTypeItem snapTypeItems[SNAPTYPECOUNT];
+    static ShotTypeItem snapTypeItems[ScreenShotHelper::ShotType::Count];
 
     static QPair<QString, QString> imageExtName[6];
 
@@ -80,7 +78,6 @@ public:
 
     static void unregisterAllHotKey();
 
-    //0全屏，1活动窗口截图
     static QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> hotKey;
 
     static bool applyQss();

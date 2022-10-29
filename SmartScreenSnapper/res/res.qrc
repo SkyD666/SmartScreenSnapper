@@ -18,5 +18,6 @@
         <file>image/SnapByPoint.svg</file>
         <file>sound/typewriter.wav</file>
         <file>license/LICENSE</file>
+        <file>image/Delete.svg</file>
     </qresource>
 </RCC>

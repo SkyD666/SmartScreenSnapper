@@ -30,7 +30,7 @@ QPair<QString, QString> PublicData::imageExtName[] = {{".png", QObject::tr("PNG 
                                                       {".tiff", QObject::tr("TIFF 标签图像文件")},
                                                       {".webp", QObject::tr("WebP")},
                                                       {".ico", QObject::tr("ICO 图标")}};
-ShotTypeItem PublicData::snapTypeItems[SNAPTYPECOUNT] = {};
+ShotTypeItem PublicData::snapTypeItems[ScreenShotHelper::ShotType::Count] = {};
 QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
