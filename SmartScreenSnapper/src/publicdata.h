@@ -76,7 +76,7 @@ public:
 
     static void writeSettings();
 
-    static void registerAllHotKey(QWidget* parent);
+    static void registerAllHotKey(QWidget* parent, std::function<void (ScreenShotHelper::ShotType shotType)> receiver);
 
     static void unregisterAllHotKey();
 

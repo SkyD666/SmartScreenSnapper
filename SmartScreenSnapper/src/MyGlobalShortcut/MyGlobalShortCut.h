@@ -16,7 +16,7 @@ signals:
 public:
     MyGlobalShortCut();
     MyGlobalShortCut(QWidget* parent);
-    MyGlobalShortCut(QString key,QWidget* parent, bool reportError);
+    MyGlobalShortCut(QString key, QWidget* parent, bool reportError);
     ~MyGlobalShortCut();
     void activateShortcut(ScreenShotHelper::ShotType shotType);
     bool registerHotKey();

@@ -47,7 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
     initStatusBar();        // 这句里面有控件初始化，在设置值之前进行
 
     PublicData::readSettings();
-    PublicData::registerAllHotKey(this);
+    PublicData::registerAllHotKey(this, [=](ScreenShotHelper::ShotType shotType){
+        hotKeyPressed(shotType);
+    });
 
     setSettings();
 
@@ -237,7 +239,9 @@ void MainWindow::connectActionSlots()
         if (cbPlaySound) {
             cbPlaySound->setChecked(PublicData::isPlaySound);
         }
-        PublicData::registerAllHotKey(this);
+        PublicData::registerAllHotKey(this, [=](ScreenShotHelper::ShotType shotType){
+            hotKeyPressed(shotType);
+        });
     });
     // 动态添加皮肤菜单
     int styleCount = QStyleFactory::keys().count();

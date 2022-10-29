@@ -1,5 +1,4 @@
 #include "publicdata.h"
-#include "mainwindow.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
 #include <QSettings>
 #include <QApplication>
@@ -139,7 +138,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/QssPath", qssPath);
 }
 
-void PublicData::registerAllHotKey(QWidget* parent)
+void PublicData::registerAllHotKey(QWidget* parent, std::function<void (ScreenShotHelper::ShotType shotType)> receiver)
 {
     QStringList registeredKeyList;    //记录次热键是否被本程序注册，如果注册过了就不再注册了
     for (int i = 0; i < (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem)); i++){
@@ -148,7 +147,7 @@ void PublicData::registerAllHotKey(QWidget* parent)
         for (int j = 0; j < keys.size(); j++) {
             QString key = keys.at(j);
             if (key == "") continue;
-            MyGlobalShortCut* shortcut = NULL;
+            MyGlobalShortCut* shortcut = nullptr;
             if (registeredKeyList.contains(key)) {
                 shortcut = new MyGlobalShortCut(key, parent, false);
             } else {
@@ -156,10 +155,10 @@ void PublicData::registerAllHotKey(QWidget* parent)
                 shortcut = new MyGlobalShortCut(key, parent, true);
             }
             hotKey.push_back(shortcut);
-            QObject::connect(shortcut,
-                             SIGNAL(activatedHotKey(ScreenShotHelper::ShotType)),
-                             parent,
-                             SLOT(hotKeyPressed(ScreenShotHelper::ShotType)));
+            QObject::connect(shortcut, &MyGlobalShortCut::activatedHotKey, shortcut,
+                             [receiver](ScreenShotHelper::ShotType shotType){
+                receiver(shotType);
+            });
         }
         PublicData::hotKey.insert(PublicData::snapTypeItems[i].shotType, hotKey);
     }

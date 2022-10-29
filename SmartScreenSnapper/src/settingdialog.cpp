@@ -22,7 +22,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
         ui->listWidgetSetting->addItem(new QListWidgetItem(tabBar->tabIcon(i), tabBar->tabText(i), ui->listWidgetSetting));
     }
 
-    connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, [=](int currentRow){
+    connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, this, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
     });
 
@@ -32,7 +32,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
     }
 
     // 此处的信号有重载
-    connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+    connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         if(index <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
             ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapTypeItems[index].waitTime) + tr("s"));
             ui->horizontalSliderWaitTime->setValue(PublicData::snapTypeItems[index].waitTime);
@@ -56,7 +56,7 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->comboBoxSnapType->addItem(QIcon(":/image/FreeHandSnap.svg"), tr("徒手截图"));
     ui->comboBoxSnapType->addItem(QIcon(":/image/SnapByPoint.svg"), tr("窗体控件截图"));
 
-    connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, [=](const QKeySequence &keySequence){
+    connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, this, [=](const QKeySequence &keySequence){
         PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
     });
 
@@ -66,34 +66,34 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->comboBoxSnapMethod->addItem(tr("方式2"));
 
     //此处的信号有重载
-    connect(ui->comboBoxSnapMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+    connect(ui->comboBoxSnapMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         if (index < SNAPMETHOD) {
             PublicData::snapMethod = index;
         }
     });
 
     //要在read之前
-    connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::noBorder = state;
     });
 
     readSettings(); //注意调用顺序，上面是进行初始设置，下面是在控件状态（选中、值等）发生改变时改变PublicData里的值
 
-    connect(ui->horizontalSliderWaitTime, &QAbstractSlider::valueChanged, [=](int value){
+    connect(ui->horizontalSliderWaitTime, &QAbstractSlider::valueChanged, this, [=](int value){
         ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(value) + tr("s"));
         if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].waitTime = value;
         }
     });
 
-    connect(ui->cbManualSaveAfterShot, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->cbManualSaveAfterShot, &QCheckBox::stateChanged, this, [=](int state){
         int index = ui->comboBoxSnapType->currentIndex();
         if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[index].isManualSave = state;
         }
     });
 
-    connect(ui->cbAutoSaveAfterShot, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->cbAutoSaveAfterShot, &QCheckBox::stateChanged, this, [=](int state){
         int index = ui->comboBoxSnapType->currentIndex();
         if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[index].isAutoSave = state;
@@ -103,33 +103,33 @@ SettingDialog::SettingDialog(QWidget *parent) :
         ui->comboBoxAutoSaveExtName->setEnabled(state);
     });
 
-    connect(ui->lineEditAutoSavePath, &QLineEdit::editingFinished, [=](){
+    connect(ui->lineEditAutoSavePath, &QLineEdit::editingFinished, this, [=](){
         int index = ui->comboBoxSnapType->currentIndex();
         if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[index].autoSavePath = ui->lineEditAutoSavePath->text();
         }
     });
 
-    connect(ui->lineEditAutoSavePath, &QLineEdit::textChanged, [=](const QString &text){
+    connect(ui->lineEditAutoSavePath, &QLineEdit::textChanged, this, [=](const QString &text){
         int index = ui->comboBoxSnapType->currentIndex();
         if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[index].autoSavePath = text;
         }
     });
 
-    connect(ui->lineEditQssPath, &QLineEdit::editingFinished, [=](){
+    connect(ui->lineEditQssPath, &QLineEdit::editingFinished, this, [=](){
         PublicData::qssPath = ui->lineEditQssPath->text();
     });
 
-    connect(ui->lineEditQssPath, &QLineEdit::textChanged, [=](const QString &text){
+    connect(ui->lineEditQssPath, &QLineEdit::textChanged, this, [=](const QString &text){
         PublicData::qssPath = text;
     });
 
-    connect(ui->lineEditFileNameTemplate, &QLineEdit::editingFinished, [=](){
+    connect(ui->lineEditFileNameTemplate, &QLineEdit::editingFinished, this, [=](){
         PublicData::fileNameTemplate = ui->lineEditFileNameTemplate->text();
     });
 
-    connect(ui->lineEditFileNameTemplate, &QLineEdit::textChanged, [=](const QString &text){
+    connect(ui->lineEditFileNameTemplate, &QLineEdit::textChanged, this, [=](const QString &text){
         PublicData::fileNameTemplate = text;
         ui->lineEditFileNamePreview->setText(
                     ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
@@ -138,34 +138,34 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->lineEditFileNameTemplate->setValidator(new QRegularExpressionValidator(QRegularExpression("^[^/*?\"\\\\:|]+$"), this));
 
     // 自动保存格式，有信号重载
-    connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+    connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         int i = ui->comboBoxSnapType->currentIndex();
         if (i <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[i].autoSaveExtName = PublicData::imageExtName[index].first;
         }
     });
 
-    connect(ui->checkBoxClickCloseToTray, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxClickCloseToTray, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::clickCloseToTray = state;
     });
 
-    connect(ui->checkBoxPlaySound, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxPlaySound, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::isPlaySound = state;
     });
 
-    connect(ui->comboBoxMdiWindowInitState, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+    connect(ui->comboBoxMdiWindowInitState, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         PublicData::mdiWindowInitState = ui->comboBoxMdiWindowInitState->itemData(index).value<Qt::WindowState>();
     });
 
-    connect(ui->checkBoxHotKeyNoWait, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxHotKeyNoWait, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::hotKeyNoWait = state;
     });
 
-    connect(ui->checkBoxIncludeCursor, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxIncludeCursor, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::includeCursor = state;
     });
 
-    connect(ui->checkBoxCopyToClipBoardAfterSnap, &QCheckBox::stateChanged, [=](int state){
+    connect(ui->checkBoxCopyToClipBoardAfterSnap, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::copyToClipBoardAfterSnap = state;
     });
 }
