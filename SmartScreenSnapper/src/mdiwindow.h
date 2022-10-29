@@ -23,6 +23,8 @@ public:
 
     MdiWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
+    ~MdiWindow();
+
     void setPixmap(QPixmap pixmap);
 
     void setListItemName(QString name);

@@ -31,6 +31,11 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
     listItem.setData(MdiWindowRole, QVariant::fromValue(this));
 }
 
+MdiWindow::~MdiWindow()
+{
+    delete ui;
+}
+
 void MdiWindow::setPixmap(QPixmap pixmap)
 {
     setSaved(false);
