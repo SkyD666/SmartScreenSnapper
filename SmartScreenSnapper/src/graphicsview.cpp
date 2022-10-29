@@ -4,16 +4,18 @@
 #include <QDrag>
 #include <QBuffer>
 
-GraphicsView::GraphicsView(QWidget *parent): QGraphicsView(parent), mimeData(nullptr)
+GraphicsView::GraphicsView(QWidget *parent):
+    QGraphicsView(parent),
+    mousePressed(false),
+    lastMousePoint(-1, -1),
+    mimeData(nullptr)
 {
-    this->mousePressed = false;
-    lastMousePoint.setX(-1);
-    lastMousePoint.setY(-1);
+
 }
 
 void GraphicsView::wheelEvent(QWheelEvent *event)
 {
-    QPoint numDegrees=event->angleDelta() / 8;
+    QPoint numDegrees = event->angleDelta() / 8;
     if (!numDegrees.isNull()) {
         if (event->modifiers() == Qt::ControlModifier) {
             if (numDegrees.y() > 0) {
@@ -25,8 +27,8 @@ void GraphicsView::wheelEvent(QWheelEvent *event)
             return;
         }  else if (event->modifiers() == Qt::ShiftModifier) {
             if (numDegrees.y() != 0) {
-                this->horizontalScrollBar()->setSliderPosition(this->horizontalScrollBar()->sliderPosition() -
-                                                               event->angleDelta().y());
+                horizontalScrollBar()->setSliderPosition(horizontalScrollBar()->sliderPosition() -
+                                                         event->angleDelta().y());
             }
             event->accept();
             return;
@@ -62,10 +64,10 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton) {
         if (mousePressed) {
-            this->horizontalScrollBar()->setSliderPosition(this->horizontalScrollBar()->sliderPosition() -
-                                                           event->position().x() + lastMousePoint.x());
-            this->verticalScrollBar()->setSliderPosition(this->verticalScrollBar()->sliderPosition() -
-                                                         event->position().y() + lastMousePoint.y());
+            horizontalScrollBar()->setSliderPosition(horizontalScrollBar()->sliderPosition() -
+                                                     event->position().x() + lastMousePoint.x());
+            verticalScrollBar()->setSliderPosition(verticalScrollBar()->sliderPosition() -
+                                                   event->position().y() + lastMousePoint.y());
         }
     }
     if (event->buttons() & Qt::RightButton) {
@@ -73,6 +75,8 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event)
         drag->setMimeData(mimeData);
         drag->setHotSpot(event->pos());
         drag->exec(Qt::CopyAction, Qt::CopyAction);
+    } else {
+        delete mimeData;
     }
     lastMousePoint.setX(event->position().x());
     lastMousePoint.setY(event->position().y());

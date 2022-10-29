@@ -16,72 +16,49 @@ SettingDialog::SettingDialog(QWidget *parent) :
     ui->setupUi(this);
 
     ui->tabWidgetSetting->tabBar()->hide();
-
     auto tabBar = ui->tabWidgetSetting->tabBar();
     for (int i = 0; i < tabBar->count(); i++) {
         ui->listWidgetSetting->addItem(new QListWidgetItem(tabBar->tabIcon(i), tabBar->tabText(i), ui->listWidgetSetting));
     }
 
+    readAndInitSettings();  // 进行初始设置
+
+    initConnect();          // 在控件状态（选中、值等）发生改变时改变PublicData里的值
+}
+
+SettingDialog::~SettingDialog()
+{
+    PublicData::writeSettings();
+    if (!PublicData::applyQss()) {
+        QMessageBox::critical(this, tr("警告"), tr("QSS文件打开失败"), QMessageBox::Ok);
+    }
+
+    delete ui;
+}
+
+void SettingDialog::initConnect()
+{
     connect(ui->listWidgetSetting, &QListWidget::currentRowChanged, this, [=](int currentRow){
         ui->tabWidgetSetting->setCurrentIndex(currentRow);
     });
 
-    // 下面的for循环要在下面的第一个connect之前调用
-    for (auto item : PublicData::imageExtName) {
-        ui->comboBoxAutoSaveExtName->addItem(item.second + " (*" + item.first + ")");
-    }
-
-    // 此处的信号有重载
-    connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
-        if(index <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
-            ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapTypeItems[index].waitTime) + tr("s"));
-            ui->horizontalSliderWaitTime->setValue(PublicData::snapTypeItems[index].waitTime);
-            ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[index].hotKey));
-            ui->lineEditAutoSavePath->setText(PublicData::snapTypeItems[index].autoSavePath);
-            ui->cbManualSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isManualSave);
-            ui->cbAutoSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isAutoSave);
-            ui->comboBoxAutoSaveExtName->setCurrentText(PublicData::snapTypeItems[index].autoSaveExtName);
-            ui->lineEditAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
-            ui->toolButtonAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
-            ui->comboBoxAutoSaveExtName->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
-        }
-    });
-
-    // 注意调用顺序，下面这几句要在connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){下面
-    // 保证第一次进入时horizontalSliderWaitTime的connect能调用，有正确的值
-    ui->comboBoxSnapType->addItem(QIcon(":/image/ScreenSnap.png"), tr("全屏截图"));
-    ui->comboBoxSnapType->addItem(QIcon(":/image/ActiveWindow.png"), tr("活动窗口截图"));
-    ui->comboBoxSnapType->addItem(QIcon(":/image/CursorSnap.png"), tr("截取光标"));
-    ui->comboBoxSnapType->addItem(QIcon(":/image/FreeSnap.png"), tr("自由截图"));
-    ui->comboBoxSnapType->addItem(QIcon(":/image/FreeHandSnap.svg"), tr("徒手截图"));
-    ui->comboBoxSnapType->addItem(QIcon(":/image/SnapByPoint.svg"), tr("窗体控件截图"));
-
-    connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, this, [=](const QKeySequence &keySequence){
-        PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
-    });
-
-    ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey));
-
-    ui->comboBoxSnapMethod->addItem(tr("方式1\n(Aero开启时部分区域会透明；截取例如QQ等部分窗体为黑色)"));
-    ui->comboBoxSnapMethod->addItem(tr("方式2"));
-
-    //此处的信号有重载
     connect(ui->comboBoxSnapMethod, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         if (index < SNAPMETHOD) {
             PublicData::snapMethod = index;
         }
     });
 
-    //要在read之前
+    connect(ui->keySequenceEditHotKey, &QKeySequenceEdit::keySequenceChanged, this, [=](const QKeySequence &keySequence){
+        PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey = keySequence.toString();
+    });
+
     connect(ui->checkBoxNoBorder, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::noBorder = state;
     });
 
-    readSettings(); //注意调用顺序，上面是进行初始设置，下面是在控件状态（选中、值等）发生改变时改变PublicData里的值
-
     connect(ui->horizontalSliderWaitTime, &QAbstractSlider::valueChanged, this, [=](int value){
         ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(value) + tr("s"));
-        if(ui->comboBoxSnapType->currentIndex() <= (int)(sizeof(PublicData::snapTypeItems)/sizeof(ShotTypeItem))) {
+        if (ui->comboBoxSnapType->currentIndex() <= ScreenShotHelper::ShotType::Count) {
             PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].waitTime = value;
         }
     });
@@ -91,6 +68,34 @@ SettingDialog::SettingDialog(QWidget *parent) :
         if (index <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
             PublicData::snapTypeItems[index].isManualSave = state;
         }
+    });
+
+    connect(ui->toolButtonDeleteHotKey, &QAbstractButton::clicked, this, [=](){
+        ui->keySequenceEditHotKey->clear();
+    });
+
+    connect(ui->checkBoxRunWithWindows, &QCheckBox::stateChanged, this, [=](int state){
+        runWithWindows(state);
+    });
+
+    connect(ui->toolButtonAutoSavePath, &QAbstractButton::clicked, this, [=](){
+        QString dirPath = QFileDialog::getExistingDirectory(this, tr("选择目录"),
+                                                            PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath, QFileDialog::ShowDirsOnly);
+        if (!dirPath.isEmpty()) {
+            ui->lineEditAutoSavePath->setText(dirPath);
+        }
+    });
+
+    connect(ui->toolButtonQssPath, &QAbstractButton::clicked, this, [=](){
+        QString dirPath = QFileDialog::getOpenFileName(this, tr("选择QSS文件"),
+                                                       PublicData::qssPath, tr("QSS文件(*.qss);;CSS文件(*.css);;所有文件(*.*)"));
+        if (!dirPath.isEmpty()) {
+            ui->lineEditQssPath->setText(dirPath);
+        }
+    });
+
+    connect(ui->pushButtonOpenConfigFile, &QAbstractButton::clicked, this, [=](){
+        QDesktopServices::openUrl(QUrl::fromLocalFile(PublicData::getConfigFilePath()));
     });
 
     connect(ui->cbAutoSaveAfterShot, &QCheckBox::stateChanged, this, [=](int state){
@@ -135,13 +140,11 @@ SettingDialog::SettingDialog(QWidget *parent) :
                     ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
     });
 
-    ui->lineEditFileNameTemplate->setValidator(new QRegularExpressionValidator(QRegularExpression("^[^/*?\"\\\\:|]+$"), this));
-
     // 自动保存格式，有信号重载
     connect(ui->comboBoxAutoSaveExtName, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
         int i = ui->comboBoxSnapType->currentIndex();
-        if (i <= (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem))) {
-            PublicData::snapTypeItems[i].autoSaveExtName = PublicData::imageExtName[index].first;
+        if (i <= ScreenShotHelper::ShotType::Count) {
+            PublicData::snapTypeItems[i].autoSaveExtName = ui->comboBoxAutoSaveExtName->itemData(index).value<QString>();
         }
     });
 
@@ -170,16 +173,44 @@ SettingDialog::SettingDialog(QWidget *parent) :
     });
 }
 
-SettingDialog::~SettingDialog()
+void SettingDialog::readAndInitSettings()
 {
-    PublicData::writeSettings();
-    if (!PublicData::applyQss()) QMessageBox::critical(this, tr("警告"), tr("QSS文件打开失败"), QMessageBox::Ok);
+    for (auto item : PublicData::imageExtName) {
+        ui->comboBoxAutoSaveExtName->addItem(item.second, item.first);
+    }
 
-    delete ui;
-}
+    connect(ui->comboBoxSnapType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
+        if (index <= ScreenShotHelper::ShotType::Count) {
+            ui->labelWaitTime->setText(tr("截图前等待时间: ") + QString::number(PublicData::snapTypeItems[index].waitTime) + tr("s"));
+            ui->horizontalSliderWaitTime->setValue(PublicData::snapTypeItems[index].waitTime);
+            ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[index].hotKey));
+            ui->lineEditAutoSavePath->setText(PublicData::snapTypeItems[index].autoSavePath);
+            ui->cbManualSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isManualSave);
+            ui->cbAutoSaveAfterShot->setChecked(PublicData::snapTypeItems[index].isAutoSave);
+            for (auto ext : PublicData::imageExtName) {
+                if (ext.first == PublicData::snapTypeItems[index].autoSaveExtName) {
+                    ui->comboBoxAutoSaveExtName->setCurrentText(ext.second);
+                    break;
+                }
+            }
+            ui->lineEditAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
+            ui->toolButtonAutoSavePath->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
+            ui->comboBoxAutoSaveExtName->setEnabled(PublicData::snapTypeItems[index].isAutoSave);
+        }
+    });
 
-void SettingDialog::readSettings()
-{
+    ui->comboBoxSnapType->addItem(QIcon(":/image/ScreenSnap.png"), tr("全屏截图"));
+    ui->comboBoxSnapType->addItem(QIcon(":/image/ActiveWindow.png"), tr("活动窗口截图"));
+    ui->comboBoxSnapType->addItem(QIcon(":/image/CursorSnap.png"), tr("截取光标"));
+    ui->comboBoxSnapType->addItem(QIcon(":/image/FreeSnap.png"), tr("自由截图"));
+    ui->comboBoxSnapType->addItem(QIcon(":/image/FreeHandSnap.svg"), tr("徒手截图"));
+    ui->comboBoxSnapType->addItem(QIcon(":/image/SnapByPoint.svg"), tr("窗体控件截图"));
+
+    ui->keySequenceEditHotKey->setKeySequence(QKeySequence(PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].hotKey));
+
+    ui->comboBoxSnapMethod->addItem(tr("方式1\n(Aero开启时部分区域会透明；截取例如QQ等部分窗体为黑色)"));
+    ui->comboBoxSnapMethod->addItem(tr("方式2"));
+
     for (auto key : PublicData::mdiWindowInitStates.keys()) {
         ui->comboBoxMdiWindowInitState->addItem(PublicData::mdiWindowInitStates[key], key);
     }
@@ -195,55 +226,24 @@ void SettingDialog::readSettings()
     ui->lineEditQssPath->setText(PublicData::qssPath);
     ui->lineEditFileNameTemplate->setText(PublicData::fileNameTemplate);
     ui->lineEditFileNamePreview->setText(ScreenShotHelper::getPictureName(ScreenShotHelper::ScreenShot));
+    ui->lineEditFileNameTemplate->setValidator(new QRegularExpressionValidator(QRegularExpression("^[^/*?\"\\\\:|]+$"), this));
 
-    QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
+    QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
     QString value = qSettings.value(QApplication::applicationName()).toString();
     QString appPath = QApplication::applicationFilePath();
     appPath = appPath.replace("/","\\");
-    if (value == "\"" + appPath + "\"" + " -autorun") {
-        ui->checkBoxRunWithWindows->setChecked(true);
-    } else {
-        ui->checkBoxRunWithWindows->setChecked(false);
-    }
+    ui->checkBoxRunWithWindows->setChecked(value == "\"" + appPath + "\"" + " -autorun");
 }
 
-void SettingDialog::on_pushButtonDeleteHotKey_clicked()
-{
-    ui->keySequenceEditHotKey->clear();
-}
-
-void SettingDialog::on_toolButtonAutoSavePath_clicked()
-{
-    QString dirPath = QFileDialog::getExistingDirectory(this, tr("选择目录"),
-                                                        PublicData::snapTypeItems[ui->comboBoxSnapType->currentIndex()].autoSavePath, QFileDialog::ShowDirsOnly);
-    if (dirPath != "") {
-        ui->lineEditAutoSavePath->setText(dirPath);
-    }
-}
-
-void SettingDialog::on_checkBoxRunWithWindows_stateChanged(int state)
+void SettingDialog::runWithWindows(bool enable)
 {
     QSettings qSettings("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString appPath = QApplication::applicationFilePath();
     QString appName = QApplication::applicationName();
     appPath = appPath.replace("/","\\");
-    if (state) {
+    if (enable) {
         qSettings.setValue(appName, "\"" + appPath + "\"" + " -autorun");
     } else {
         qSettings.remove(appName);
     }
-}
-
-void SettingDialog::on_toolButtonQssPath_clicked()
-{
-    QString dirPath = QFileDialog::getOpenFileName(this, tr("选择QSS文件"),
-                                                   PublicData::qssPath, tr("QSS文件(*.qss);;CSS文件(*.css);;所有文件(*.*)"));
-    if (dirPath != "") {
-        ui->lineEditQssPath->setText(dirPath);
-    }
-}
-
-void SettingDialog::on_pushButton_clicked()
-{
-    QDesktopServices::openUrl(QUrl::fromLocalFile(PublicData::getConfigFilePath()));
 }

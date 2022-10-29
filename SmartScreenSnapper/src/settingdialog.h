@@ -14,25 +14,18 @@ class SettingDialog : public QDialog
 
 public:
     explicit SettingDialog(QWidget *parent = nullptr);
+
     ~SettingDialog();
-
-private slots:
-    void on_pushButtonDeleteHotKey_clicked();
-
-    void on_toolButtonAutoSavePath_clicked();
-
-    void on_checkBoxRunWithWindows_stateChanged(int arg1);
-
-    void on_toolButtonQssPath_clicked();
-
-    void on_pushButton_clicked();
-
 private:
     Ui::SettingDialog *ui;
 
     QList<QListWidgetItem*> listItem;
 
-    void readSettings();
+    void initConnect();
+
+    void readAndInitSettings();
+
+    void runWithWindows(bool enable);
 };
 
 #endif // SETTINGDIALOG_H

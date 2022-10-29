@@ -51,7 +51,7 @@ QListWidgetItem & MdiWindow::getListItem() {
 }
 
 QString MdiWindow::getName() {
-    return this->name;
+    return name;
 }
 
 void MdiWindow::setName(QString name) {
@@ -66,7 +66,7 @@ void MdiWindow::setName(QString name) {
 }
 
 bool MdiWindow::isSaved() {
-    return this->saved;
+    return saved;
 }
 
 void MdiWindow::setSaved(bool saved) {

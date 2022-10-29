@@ -242,97 +242,19 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButtonDeleteHotKey">
+                  <widget class="QToolButton" name="toolButtonDeleteHotKey">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>30</width>
-                     <height>16777215</height>
-                    </size>
+                   <property name="toolTip">
+                    <string>清空当前所有热键</string>
                    </property>
-                   <property name="palette">
-                    <palette>
-                     <active>
-                      <colorrole role="ButtonText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="255">
-                         <red>255</red>
-                         <green>0</green>
-                         <blue>127</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
-                         <red>0</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                     </active>
-                     <inactive>
-                      <colorrole role="ButtonText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="255">
-                         <red>255</red>
-                         <green>0</green>
-                         <blue>127</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
-                         <red>0</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                     </inactive>
-                     <disabled>
-                      <colorrole role="ButtonText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="255">
-                         <red>120</red>
-                         <green>120</green>
-                         <blue>120</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
-                         <red>0</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                     </disabled>
-                    </palette>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <family>Arial</family>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>X</string>
-                   </property>
-                   <property name="autoDefault">
-                    <bool>false</bool>
-                   </property>
-                   <property name="flat">
-                    <bool>false</bool>
+                   <property name="icon">
+                    <iconset resource="../res/res.qrc">
+                     <normaloff>:/image/Delete.svg</normaloff>:/image/Delete.svg</iconset>
                    </property>
                   </widget>
                  </item>
@@ -913,7 +835,7 @@ hr { height: 1px; border-width: 0; }
             <number>9</number>
            </property>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="pushButtonOpenConfigFile">
              <property name="text">
               <string>打开配置文件...</string>
              </property>

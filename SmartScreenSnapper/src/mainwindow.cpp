@@ -397,7 +397,14 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     if (PublicData::isPlaySound) {
         QSoundEffect *startSound = new QSoundEffect(this);
         startSound->setSource(QUrl::fromLocalFile(":/sound/typewriter.wav"));
+        connect(startSound, &QSoundEffect::playingChanged, this, [=](){
+            if (!startSound->isPlaying()) {
+                disconnect(this, nullptr, startSound, nullptr);
+                delete startSound;
+            }
+        });
         startSound->play();
+
     }
 
     ShotTypeItem snapTypeItem = PublicData::snapTypeItems[shotType];
