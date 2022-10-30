@@ -264,7 +264,7 @@ bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPix
         dir = new QDir(filePath);
     }
     if (!dir->exists()) dir->mkdir(dir->path());
-    saved = pixmap.save(filePath);
+    saved = pixmap.save(filePath, nullptr, PublicData::saveImageQuality);
     if (!saved) {
         QMessageBox::critical(msgBoxParent, QObject::tr("警告"), QObject::tr("保存图片失败"), QMessageBox::Ok);
     }

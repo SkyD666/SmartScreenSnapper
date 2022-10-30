@@ -171,6 +171,10 @@ void SettingDialog::initConnect()
     connect(ui->checkBoxCopyToClipBoardAfterSnap, &QCheckBox::stateChanged, this, [=](int state){
         PublicData::copyToClipBoardAfterSnap = state;
     });
+
+    connect(ui->spinBoxImageQuality, &QSpinBox::valueChanged, this, [=](int i){
+        PublicData::saveImageQuality = i;
+    });
 }
 
 void SettingDialog::readAndInitSettings()
@@ -220,6 +224,7 @@ void SettingDialog::readAndInitSettings()
     ui->checkBoxPlaySound->setChecked(PublicData::isPlaySound);
     ui->checkBoxHotKeyNoWait->setChecked(PublicData::hotKeyNoWait);
     ui->checkBoxIncludeCursor->setChecked(PublicData::includeCursor);
+    ui->spinBoxImageQuality->setValue(PublicData::saveImageQuality);
     ui->checkBoxNoBorder->setChecked(PublicData::noBorder);
     ui->checkBoxCopyToClipBoardAfterSnap->setChecked(PublicData::copyToClipBoardAfterSnap);
     ui->comboBoxSnapMethod->setCurrentIndex(PublicData::snapMethod);

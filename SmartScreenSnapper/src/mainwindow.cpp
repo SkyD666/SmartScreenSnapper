@@ -404,7 +404,6 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
             }
         });
         startSound->play();
-
     }
 
     ShotTypeItem snapTypeItem = PublicData::snapTypeItems[shotType];

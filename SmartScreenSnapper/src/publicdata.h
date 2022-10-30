@@ -57,6 +57,8 @@ public:
 
     static bool noBorder;
 
+    static int saveImageQuality;
+
     //0原始方法，1全屏截图再截取
     static int snapMethod;
 

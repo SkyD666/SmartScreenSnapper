@@ -8,6 +8,7 @@
 int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;
 int PublicData::snapMethod = 0;
+int PublicData::saveImageQuality = -1;
 bool PublicData::isPlaySound = false;
 QHash<Qt::WindowState, QString>
 PublicData::mdiWindowInitStates{{Qt::WindowNoState, QObject::tr("默认")},
@@ -96,6 +97,7 @@ void PublicData::readSettings()
     hotKeyNoWait = qSettings.value("Config/HotKeyNoWait", true).toBool();
     includeCursor = qSettings.value("Config/IncludeCursor", false).toBool();
     noBorder = qSettings.value("Config/NoBorder", false).toBool();
+    saveImageQuality = qSettings.value("Config/SaveImageQuality", -1).toInt();
     snapMethod = qSettings.value("Config/SnapMethod", SnapMethod2).toInt();
     copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
     gifSavePath = qSettings.value("Tool/GIFSavePath", "").toString();
@@ -130,6 +132,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/HotKeyNoWait", hotKeyNoWait);
     qSettings.setValue("Config/IncludeCursor", includeCursor);
     qSettings.setValue("Config/NoBorder", noBorder);
+    qSettings.setValue("Config/SaveImageQuality", saveImageQuality);
     qSettings.setValue("Config/SnapMethod", snapMethod);
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
     qSettings.setValue("Tool/GIFSavePath", gifSavePath);
@@ -140,8 +143,8 @@ void PublicData::writeSettings()
 
 void PublicData::registerAllHotKey(QWidget* parent, std::function<void (ScreenShotHelper::ShotType shotType)> receiver)
 {
-    QStringList registeredKeyList;    //记录次热键是否被本程序注册，如果注册过了就不再注册了
-    for (int i = 0; i < (int)(sizeof(PublicData::snapTypeItems) / sizeof(ShotTypeItem)); i++){
+    QStringList registeredKeyList;    // 记录次热键是否被本程序注册，如果注册过了就不再注册了
+    for (int i = 0; i < ScreenShotHelper::ShotType::Count; i++){
         QList<MyGlobalShortCut*> hotKey;
         QStringList keys = PublicData::snapTypeItems[i].hotKey.split(", ");
         for (int j = 0; j < keys.size(); j++) {
