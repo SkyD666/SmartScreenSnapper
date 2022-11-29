@@ -8,6 +8,6 @@ FreeSnapRect::FreeSnapRect(QWidget* parent, Qt::WindowFlags) : QFrame(parent)
 
 void FreeSnapRect::mouseMoveEvent(QMouseEvent *event)
 {
-    emit mouseMove(event->pos());
     QWidget::mouseMoveEvent(event);
+    emit mouseMove(event->pos());
 }

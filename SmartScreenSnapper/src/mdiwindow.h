@@ -4,6 +4,7 @@
 #include <QMdiSubWindow>
 #include <QListWidgetItem>
 #include <QCloseEvent>
+#include "screenshothelper.h"
 
 namespace Ui {
 class MdiWindowWidget;
@@ -47,6 +48,10 @@ public:
 
     bool saveByPath(QString filePath);
 
+    ScreenShotHelper::ShotType getShotType() const;
+
+    void setShotType(ScreenShotHelper::ShotType newShotType);
+
 private:
 
     void setSaved(bool saved);
@@ -62,6 +67,8 @@ private:
     bool saved;
 
     double imageScale;
+
+    ScreenShotHelper::ShotType shotType;
 
 protected:
     void closeEvent(QCloseEvent *event) override;

@@ -25,12 +25,14 @@ public:
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void setFileName(const QString &newFileName);
+
 private:
     bool mousePressed;
 
     QPoint lastMousePoint;
 
-    QMimeData *mimeData;
+    QString fileName;
 };
 
 #endif // GRAPHICSVIEW_H
