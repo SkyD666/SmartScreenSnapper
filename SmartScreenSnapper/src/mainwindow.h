@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <Mmsystem.h>
 #include <QSpinBox>
+#include <QSoundEffect>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -70,6 +71,8 @@ private:
     QMenu systemTrayMenu;
 
     QNetworkAccessManager *networkAccessManager;
+
+    QSoundEffect soundEffect;
 
 protected:
 

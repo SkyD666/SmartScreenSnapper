@@ -20,6 +20,7 @@
 #include <QNetworkReply>
 #include <QSoundEffect>
 #include <QMimeData>
+#include <QSessionManager>
 #include "publicdata.h"
 #include "mdiwindow.h"
 #include "aboutdialog.h"
@@ -40,9 +41,21 @@ bool MainWindow::closeAllNotSave = false;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow) {
+      ui(new Ui::MainWindow),
+      soundEffect(this)
+{
     ui->setupUi(this);
 
+//    connect(qApp, &QGuiApplication::commitDataRequest, this, [=](QSessionManager &manager){
+//       qDebug() << manager.allowsInteraction();
+//        if (manager.allowsInteraction()) {
+//            manager.cancel();
+//            close();
+//        } else {
+//            // we did not get permission to interact, then
+//            // do something reasonable instead
+//        }
+//    });
     initSystemTray();
     initStatusBar();        // 这句里面有控件初始化，在设置值之前进行
 
@@ -390,20 +403,19 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     activeWindow = createMDIWindow();
     activeWindow->setName(name);
     activeWindow->setPixmap(pixmap);
+    activeWindow->setShotType(shotType);
 
     if (PublicData::copyToClipBoardAfterSnap) {
         QApplication::clipboard()->setPixmap(pixmap);
     }
     if (PublicData::isPlaySound) {
-        QSoundEffect *startSound = new QSoundEffect(this);
-        startSound->setSource(QUrl::fromLocalFile(":/sound/typewriter.wav"));
-        connect(startSound, &QSoundEffect::playingChanged, this, [=](){
-            if (!startSound->isPlaying()) {
-                disconnect(this, nullptr, startSound, nullptr);
-                delete startSound;
+        soundEffect.setSource(QUrl::fromLocalFile(":/sound/typewriter.wav"));
+        connect(&soundEffect, &QSoundEffect::playingChanged, this, [=](){
+            if (!soundEffect.isPlaying()) {
+                disconnect(this, nullptr, &soundEffect, nullptr);
             }
         });
-        startSound->play();
+        soundEffect.play();
     }
 
     ShotTypeItem snapTypeItem = PublicData::snapTypeItems[shotType];

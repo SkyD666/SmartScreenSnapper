@@ -56,6 +56,7 @@ QString MdiWindow::getName() {
 
 void MdiWindow::setName(QString name) {
     this->name = name;
+    ui->graphicsView->setFileName(name);
     if (saved) {
         setWindowTitle(name);
         setListItemName(name);
@@ -78,6 +79,16 @@ void MdiWindow::setSaved(bool saved) {
         setWindowTitle(name + "*");
         setListItemName(name + "*");
     }
+}
+
+ScreenShotHelper::ShotType MdiWindow::getShotType() const
+{
+    return shotType;
+}
+
+void MdiWindow::setShotType(ScreenShotHelper::ShotType newShotType)
+{
+    shotType = newShotType;
 }
 
 void MdiWindow::closeEvent(QCloseEvent *event) {
