@@ -8,16 +8,20 @@
 #include "mainwindow.h"
 #include "graphicsview.h"
 #include "publicdata.h"
+#include "screenshotdisplaydialog.h"
 
 MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
     QMdiSubWindow(parent, flags),
     ui(new Ui::MdiWindowWidget),
     listItem(),
     saved(true),
-    imageScale(1)
+    imageScale(1),
+    contextMenu(new QMenu(this))
 {
     containerWidget = new QWidget(this);
     ui->setupUi(containerWidget);
+
+    initActions();
 
     QGraphicsScene* graphicsScene = new QGraphicsScene(ui->graphicsView);
     ui->graphicsView->setScene(graphicsScene);
@@ -91,6 +95,21 @@ void MdiWindow::setShotType(ScreenShotHelper::ShotType newShotType)
     shotType = newShotType;
 }
 
+void MdiWindow::initActions()
+{
+    QAction *screenshotDisplay = new QAction(tr("到顶层展示..."), this);
+    screenshotDisplay->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+    screenshotDisplay->setShortcutContext(Qt::WindowShortcut);
+
+    addAction(screenshotDisplay);
+    contextMenu->addAction(screenshotDisplay);
+
+    connect(screenshotDisplay, &QAction::triggered, this, [=](){
+        ScreenshotDisplayDialog *dialog = new ScreenshotDisplayDialog(getPixmap());
+        dialog->show();
+    });
+}
+
 void MdiWindow::closeEvent(QCloseEvent *event) {
     if (!saved && !MainWindow::closeAllNotSave && !MainWindow::noToAllClicked) {
         QMessageBox::StandardButton messageBoxResult = QMessageBox::StandardButton(QMessageBox::Cancel);
@@ -126,6 +145,11 @@ void MdiWindow::closeEvent(QCloseEvent *event) {
     if (event->isAccepted()) {
         emit onClose();
     }
+}
+
+void MdiWindow::contextMenuEvent(QContextMenuEvent *event)
+{
+    contextMenu->exec(mapToGlobal(event->pos()));
 }
 
 void MdiWindow::setScale(double scale)

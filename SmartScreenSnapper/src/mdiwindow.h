@@ -4,6 +4,7 @@
 #include <QMdiSubWindow>
 #include <QListWidgetItem>
 #include <QCloseEvent>
+#include <QMenu>
 #include "screenshothelper.h"
 
 namespace Ui {
@@ -70,8 +71,14 @@ private:
 
     ScreenShotHelper::ShotType shotType;
 
+    QMenu *contextMenu;
+
+    void initActions();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
+
+    void contextMenuEvent(QContextMenuEvent *event);
 };
 
 #endif // MDIWINDOW_H
