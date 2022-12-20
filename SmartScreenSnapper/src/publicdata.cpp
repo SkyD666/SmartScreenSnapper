@@ -21,6 +21,7 @@ bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
+bool PublicData::editMode = false;
 QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
 QString PublicData::fileNameTemplate = "";
@@ -30,7 +31,8 @@ QPair<QString, QString> PublicData::imageExtName[] = {{".png", QObject::tr("PNG 
                                                       {".bmp", QObject::tr("BMP 位图")},
                                                       {".tiff", QObject::tr("TIFF 标签图像文件")},
                                                       {".webp", QObject::tr("WebP")},
-                                                      {".ico", QObject::tr("ICO 图标")}};
+                                                      {".ico", QObject::tr("ICO 图标")},
+                                                      {".psd", QObject::tr("Photoshop")}};
 ShotTypeItem PublicData::snapTypeItems[ScreenShotHelper::ShotType::Count] = {};
 QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> PublicData::hotKey;
 

@@ -1,14 +1,19 @@
 #include "mdiwindow.h"
+#include "src/graphicsscene.h"
 #include "ui_mdiwindowwidget.h"
 #include <QFileDialog>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsScene>
 #include <QMessageBox>
 #include <QSlider>
 #include <QVariant>
+#include <QDebug>
 #include "mainwindow.h"
 #include "graphicsview.h"
 #include "publicdata.h"
 #include "screenshotdisplaydialog.h"
+#include <src/graphicsitem/graphicspixmapitem.h>
+#include <src/undo/undomove.h>
 
 MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
     QMdiSubWindow(parent, flags),
@@ -16,14 +21,22 @@ MdiWindow::MdiWindow(QWidget *parent, Qt::WindowFlags flags) :
     listItem(),
     saved(true),
     imageScale(1),
-    contextMenu(new QMenu(this))
+    contextMenu(new QMenu(this)),
+    undoStack(new QUndoStack(this))
 {
     containerWidget = new QWidget(this);
     ui->setupUi(containerWidget);
 
+    connect(this, &QMdiSubWindow::aboutToActivate, this, [=](){
+        undoStack->setActive();
+    });
+
     initActions();
 
-    QGraphicsScene* graphicsScene = new QGraphicsScene(ui->graphicsView);
+    GraphicsScene* graphicsScene = new GraphicsScene(ui->graphicsView);
+    connect(graphicsScene, &GraphicsScene::itemMoved, this, [=](QGraphicsItem *movedItem, const QPointF &movedFromPosition){
+        undoStack->push(new UndoMove(movedItem, movedFromPosition));
+    });
     ui->graphicsView->setScene(graphicsScene);
     setWidget(containerWidget);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -40,10 +53,15 @@ MdiWindow::~MdiWindow()
     delete ui;
 }
 
-void MdiWindow::setPixmap(QPixmap pixmap)
+void MdiWindow::setLayers(QList<QPair<QPixmap, QPoint>> layers)
 {
     setSaved(false);
-    ui->graphicsView->scene()->addPixmap(pixmap);
+    QGraphicsPixmapItem *item = nullptr;
+    for (auto layer : layers) {
+        item = new GraphicsPixmapItem(layer.first, nullptr);
+        ui->graphicsView->scene()->addItem(item);
+        item->setPos(layer.second);
+    }
 }
 
 void MdiWindow::setListItemName(QString name) {
@@ -110,6 +128,11 @@ void MdiWindow::initActions()
     });
 }
 
+QUndoStack *MdiWindow::getUndoStack() const
+{
+    return undoStack;
+}
+
 void MdiWindow::closeEvent(QCloseEvent *event) {
     if (!saved && !MainWindow::closeAllNotSave && !MainWindow::noToAllClicked) {
         QMessageBox::StandardButton messageBoxResult = QMessageBox::StandardButton(QMessageBox::Cancel);
@@ -149,7 +172,7 @@ void MdiWindow::closeEvent(QCloseEvent *event) {
 
 void MdiWindow::contextMenuEvent(QContextMenuEvent *event)
 {
-    contextMenu->exec(mapToGlobal(event->pos()));
+    contextMenu->popup(mapToGlobal(event->pos()));
 }
 
 void MdiWindow::setScale(double scale)

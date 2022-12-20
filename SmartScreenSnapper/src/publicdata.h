@@ -66,7 +66,7 @@ public:
 
     static ShotTypeItem snapTypeItems[ScreenShotHelper::ShotType::Count];
 
-    static QPair<QString, QString> imageExtName[6];
+    static QPair<QString, QString> imageExtName[7];
 
     static QString getSaveExtFilter();
 
@@ -83,6 +83,8 @@ public:
     static QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> hotKey;
 
     static bool applyQss();
+
+    static bool editMode;
 };
 
 #endif // PUBLICDATA_H

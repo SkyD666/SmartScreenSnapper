@@ -21,7 +21,7 @@ SnapByPointDialog::SnapByPointDialog(QWidget *parent) :
     setMouseTracking(true);
     ui->graphicsView->setMouseTracking(true);
 
-    fullScreenPixmap = ScreenShotHelper::getFullScreen();
+    fullScreenPixmap = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getFullScreen());
     scene = new SnapByPointGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
     scene->setBackgroundBrush(QBrush(fullScreenPixmap));

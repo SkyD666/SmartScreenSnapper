@@ -43,14 +43,22 @@ void GraphicsView::wheelEvent(QWheelEvent *event)
 
 void GraphicsView::mousePressEvent(QMouseEvent *event)
 {
-    mousePressed = true;
-    lastMousePoint.setX(event->position().x());
-    lastMousePoint.setY(event->position().y());
+    if (PublicData::editMode) {
+        QGraphicsView::mousePressEvent(event);
+    } else {
+        mousePressed = true;
+        lastMousePoint.setX(event->position().x());
+        lastMousePoint.setY(event->position().y());
+    }
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent *)
+void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
 {
-    mousePressed = false;
+    if (PublicData::editMode) {
+        QGraphicsView::mouseReleaseEvent(event);
+    } else {
+        mousePressed = false;
+    }
 }
 
 void GraphicsView::setFileName(const QString &newFileName)
@@ -60,43 +68,47 @@ void GraphicsView::setFileName(const QString &newFileName)
 
 void GraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
-    if (event->buttons() & Qt::LeftButton) {
-        if (mousePressed) {
-            horizontalScrollBar()->setSliderPosition(horizontalScrollBar()->sliderPosition() -
-                                                     event->position().x() + lastMousePoint.x());
-            verticalScrollBar()->setSliderPosition(verticalScrollBar()->sliderPosition() -
-                                                   event->position().y() + lastMousePoint.y());
+    if (PublicData::editMode) {
+        QGraphicsView::mouseMoveEvent(event);
+    } else {
+        if (event->buttons() & Qt::LeftButton) {
+            if (mousePressed) {
+                horizontalScrollBar()->setSliderPosition(horizontalScrollBar()->sliderPosition() -
+                                                         event->position().x() + lastMousePoint.x());
+                verticalScrollBar()->setSliderPosition(verticalScrollBar()->sliderPosition() -
+                                                       event->position().y() + lastMousePoint.y());
+            }
         }
-    }
-    if (event->buttons() & Qt::LeftButton && event->modifiers() == Qt::ControlModifier) {
-        QPixmap pixmap(scene()->width(), scene()->height());
-        pixmap.fill(Qt::transparent);
-        QPainter painter(&pixmap);
-        scene()->render(&painter);
+        if (event->buttons() & Qt::LeftButton && event->modifiers() == Qt::ControlModifier) {
+            QPixmap pixmap(scene()->width(), scene()->height());
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            scene()->render(&painter);
 
-        QPixmap dragPixmap(scene()->width(), scene()->height());
-        dragPixmap.fill(Qt::transparent);
-        QPainter dragPixmapPainter(&dragPixmap);
-        dragPixmapPainter.setOpacity(0.5f);
-        dragPixmapPainter.drawPixmap(0, 0, pixmap);
+            QPixmap dragPixmap(scene()->width(), scene()->height());
+            dragPixmap.fill(Qt::transparent);
+            QPainter dragPixmapPainter(&dragPixmap);
+            dragPixmapPainter.setOpacity(0.5f);
+            dragPixmapPainter.drawPixmap(0, 0, pixmap);
 
-        QTemporaryFile tempFile = QTemporaryFile();
-        tempFile.open();
-        if (!fileName.isEmpty()) {
-            tempFile.rename(QDir::tempPath() + "/" +  fileName + PublicData::imageExtName[0].first);
+            QTemporaryFile tempFile = QTemporaryFile();
+            tempFile.open();
+            if (!fileName.isEmpty()) {
+                tempFile.rename(QDir::tempPath() + "/" +  fileName + PublicData::imageExtName[0].first);
+            }
+            pixmap.save(&tempFile, nullptr, PublicData::saveImageQuality);
+
+            QMimeData *mimeData = new QMimeData();
+            mimeData->clear();
+            mimeData->setImageData(pixmap.toImage());
+            mimeData->setUrls(QList<QUrl>() << QUrl::fromLocalFile(tempFile.fileName()));
+            QDrag *drag = new QDrag(this);      // The QDrag must be constructed on the heap with a parent QObject
+            drag->setPixmap(dragPixmap);
+            drag->setMimeData(mimeData);
+            drag->setHotSpot(mapToScene(event->pos()).toPoint());
+            drag->exec(Qt::CopyAction, Qt::CopyAction);
         }
-        pixmap.save(&tempFile, nullptr, PublicData::saveImageQuality);
-
-        QMimeData *mimeData = new QMimeData();
-        mimeData->clear();
-        mimeData->setImageData(pixmap.toImage());
-        mimeData->setUrls(QList<QUrl>() << QUrl::fromLocalFile(tempFile.fileName()));
-        QDrag *drag = new QDrag(this);      // The QDrag must be constructed on the heap with a parent QObject
-        drag->setPixmap(dragPixmap);
-        drag->setMimeData(mimeData);
-        drag->setHotSpot(mapToScene(event->pos()).toPoint());
-        drag->exec(Qt::CopyAction, Qt::CopyAction);
+        lastMousePoint.setX(event->position().x());
+        lastMousePoint.setY(event->position().y());
     }
-    lastMousePoint.setX(event->position().x());
-    lastMousePoint.setY(event->position().y());
 }

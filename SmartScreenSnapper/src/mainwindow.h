@@ -17,6 +17,8 @@
 #include <Mmsystem.h>
 #include <QSpinBox>
 #include <QSoundEffect>
+#include <QUndoStack>
+#include <QUndoGroup>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -44,6 +46,7 @@ public:
     void commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHotKey);
 
     // 获取到截图后回调函数，用来更新mdiwindow
+    void snapSuccessCallback(ScreenShotHelper::ShotType shotType, QList<QPair<QPixmap, QPoint>> pixmap);
     void snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixmap pixmap);
 
     static bool exitApp;
@@ -57,6 +60,9 @@ public:
     inline MdiWindow* getActiveWindow();
 
     void updateDocumentCountLabel();
+
+    void showUndoAcions();
+    void removeUndoAcions();
 
 private:
     Ui::MainWindow *ui;
@@ -74,6 +80,10 @@ private:
 
     QSoundEffect soundEffect;
 
+    QUndoGroup *undoGroup;
+
+    QAction *actionUndo = nullptr;
+    QAction *actionRedo = nullptr;
 protected:
 
     void closeEvent(QCloseEvent *event);

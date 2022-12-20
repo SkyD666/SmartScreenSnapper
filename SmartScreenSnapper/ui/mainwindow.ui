@@ -42,7 +42,7 @@
      <x>0</x>
      <y>0</y>
      <width>1048</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -74,11 +74,20 @@
     <property name="title">
      <string>编辑(&amp;E)</string>
     </property>
+    <addaction name="separator"/>
     <addaction name="actionCopy"/>
+    <addaction name="separator"/>
+    <addaction name="actionEditMode"/>
+   </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>窗口(&amp;W)</string>
+    </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuTool"/>
+   <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
@@ -148,6 +157,33 @@
      </property>
      <item>
       <widget class="QListWidget" name="listDocument"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockUndoList">
+   <property name="windowTitle">
+    <string>历史操作</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QUndoView" name="undoView"/>
      </item>
     </layout>
    </widget>
@@ -290,7 +326,10 @@
      <normaloff>:/image/Copy.svg</normaloff>:/image/Copy.svg</iconset>
    </property>
    <property name="text">
-    <string>复制(&amp;C)</string>
+    <string>复制整个文档为图片(&amp;C)</string>
+   </property>
+   <property name="toolTip">
+    <string>复制整个文档为图片(C)</string>
    </property>
    <property name="statusTip">
     <string>复制当前选择的截图到粘贴板</string>
@@ -404,6 +443,17 @@
    </property>
    <property name="statusTip">
     <string>截取鼠标位置所在的窗体或控件</string>
+   </property>
+  </action>
+  <action name="actionEditMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>编辑模式(&amp;E)</string>
+   </property>
+   <property name="toolTip">
+    <string>编辑模式</string>
    </property>
   </action>
  </widget>

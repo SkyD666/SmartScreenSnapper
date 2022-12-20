@@ -21,6 +21,7 @@
 #include <QSoundEffect>
 #include <QMimeData>
 #include <QSessionManager>
+#include <QList>
 #include "publicdata.h"
 #include "mdiwindow.h"
 #include "aboutdialog.h"
@@ -42,20 +43,21 @@ bool MainWindow::closeAllNotSave = false;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      soundEffect(this)
+      soundEffect(this),
+      undoGroup(new QUndoGroup(this))
 {
     ui->setupUi(this);
 
-//    connect(qApp, &QGuiApplication::commitDataRequest, this, [=](QSessionManager &manager){
-//       qDebug() << manager.allowsInteraction();
-//        if (manager.allowsInteraction()) {
-//            manager.cancel();
-//            close();
-//        } else {
-//            // we did not get permission to interact, then
-//            // do something reasonable instead
-//        }
-//    });
+    //    connect(qApp, &QGuiApplication::commitDataRequest, this, [=](QSessionManager &manager){
+    //       qDebug() << manager.allowsInteraction();
+    //        if (manager.allowsInteraction()) {
+    //            manager.cancel();
+    //            close();
+    //        } else {
+    //            // we did not get permission to interact, then
+    //            // do something reasonable instead
+    //        }
+    //    });
     initSystemTray();
     initStatusBar();        // 这句里面有控件初始化，在设置值之前进行
 
@@ -106,9 +108,16 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
+    ui->undoView->setGroup(undoGroup);
+
     ui->actionSave->setEnabled(false);
     ui->actionCloseAllNotSave->setEnabled(false);
     ui->actionPrint->setEnabled(false);
+
+    actionUndo = undoGroup->createUndoAction(this, tr("撤销(&U)"));
+    actionUndo->setShortcuts(QKeySequence::Undo);
+    actionRedo = undoGroup->createRedoAction(this, tr("重做(&R)"));
+    actionRedo->setShortcuts(QKeySequence::Redo);
     //------------------------------------------------
     connectActionSlots();
 }
@@ -122,7 +131,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     if (PublicData::clickCloseToTray && !PublicData::ignoreClickCloseToTray) {
-        setVisible(false);
+        hide();
         event->ignore();
         return;
     }
@@ -226,6 +235,16 @@ void MainWindow::connectActionSlots()
         QApplication::clipboard()->setMimeData(data, QClipboard::Clipboard);
         QApplication::clipboard()->setImage(image);
     });
+    // 编辑模式
+    connect(ui->actionEditMode, QOverload<bool>::of(&QAction::triggered), this, [=](bool checked){
+        PublicData::editMode = checked;
+        ui->undoView->setEnabled(checked);
+        if (checked) {
+            showUndoAcions();
+        } else {
+            removeUndoAcions();
+        }
+    });
     // 退出
     connect(ui->actionExit, &QAction::triggered, this, [=](){
         PublicData::ignoreClickCloseToTray = true;
@@ -282,12 +301,27 @@ void MainWindow::connectActionSlots()
     }
     ui->menuTool->insertMenu(ui->actionSetting, styleMenu);
     ui->menuTool->insertSeparator(ui->actionSetting);
+    // 窗口
+    QList<QDockWidget *> dockWidgets = findChildren<QDockWidget *>();
+    for (auto dock : dockWidgets) {
+        ui->menuWindow->addAction(dock->toggleViewAction());
+    }
+    ui->menuWindow->addSeparator();
+    QList<QToolBar *> toolBars = findChildren<QToolBar *>();
+    for (auto toolbar : toolBars) {
+        ui->menuWindow->addAction(toolbar->toggleViewAction());
+    }
+    ui->dockUndoList->close();
 }
 
-MdiWindow * MainWindow::createMDIWindow() {
+MdiWindow *MainWindow::createMDIWindow() {
     MdiWindow *child = new MdiWindow(ui->mdiArea);
     ui->listDocument->addItem(&child->getListItem());
     ui->mdiArea->addSubWindow(child);
+    undoGroup->addStack(child->getUndoStack());
+    connect(child, &MdiWindow::onClose, this, [=](){
+        undoGroup->removeStack(child->getUndoStack());
+    });
     child->setWindowState(PublicData::mdiWindowInitState);
     child->show();
     ui->mdiArea->setActiveSubWindow(child);
@@ -315,6 +349,19 @@ void MainWindow::updateDocumentCountLabel()
                 tr("共%1张, 选中第%2张")
                 .arg(ui->listDocument->count())
                 .arg(ui->listDocument->currentRow() + 1));
+}
+
+void MainWindow::showUndoAcions()
+{
+    QList<QAction*> actions = ui->menuEdit->actions();
+    ui->menuEdit->insertAction(actions.isEmpty() ? nullptr : actions[0], actionRedo);
+    ui->menuEdit->insertAction(actions.isEmpty() ? nullptr : actions[0], actionUndo);
+}
+
+void MainWindow::removeUndoAcions()
+{
+    ui->menuEdit->removeAction(actionUndo);
+    ui->menuEdit->removeAction(actionRedo);
 }
 
 void MainWindow::initStatusBar() {
@@ -396,17 +443,17 @@ void MainWindow::commonSnapAction(ScreenShotHelper::ShotType shotType, bool isHo
     }
 }
 
-void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixmap pixmap)
+void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QList<QPair<QPixmap, QPoint>> layers)
 {
     MdiWindow* activeWindow = nullptr;
     QString name = ScreenShotHelper::getPictureName(shotType);
     activeWindow = createMDIWindow();
     activeWindow->setName(name);
-    activeWindow->setPixmap(pixmap);
+    activeWindow->setLayers(layers);
     activeWindow->setShotType(shotType);
 
     if (PublicData::copyToClipBoardAfterSnap) {
-        QApplication::clipboard()->setPixmap(pixmap);
+        QApplication::clipboard()->setPixmap(ScreenShotHelper::layersToPixmap(layers));
     }
     if (PublicData::isPlaySound) {
         soundEffect.setSource(QUrl::fromLocalFile(":/sound/typewriter.wav"));
@@ -427,6 +474,11 @@ void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixma
     if (snapTypeItem.isManualSave) {
         activeWindow->saveByDialog();
     }
+}
+
+void MainWindow::snapSuccessCallback(ScreenShotHelper::ShotType shotType, QPixmap pixmap)
+{
+    snapSuccessCallback(shotType, QList<QPair<QPixmap, QPoint>>({qMakePair(pixmap, QPoint(0, 0))}));
 }
 
 void MainWindow::exitCancel()

@@ -46,11 +46,11 @@ LongSnapDialog::~LongSnapDialog()
 
 QPixmap LongSnapDialog::getFullScreen()
 {
-    return ScreenShotHelper::getWindowPixmap(
+    return ScreenShotHelper::layersToPixmap(ScreenShotHelper::getWindowPixmap(
                 (HWND)QGuiApplication::primaryScreen()->handle(),
                 ScreenShotHelper::ScreenShot,
                 PublicData::includeCursor
-                );
+                ));
 }
 
 void LongSnapDialog::keyPressEvent(QKeyEvent *event)
@@ -103,13 +103,13 @@ QPixmap LongSnapDialog::capture()
     QImage currentRegion;
     QImage finalPixmap;
     do {
-        currentRegion = ScreenShotHelper::getWindowPixmap(
+        currentRegion = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getWindowPixmap(
                     (HWND)QGuiApplication::primaryScreen()->handle(),
                     ScreenShotHelper::ScreenShot,
                     PublicData::includeCursor,
                     region->x(),
                     region->y(),
                     region->width(),
-                    region->height()).toImage();
+                    region->height())).toImage();
     } while (currentRegion == lastRegion);
 }

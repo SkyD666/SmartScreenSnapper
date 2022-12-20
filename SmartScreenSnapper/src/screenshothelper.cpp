@@ -9,19 +9,28 @@
 #include <QScreen>
 #include <QDebug>
 #include <QRandomGenerator>
+#include <QPainter>
 #include "publicdata.h"
 #include "windowsinfo.h"
 #include "util.h"
+#include "psd_sdk/PsdExport.h"
+#include "psd_sdk/PsdNativeFile.h"
+#include "psd_sdk/PsdMallocAllocator.h"
+#include "psd_sdk/PsdExportDocument.h"
 
 unsigned long ScreenShotHelper::lastPId = 0L;
+
+using namespace psd;
 
 ScreenShotHelper::ScreenShotHelper()
 {
 
 }
 
-QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w , int h)
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w , int h)
 {
+    QList<QPair<QPixmap, QPoint>> layers = QList<QPair<QPixmap, QPoint>>();
+
     GetWindowThreadProcessId(hwnd, &lastPId);
 
     RECT r = {0, 0, 0, 0};
@@ -81,15 +90,6 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool i
         }
     }
 
-    if (includeCursor) {
-        CURSORINFO ci;
-        ICONINFO iconInf;
-        ci.cbSize = sizeof(CURSORINFO);
-        GetCursorInfo(&ci);
-        GetIconInfo(ci.hCursor, &iconInf);
-        DrawIcon(bitmapDC, ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot, ci.hCursor);
-    }
-
     // clean up all but bitmap
     ReleaseDC(hwnd, displayDC);
     SelectObject(bitmapDC, null_bitmap);
@@ -101,7 +101,17 @@ QPixmap ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool i
 
     DeleteObject(bitmap);
 
-    return pixmap;
+    layers.append(qMakePair(pixmap, QPoint(0, 0)));
+    if (includeCursor) {
+        CURSORINFO ci;
+        ICONINFO iconInf;
+        ci.cbSize = sizeof(CURSORINFO);
+        GetCursorInfo(&ci);
+        GetIconInfo(ci.hCursor, &iconInf);
+        layers.append(qMakePair(grabCursor(), QPoint(ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot)));
+    }
+
+    return layers;
 }
 
 /**
@@ -155,9 +165,9 @@ void wait(int msec)
     loop.exec();                    //事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
 }
 
-QPixmap ScreenShotHelper::screenshot(ShotType shotType, bool isHotKey)
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::screenshot(ShotType shotType, bool isHotKey)
 {
-    QPixmap pixmap;
+    QList<QPair<QPixmap, QPoint>> layers = QList<QPair<QPixmap, QPoint>>();
 
     ShotTypeItem snapType = PublicData::snapTypeItems[shotType];
     if (!isHotKey || !PublicData::hotKeyNoWait) {
@@ -165,30 +175,32 @@ QPixmap ScreenShotHelper::screenshot(ShotType shotType, bool isHotKey)
     }
     switch (shotType) {
     case ScreenShot: {
-        pixmap = getWindowPixmap((HWND)QGuiApplication::primaryScreen()->handle(),
+        layers = getWindowPixmap((HWND)QGuiApplication::primaryScreen()->handle(),
                                  shotType,
                                  PublicData::includeCursor);
         break;
     }
     case ActiveWindowShot: {
-        pixmap = getWindowPixmap(GetForegroundWindow(),
+        layers = getWindowPixmap(GetForegroundWindow(),
                                  shotType,
                                  PublicData::includeCursor,
                                  0, 0);
         break;
     }
     case CursorShot: {
-        pixmap = grabCursor();
+        layers.append(qMakePair<QPixmap, QPoint>(grabCursor(), QPoint(0, 0)));
         break;
     }
     default: break;
     }
-    return pixmap;
+    return layers;
 }
 
-QPixmap ScreenShotHelper::getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor, int x, int y, int w , int h) {
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor, int x, int y, int w , int h) {
     if (shotType == CursorShot) {
-        return grabCursor();
+        QList<QPair<QPixmap, QPoint>> pixmaps = QList<QPair<QPixmap, QPoint>>();
+        pixmaps.append(qMakePair<QPixmap, QPoint>(grabCursor(), QPoint(0, 0)));
+        return pixmaps;
     } else {
         return ScreenShotHelper::grabWindow(PublicData::snapMethod, winId, shotType, includeCursor, x, y, w, h);
     }
@@ -264,7 +276,11 @@ bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPix
         dir = new QDir(filePath);
     }
     if (!dir->exists()) dir->mkdir(dir->path());
-    saved = pixmap.save(filePath, nullptr, PublicData::saveImageQuality);
+    if (filePath.endsWith(".psd", Qt::CaseInsensitive)) {
+        saved = savePsd(filePath, pixmap);
+    } else{
+        saved = pixmap.save(filePath, nullptr, PublicData::saveImageQuality);
+    }
     if (!saved) {
         QMessageBox::critical(msgBoxParent, QObject::tr("警告"), QObject::tr("保存图片失败"), QMessageBox::Ok);
     }
@@ -272,10 +288,66 @@ bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPix
     return saved;
 }
 
-QPixmap ScreenShotHelper::getFullScreen()
+
+
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::getFullScreen()
 {
     return getWindowPixmap(
                 (HWND)QGuiApplication::primaryScreen()->handle(),
                 ScreenShot,
                 PublicData::includeCursor);
+}
+
+QPixmap ScreenShotHelper::layersToPixmap(QList<QPair<QPixmap, QPoint>> layers)
+{
+    QPixmap pixmap = layers.first().first;
+    QPainter painter(&pixmap);
+    for (int i = 1; i < layers.size(); i++) {
+        painter.drawPixmap(layers[i].second, layers[i].first);
+    }
+    return pixmap;
+}
+
+bool ScreenShotHelper::savePsd(QString filePath, QPixmap pixmap)
+{
+//    const std::wstring dstPath = filePath.toStdWString();
+//    MallocAllocator allocator;
+//    NativeFile file(&allocator);
+
+//    if (!file.OpenWrite(dstPath.c_str())) {
+//        return false;
+//    }
+
+//    float *g_multiplyData32 = new float[pixmap.height() * pixmap.width()];
+//    float *g_xorData32 = new float[pixmap.height() * pixmap.width()];
+//    float *g_orData32 = new float[pixmap.height() * pixmap.width()];
+//    float *g_andData32 = new float[pixmap.height() * pixmap.width()];
+//    float *g_checkerBoardData32 = new float[pixmap.height() * pixmap.width()];
+
+
+//    for (unsigned int y = 0; y < pixmap.height(); ++y)
+//            {
+//                for (unsigned int x = 0; x < pixmap.width(); ++x)
+//                {
+//                    g_multiplyData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * (x*y);
+//                    g_xorData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x ^ y) * 256);
+//                    g_orData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x | y) * 256);
+//                    g_andData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x & y) * 256);
+//                    g_checkerBoardData32[y * pixmap.height() + x] = (x / 8 + y / 8) & 1 ? 1.0f : 0.5f;
+//                }
+//            }
+
+//    // write an RGB PSD file, 32-bit
+//    ExportDocument* document = CreateExportDocument(&allocator, pixmap.width(), pixmap.height(), 32u, exportColorMode::RGB);
+//    {
+//        const unsigned int layer1 = AddLayer(document, &allocator, "MUL pattern");
+//        UpdateLayer(document, &allocator, layer1, exportChannel::BLUE, 0, 0, pixmap.width(), pixmap.height(), &g_multiplyData32[0], compressionType::ZIP);
+
+//        UpdateMergedImage(document, &allocator, &g_multiplyData32[0], &g_xorData32[0], &g_checkerBoardData32[0]);
+
+//        WriteDocument(document, &allocator, &file);
+//    }
+
+//    DestroyExportDocument(document, &allocator);
+//    file.Close();
 }

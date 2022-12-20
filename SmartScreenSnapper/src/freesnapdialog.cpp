@@ -39,7 +39,7 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool &captured, QWidget *parent)
 {
     ui->setupUi(this);
 
-    picture = ScreenShotHelper::getFullScreen();
+    picture = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getFullScreen());
     image = picture.toImage();
 
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);

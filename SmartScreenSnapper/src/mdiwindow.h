@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <QCloseEvent>
 #include <QMenu>
+#include <QUndoStack>
 #include "screenshothelper.h"
 
 namespace Ui {
@@ -27,7 +28,7 @@ public:
 
     ~MdiWindow();
 
-    void setPixmap(QPixmap pixmap);
+    void setLayers(QList<QPair<QPixmap, QPoint>> layers);
 
     void setListItemName(QString name);
 
@@ -38,6 +39,8 @@ public:
     void setName(QString name);
 
     bool isSaved();
+
+    void setSaved(bool saved);
 
     void setScale(double scale);
 
@@ -53,9 +56,9 @@ public:
 
     void setShotType(ScreenShotHelper::ShotType newShotType);
 
-private:
+    QUndoStack *getUndoStack() const;
 
-    void setSaved(bool saved);
+private:
 
     Ui::MdiWindowWidget *ui;
 
@@ -75,10 +78,12 @@ private:
 
     void initActions();
 
+    QUndoStack *undoStack;
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 
-    void contextMenuEvent(QContextMenuEvent *event);
+    void contextMenuEvent(QContextMenuEvent *event) override;
 };
 
 #endif // MDIWINDOW_H
