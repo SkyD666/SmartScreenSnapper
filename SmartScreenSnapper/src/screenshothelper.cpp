@@ -1,39 +1,32 @@
 #include "screenshothelper.h"
-#include <QTimer>
-#include <windows.h>
+#include "publicdata.h"
+#include "util.h"
+#include "windowsinfo.h"
 #include <QApplication>
 #include <QClipboard>
-#include <QDir>
 #include <QDateTime>
-#include <QMessageBox>
-#include <QScreen>
 #include <QDebug>
-#include <QRandomGenerator>
+#include <QDir>
+#include <QMessageBox>
 #include <QPainter>
-#include "publicdata.h"
-#include "windowsinfo.h"
-#include "util.h"
-#include "psd_sdk/PsdExport.h"
-#include "psd_sdk/PsdNativeFile.h"
-#include "psd_sdk/PsdMallocAllocator.h"
-#include "psd_sdk/PsdExportDocument.h"
+#include <QRandomGenerator>
+#include <QScreen>
+#include <QTimer>
+#include <windows.h>
 
 unsigned long ScreenShotHelper::lastPId = 0L;
 
-using namespace psd;
-
 ScreenShotHelper::ScreenShotHelper()
 {
-
 }
 
-QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w , int h)
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND hwnd, int type, bool includeCursor, int x, int y, int w, int h)
 {
     QList<QPair<QPixmap, QPoint>> layers = QList<QPair<QPixmap, QPoint>>();
 
     GetWindowThreadProcessId(hwnd, &lastPId);
 
-    RECT r = {0, 0, 0, 0};
+    RECT r = { 0, 0, 0, 0 };
 
     // 多屏支持
     if (type == ScreenShot) {
@@ -45,8 +38,10 @@ QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND 
         GetWindowRect(hwnd, &r);
     }
 
-    if (w < 0) w = r.right - r.left;
-    if (h < 0) h = r.bottom - r.top;
+    if (w < 0)
+        w = r.right - r.left;
+    if (h < 0)
+        h = r.bottom - r.top;
 
     long xBorder, yBorder, captionBorder;
     WindowsInfo::getWindowBorderSize(hwnd, &xBorder, &yBorder, &captionBorder);
@@ -62,7 +57,7 @@ QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND 
     HBITMAP bitmap = nullptr;
     if (PublicData::noBorder) {
         bitmap = CreateCompatibleBitmap(displayDC, w - 2 * xBorder,
-                                        h -  2 * yBorder - captionBorder);
+            h - 2 * yBorder - captionBorder);
     } else {
         bitmap = CreateCompatibleBitmap(displayDC, w, h);
     }
@@ -73,12 +68,12 @@ QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND 
         w -= xBorder;
         if (snapMethod == 0) {
             BitBlt(bitmapDC, -xBorder,
-                   -captionBorder - yBorder,
-                   w, h, displayDC, x, y, SRCCOPY | CAPTUREBLT);
+                -captionBorder - yBorder,
+                w, h, displayDC, x, y, SRCCOPY | CAPTUREBLT);
         } else if (snapMethod == 1) {
             BitBlt(bitmapDC, -xBorder,
-                   -captionBorder - yBorder,
-                   w, h, displayDC, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
+                -captionBorder - yBorder,
+                w, h, displayDC, r.left + x, r.top + y, SRCCOPY | CAPTUREBLT);
         }
         x += xBorder;
         y += (yBorder + captionBorder);
@@ -136,8 +131,8 @@ QPixmap ScreenShotHelper::grabCursor()
     HDC hdcMem = CreateCompatibleDC(hdcScreen);
 
     HBITMAP hbmCanvas = CreateCompatibleBitmap(hdcScreen,
-                                               GetSystemMetrics(SM_CXCURSOR),
-                                               GetSystemMetrics(SM_CYCURSOR));
+        GetSystemMetrics(SM_CXCURSOR),
+        GetSystemMetrics(SM_CYCURSOR));
 
     HGDIOBJ hbmOld = SelectObject(hdcMem, hbmCanvas);
 
@@ -146,7 +141,7 @@ QPixmap ScreenShotHelper::grabCursor()
     GetCursorInfo(&ci);
 
     DrawIconEx(hdcMem, 0, 0, ci.hCursor,
-               0, 0, 0, NULL, DI_NORMAL);
+        0, 0, 0, NULL, DI_NORMAL);
 
     QPixmap p = qt_pixmapFromWinHBITMAP(hbmCanvas, 1);
 
@@ -160,9 +155,9 @@ QPixmap ScreenShotHelper::grabCursor()
 
 void wait(int msec)
 {
-    QEventLoop loop;            //定义一个新的事件循环
-    QTimer::singleShot(msec, &loop, SLOT(quit()));//创建单次定时器，槽函数为事件循环的退出函数
-    loop.exec();                    //事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
+    QEventLoop loop; // 定义一个新的事件循环
+    QTimer::singleShot(msec, &loop, SLOT(quit())); // 创建单次定时器，槽函数为事件循环的退出函数
+    loop.exec(); // 事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
 }
 
 QList<QPair<QPixmap, QPoint>> ScreenShotHelper::screenshot(ShotType shotType, bool isHotKey)
@@ -176,27 +171,29 @@ QList<QPair<QPixmap, QPoint>> ScreenShotHelper::screenshot(ShotType shotType, bo
     switch (shotType) {
     case ScreenShot: {
         layers = getWindowPixmap((HWND)QGuiApplication::primaryScreen()->handle(),
-                                 shotType,
-                                 PublicData::includeCursor);
+            shotType,
+            PublicData::includeCursor);
         break;
     }
     case ActiveWindowShot: {
         layers = getWindowPixmap(GetForegroundWindow(),
-                                 shotType,
-                                 PublicData::includeCursor,
-                                 0, 0);
+            shotType,
+            PublicData::includeCursor,
+            0, 0);
         break;
     }
     case CursorShot: {
         layers.append(qMakePair<QPixmap, QPoint>(grabCursor(), QPoint(0, 0)));
         break;
     }
-    default: break;
+    default:
+        break;
     }
     return layers;
 }
 
-QList<QPair<QPixmap, QPoint>> ScreenShotHelper::getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor, int x, int y, int w , int h) {
+QList<QPair<QPixmap, QPoint>> ScreenShotHelper::getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor, int x, int y, int w, int h)
+{
     if (shotType == CursorShot) {
         QList<QPair<QPixmap, QPoint>> pixmaps = QList<QPair<QPixmap, QPoint>>();
         pixmaps.append(qMakePair<QPixmap, QPoint>(grabCursor(), QPoint(0, 0)));
@@ -228,7 +225,8 @@ QString ScreenShotHelper::getPictureName(ShotType shotType)
     kv["Rand"] = QString::number(QRandomGenerator::global()->bounded(100000, 999999));
 
     QString result = Util::transformTemplateStr(fileNameTemplate, kv);
-    if (result.isEmpty()) result = Util::transformTemplateStr(defaultTemplate, kv);
+    if (result.isEmpty())
+        result = Util::transformTemplateStr(defaultTemplate, kv);
     return result;
 }
 
@@ -236,49 +234,51 @@ QString ScreenShotHelper::getSnapTypeName(ScreenShotHelper::ShotType shotType)
 {
     QString typeName;
     switch (shotType) {
-    case ScreenShot:{
+    case ScreenShot: {
         typeName = "全屏截图";
         break;
     }
-    case ActiveWindowShot:{
+    case ActiveWindowShot: {
         typeName = "活动窗口截图";
         break;
     }
-    case CursorShot:{
+    case CursorShot: {
         typeName = "截取光标";
         break;
     }
-    case FreeShot:{
+    case FreeShot: {
         typeName = "自由截图";
         break;
     }
-    case FreeHandShot:{
+    case FreeHandShot: {
         typeName = "徒手截图";
         break;
     }
-    case ShotByPoint:{
+    case ShotByPoint: {
         typeName = "窗体控件截图";
         break;
     }
-    default:{
+    default: {
         typeName = "截图";
     }
     }
     return typeName;
 }
 
-bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPixmap pixmap) {
-    QDir *dir;
+bool ScreenShotHelper::savePicture(QWidget* msgBoxParent, QString filePath, QPixmap pixmap)
+{
+    QDir* dir;
     bool saved = false;
     if (!filePath.isEmpty()) {
         dir = new QDir(filePath.left(filePath.lastIndexOf('/') + 1));
     } else {
         dir = new QDir(filePath);
     }
-    if (!dir->exists()) dir->mkdir(dir->path());
+    if (!dir->exists())
+        dir->mkdir(dir->path());
     if (filePath.endsWith(".psd", Qt::CaseInsensitive)) {
-        saved = savePsd(filePath, pixmap);
-    } else{
+        // saved = savePsd(filePath, pixmap);
+    } else {
         saved = pixmap.save(filePath, nullptr, PublicData::saveImageQuality);
     }
     if (!saved) {
@@ -288,14 +288,12 @@ bool ScreenShotHelper::savePicture(QWidget *msgBoxParent, QString filePath, QPix
     return saved;
 }
 
-
-
 QList<QPair<QPixmap, QPoint>> ScreenShotHelper::getFullScreen()
 {
     return getWindowPixmap(
-                (HWND)QGuiApplication::primaryScreen()->handle(),
-                ScreenShot,
-                PublicData::includeCursor);
+        (HWND)QGuiApplication::primaryScreen()->handle(),
+        ScreenShot,
+        PublicData::includeCursor);
 }
 
 QPixmap ScreenShotHelper::layersToPixmap(QList<QPair<QPixmap, QPoint>> layers)
@@ -306,48 +304,4 @@ QPixmap ScreenShotHelper::layersToPixmap(QList<QPair<QPixmap, QPoint>> layers)
         painter.drawPixmap(layers[i].second, layers[i].first);
     }
     return pixmap;
-}
-
-bool ScreenShotHelper::savePsd(QString filePath, QPixmap pixmap)
-{
-//    const std::wstring dstPath = filePath.toStdWString();
-//    MallocAllocator allocator;
-//    NativeFile file(&allocator);
-
-//    if (!file.OpenWrite(dstPath.c_str())) {
-//        return false;
-//    }
-
-//    float *g_multiplyData32 = new float[pixmap.height() * pixmap.width()];
-//    float *g_xorData32 = new float[pixmap.height() * pixmap.width()];
-//    float *g_orData32 = new float[pixmap.height() * pixmap.width()];
-//    float *g_andData32 = new float[pixmap.height() * pixmap.width()];
-//    float *g_checkerBoardData32 = new float[pixmap.height() * pixmap.width()];
-
-
-//    for (unsigned int y = 0; y < pixmap.height(); ++y)
-//            {
-//                for (unsigned int x = 0; x < pixmap.width(); ++x)
-//                {
-//                    g_multiplyData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * (x*y);
-//                    g_xorData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x ^ y) * 256);
-//                    g_orData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x | y) * 256);
-//                    g_andData32[y * pixmap.height() + x] = (1.0f / 65025.0f) * ((x & y) * 256);
-//                    g_checkerBoardData32[y * pixmap.height() + x] = (x / 8 + y / 8) & 1 ? 1.0f : 0.5f;
-//                }
-//            }
-
-//    // write an RGB PSD file, 32-bit
-//    ExportDocument* document = CreateExportDocument(&allocator, pixmap.width(), pixmap.height(), 32u, exportColorMode::RGB);
-//    {
-//        const unsigned int layer1 = AddLayer(document, &allocator, "MUL pattern");
-//        UpdateLayer(document, &allocator, layer1, exportChannel::BLUE, 0, 0, pixmap.width(), pixmap.height(), &g_multiplyData32[0], compressionType::ZIP);
-
-//        UpdateMergedImage(document, &allocator, &g_multiplyData32[0], &g_xorData32[0], &g_checkerBoardData32[0]);
-
-//        WriteDocument(document, &allocator, &file);
-//    }
-
-//    DestroyExportDocument(document, &allocator);
-//    file.Close();
 }

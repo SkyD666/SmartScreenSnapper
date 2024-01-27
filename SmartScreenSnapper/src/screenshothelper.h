@@ -3,12 +3,17 @@
 
 #include <QPixmap>
 
-class ScreenShotHelper
-{
+class ScreenShotHelper {
 public:
-
     enum ShotType {
-        ScreenShot, ActiveWindowShot, CursorShot, FreeShot, FreeHandShot, ShotByPoint, LongShot, Count
+        ScreenShot,
+        ActiveWindowShot,
+        CursorShot,
+        FreeShot,
+        FreeHandShot,
+        ShotByPoint,
+        LongShot,
+        Count
     };
 
     ScreenShotHelper();
@@ -22,7 +27,7 @@ public:
 
     static QList<QPair<QPixmap, QPoint>> screenshot(ShotType shotType, bool isHotKey);
 
-    static bool savePicture(QWidget *msgBoxParent, QString filePath, QPixmap pixmap);
+    static bool savePicture(QWidget* msgBoxParent, QString filePath, QPixmap pixmap);
 
     static QList<QPair<QPixmap, QPoint>> getWindowPixmap(HWND winId, ShotType shotType, bool includeCursor = false, int x = 0, int y = 0, int w = -1, int h = -1);
 
@@ -33,9 +38,6 @@ public:
     static QList<QPair<QPixmap, QPoint>> getFullScreen();
 
     static QPixmap layersToPixmap(QList<QPair<QPixmap, QPoint>> layers);
-
-private:
-    static bool savePsd(QString filePath, QPixmap pixmap);
 };
 
 #endif // SCREENSHOTHELPER_H

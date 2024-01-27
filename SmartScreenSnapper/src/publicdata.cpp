@@ -1,9 +1,9 @@
 #include "publicdata.h"
 #include "MyGlobalShortcut/MyGlobalShortCut.h"
-#include <QSettings>
 #include <QApplication>
-#include <QFile>
 #include <QDir>
+#include <QFile>
+#include <QSettings>
 
 int PublicData::activeWindowIndex = -1;
 int PublicData::totalWindowCount = 0;
@@ -11,9 +11,9 @@ int PublicData::snapMethod = 0;
 int PublicData::saveImageQuality = -1;
 bool PublicData::isPlaySound = false;
 QHash<Qt::WindowState, QString>
-PublicData::mdiWindowInitStates{{Qt::WindowNoState, QObject::tr("默认")},
-                                {Qt::WindowMaximized, QObject::tr("最大化")},
-                                {Qt::WindowMinimized, QObject::tr("最小化")}};
+    PublicData::mdiWindowInitStates { { Qt::WindowNoState, QObject::tr("默认") },
+        { Qt::WindowMaximized, QObject::tr("最大化") },
+        { Qt::WindowMinimized, QObject::tr("最小化") } };
 Qt::WindowState PublicData::mdiWindowInitState = Qt::WindowNoState;
 bool PublicData::clickCloseToTray = true;
 bool PublicData::ignoreClickCloseToTray = false;
@@ -26,19 +26,18 @@ QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
 QString PublicData::fileNameTemplate = "";
 QString PublicData::qssPath = "";
-QPair<QString, QString> PublicData::imageExtName[] = {{".png", QObject::tr("PNG 便携网络图形")},
-                                                      {".jpg", QObject::tr("JPG")},
-                                                      {".bmp", QObject::tr("BMP 位图")},
-                                                      {".tiff", QObject::tr("TIFF 标签图像文件")},
-                                                      {".webp", QObject::tr("WebP")},
-                                                      {".ico", QObject::tr("ICO 图标")},
-                                                      {".psd", QObject::tr("Photoshop")}};
+QPair<QString, QString> PublicData::imageExtName[] = { { ".png", QObject::tr("PNG 便携网络图形") },
+    { ".jpg", QObject::tr("JPG") },
+    { ".bmp", QObject::tr("BMP 位图") },
+    { ".tiff", QObject::tr("TIFF 标签图像文件") },
+    { ".webp", QObject::tr("WebP") },
+    { ".ico", QObject::tr("ICO 图标") },
+    /*{".psd", QObject::tr("Photoshop")}*/ };
 ShotTypeItem PublicData::snapTypeItems[ScreenShotHelper::ShotType::Count] = {};
 QHash<ScreenShotHelper::ShotType, QList<MyGlobalShortCut*>> PublicData::hotKey;
 
 PublicData::PublicData()
 {
-
 }
 
 QString PublicData::getSaveExtFilter()
@@ -83,11 +82,11 @@ void PublicData::readSettings()
         snapTypeItems[i].isAutoSave = qSettings.value("IsAutoSave", false).toBool();
         snapTypeItems[i].isManualSave = qSettings.value("IsManualSave", false).toBool();
         snapTypeItems[i].autoSavePath = qSettings.value("AutoSavePath").toString();
-        if (snapTypeItems[i].autoSavePath.isEmpty()) {          // 字符串类型配置值不能自动识别为空串
+        if (snapTypeItems[i].autoSavePath.isEmpty()) { // 字符串类型配置值不能自动识别为空串
             snapTypeItems[i].autoSavePath = QApplication::applicationDirPath();
         }
         snapTypeItems[i].autoSaveExtName = qSettings.value("AutoSaveExtName").toString();
-        if (snapTypeItems[i].autoSaveExtName.isEmpty()) {       // 字符串类型配置值不能自动识别为空串
+        if (snapTypeItems[i].autoSaveExtName.isEmpty()) { // 字符串类型配置值不能自动识别为空串
             snapTypeItems[i].autoSaveExtName = imageExtName[0].first;
         }
     }
@@ -143,15 +142,16 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/QssPath", qssPath);
 }
 
-void PublicData::registerAllHotKey(QWidget* parent, std::function<void (ScreenShotHelper::ShotType shotType)> receiver)
+void PublicData::registerAllHotKey(QWidget* parent, std::function<void(ScreenShotHelper::ShotType shotType)> receiver)
 {
-    QStringList registeredKeyList;    // 记录次热键是否被本程序注册，如果注册过了就不再注册了
-    for (int i = 0; i < ScreenShotHelper::ShotType::Count; i++){
+    QStringList registeredKeyList; // 记录次热键是否被本程序注册，如果注册过了就不再注册了
+    for (int i = 0; i < ScreenShotHelper::ShotType::Count; i++) {
         QList<MyGlobalShortCut*> hotKey;
         QStringList keys = PublicData::snapTypeItems[i].hotKey.split(", ");
         for (int j = 0; j < keys.size(); j++) {
             QString key = keys.at(j);
-            if (key == "") continue;
+            if (key == "")
+                continue;
             MyGlobalShortCut* shortcut = nullptr;
             if (registeredKeyList.contains(key)) {
                 shortcut = new MyGlobalShortCut(key, parent, false);
@@ -161,9 +161,9 @@ void PublicData::registerAllHotKey(QWidget* parent, std::function<void (ScreenSh
             }
             hotKey.push_back(shortcut);
             QObject::connect(shortcut, &MyGlobalShortCut::activatedHotKey, shortcut,
-                             [receiver](ScreenShotHelper::ShotType shotType){
-                receiver(shotType);
-            });
+                [receiver](ScreenShotHelper::ShotType shotType) {
+                    receiver(shotType);
+                });
         }
         PublicData::hotKey.insert(PublicData::snapTypeItems[i].shotType, hotKey);
     }
@@ -173,7 +173,7 @@ void PublicData::unregisterAllHotKey()
 {
     while (!PublicData::hotKey.isEmpty()) {
         QList<MyGlobalShortCut*> hotKey = PublicData::hotKey.begin().value();
-        for (int i = 0; i < hotKey.size(); i++){
+        for (int i = 0; i < hotKey.size(); i++) {
             hotKey.at(i)->unregisterHotKey();
             delete hotKey.at(i);
         }

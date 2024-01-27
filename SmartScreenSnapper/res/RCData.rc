@@ -7,8 +7,8 @@ IDI_ICON1	ICON "image/icon.ico"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
-    FILEVERSION 2,0,0,0
-    PRODUCTVERSION 2,0,0,0
+    FILEVERSION 2,1,0,0
+    PRODUCTVERSION 2,1,0,0
     FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
     FILEFLAGS VS_FF_DEBUG
@@ -23,10 +23,10 @@ VS_VERSION_INFO VERSIONINFO
         BEGIN
             BLOCK "080404b0"
             BEGIN
-                VALUE "CompanyName", "Sky_D\0"
+                VALUE "CompanyName", "SkyD666\0"
                 VALUE "FileDescription", "SmartScreenSnapper\0"
-                VALUE "FileVersion", "2.0.0.0\0"
-                VALUE "ProductVersion", "2.0.0.0\0"
+                VALUE "FileVersion", "2.1.0.0\0"
+                VALUE "ProductVersion", "2.1.0.0\0"
                 VALUE "LegalCopyright", "\0"
                 VALUE "LegalTrademarks", "\0"
                 VALUE "OriginalFilename", "SmartScreenSnapper.exe\0"

@@ -1,71 +1,84 @@
 #include "freesnapdialog.h"
 #include "screenshothelper.h"
 #include "ui_freesnapdialog.h"
-#include <QDebug>
 #include <QApplication>
-#include <QGuiApplication>
-#include <windows.h>
-#include <QtMath>
-#include <QGraphicsView>
-#include <QPainterPath>
-#include <QGraphicsPolygonItem>
 #include <QClipboard>
+#include <QDebug>
+#include <QGraphicsPolygonItem>
+#include <QGraphicsView>
+#include <QGuiApplication>
+#include <QPainterPath>
 #include <QString>
+#include <QtMath>
+#include <windows.h>
 
-FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool &captured, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::FreeSnapDialog),
-    grayColor(0, 0, 0, 180),
-    grayItem(nullptr),
-    previewZoomRate(3.2f),
-    pixelColor(nullptr),
-    resultPixmap(result),
-    captured(captured),
-    rectLineWidth(1),
-    pointRadius(9),
-    deltaHeight(0),
-    deltaWidth(0),
-    hasRect(false),
-    mousePressed(false),
-    pressedInRectArea(false),
-    pressedInLeftTopArea(false),
-    pressedInRightTopArea(false),
-    pressedInLeftBottomArea(false),
-    pressedInRightBottomArea(false),
-    pressedInLeftArea(false),
-    pressedInRightArea(false),
-    pressedInTopArea(false),
-    pressedInBottomArea(false)
+FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
+    : QDialog(parent)
+    , ui(new Ui::FreeSnapDialog)
+    , grayColor(0, 0, 0, 180)
+    , grayItem(nullptr)
+    , previewZoomRate(3.2f)
+    , pixelColor(nullptr)
+    , resultPixmap(result)
+    , captured(captured)
+    , rectLineWidth(1)
+    , pointRadius(9)
+    , deltaHeight(0)
+    , deltaWidth(0)
+    , hasRect(false)
+    , mousePressed(false)
+    , pressedInRectArea(false)
+    , pressedInLeftTopArea(false)
+    , pressedInRightTopArea(false)
+    , pressedInLeftBottomArea(false)
+    , pressedInRightBottomArea(false)
+    , pressedInLeftArea(false)
+    , pressedInRightArea(false)
+    , pressedInTopArea(false)
+    , pressedInBottomArea(false)
 {
     ui->setupUi(this);
 
+    auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
     picture = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getFullScreen());
+    picture.setDevicePixelRatio(devicePixelRatio);
     image = picture.toImage();
 
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setWindowState(Qt::WindowActive);
-    //多显示器支持
-    move(GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN));
-    resize(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+    // 多显示器支持
+    move(GetSystemMetrics(SM_XVIRTUALSCREEN) / devicePixelRatio,
+        GetSystemMetrics(SM_YVIRTUALSCREEN) / devicePixelRatio);
+    resize(GetSystemMetrics(SM_CXVIRTUALSCREEN) / devicePixelRatio,
+        GetSystemMetrics(SM_CYVIRTUALSCREEN) / devicePixelRatio);
 
     ui->widgetInfoContainer->adjustSize();
     ui->widgetInfoContainer->setVisible(false);
-    ui->widgetInfoContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true);      //信息Widget不接收鼠标事件
+    ui->widgetInfoContainer->setAttribute(Qt::WA_TransparentForMouseEvents, true); // 信息Widget不接收鼠标事件
 
     // 可在不点击鼠标的情况下捕获移动事件
     setMouseTracking(true);
-
     scene = new QGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
-    scene->setBackgroundBrush(QBrush(picture));
+    scene->addPixmap(picture);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setGeometry(0, 0, width(), height());
     ui->graphicsView->setIgnoreMouseEvent(true);
+    // ui->graphicsView->setTransform(
+    //     QTransform()
+    //         .scale(
+    //             1.0 / ui->graphicsView->devicePixelRatio(),
+    //             1.0 / ui->graphicsView->devicePixelRatio())
+    //         .translate(
+    //             0,
+    //             0));
+    // ui->graphicsView->setTransform(QTransform(1.0 / ui->graphicsView->devicePixelRatio(), 0, 0,
+    //                                    0, 1.0 / ui->graphicsView->devicePixelRatio(), 0,
+    //                                    0, 0, 1),
+    // true);
 
-    QString frameRectStyle = QString("border: ") +
-            QString::number(rectLineWidth) +
-            QString(" solid rgb(255, 255, 0)");
+    QString frameRectStyle = QString("border: ") + QString::number(rectLineWidth) + QString(" solid rgb(255, 255, 0)");
     ui->frameRect->setStyleSheet(frameRectStyle);
     // 初始化8个点的鼠标样式
     ui->frameRect->setCursor(Qt::SizeAllCursor);
@@ -89,7 +102,7 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool &captured, QWidget *parent)
     ui->widgetBottomPoint->setStyleSheet(pointStyle);
 
     // 接收矩形区域内鼠标移动的位置
-    connect(ui->frameRect, &FreeSnapRect::mouseMove, this, [=](QPoint p){
+    connect(ui->frameRect, &FreeSnapRect::mouseMove, this, [=](QPoint p) {
         refreshPreviewArea(p);
     });
 
@@ -108,7 +121,7 @@ FreeSnapDialog::~FreeSnapDialog()
     delete ui;
 }
 
-void FreeSnapDialog::mousePressEvent(QMouseEvent *event)
+void FreeSnapDialog::mousePressEvent(QMouseEvent* event)
 {
     QWidget::mousePressEvent(event);
     mousePressed = true;
@@ -116,19 +129,27 @@ void FreeSnapDialog::mousePressEvent(QMouseEvent *event)
     lastPos = event->pos();
 
     // 判断在哪个区域按下的鼠标
-    if (ui->widgetLeftTopPoint->geometry().contains(event->pos())) pressedInLeftTopArea = true;
-    else if (ui->widgetLeftBottomPoint->geometry().contains(event->pos())) pressedInLeftBottomArea = true;
-    else if (ui->widgetRightTopPoint->geometry().contains(event->pos())) pressedInRightTopArea = true;
-    else if (ui->widgetRightBottomPoint->geometry().contains(event->pos())) pressedInRightBottomArea = true;
-    else if (ui->widgetLeftPoint->geometry().contains(event->pos())) pressedInLeftArea = true;
-    else if (ui->widgetRightPoint->geometry().contains(event->pos())) pressedInRightArea = true;
-    else if (ui->widgetTopPoint->geometry().contains(event->pos())) pressedInTopArea = true;
-    else if (ui->widgetBottomPoint->geometry().contains(event->pos())) pressedInBottomArea = true;
-    else if (ui->frameRect->geometry().contains(event->pos())) pressedInRectArea = true;
-
+    if (ui->widgetLeftTopPoint->geometry().contains(event->pos()))
+        pressedInLeftTopArea = true;
+    else if (ui->widgetLeftBottomPoint->geometry().contains(event->pos()))
+        pressedInLeftBottomArea = true;
+    else if (ui->widgetRightTopPoint->geometry().contains(event->pos()))
+        pressedInRightTopArea = true;
+    else if (ui->widgetRightBottomPoint->geometry().contains(event->pos()))
+        pressedInRightBottomArea = true;
+    else if (ui->widgetLeftPoint->geometry().contains(event->pos()))
+        pressedInLeftArea = true;
+    else if (ui->widgetRightPoint->geometry().contains(event->pos()))
+        pressedInRightArea = true;
+    else if (ui->widgetTopPoint->geometry().contains(event->pos()))
+        pressedInTopArea = true;
+    else if (ui->widgetBottomPoint->geometry().contains(event->pos()))
+        pressedInBottomArea = true;
+    else if (ui->frameRect->geometry().contains(event->pos()))
+        pressedInRectArea = true;
 }
 
-void FreeSnapDialog::mouseReleaseEvent(QMouseEvent *event)
+void FreeSnapDialog::mouseReleaseEvent(QMouseEvent* event)
 {
     QWidget::mouseReleaseEvent(event);
     if (!hasRect) {
@@ -149,7 +170,7 @@ void FreeSnapDialog::mouseReleaseEvent(QMouseEvent *event)
     deltaHeight = deltaWidth = 0;
 }
 
-void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
+void FreeSnapDialog::mouseMoveEvent(QMouseEvent* event)
 {
     QWidget::mouseMoveEvent(event);
     if (mousePressed) {
@@ -157,9 +178,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
             // 首次绘制矩形框
             QPointF pos = event->pos();
             QRect r = QRect(std::min(pos.x(), pressedPos.x()),
-                            std::min(pos.y(), pressedPos.y()),
-                            std::abs(pos.x() - pressedPos.x()),
-                            std::abs(pos.y() - pressedPos.y()));
+                std::min(pos.y(), pressedPos.y()),
+                std::abs(pos.x() - pressedPos.x()),
+                std::abs(pos.y() - pressedPos.y()));
             setRectVisible(true);
             ui->frameRect->setGeometry(r);
             refreshPointPos();
@@ -168,9 +189,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
             // 左上点
             if (pressedInLeftTopArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() - lastPos.x() + event->position().x() + deltaWidth,
-                                               frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
-                                               frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
-                                               frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
+                    frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
+                    frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
+                    frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -190,9 +211,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 左下点
             } else if (pressedInLeftBottomArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() - lastPos.x() + event->position().x() + deltaWidth,
-                                               frameRectGeo.y() + deltaHeight,
-                                               frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
-                                               frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
+                    frameRectGeo.y() + deltaHeight,
+                    frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
+                    frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -212,9 +233,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 右上点
             } else if (pressedInRightTopArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() + deltaWidth,
-                                               frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
-                                               frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
-                                               frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
+                    frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
+                    frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
+                    frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -234,9 +255,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 右下点
             } else if (pressedInRightBottomArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() + deltaWidth,
-                                               frameRectGeo.y() + deltaHeight,
-                                               frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
-                                               frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
+                    frameRectGeo.y() + deltaHeight,
+                    frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
+                    frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -256,9 +277,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 上中点
             } else if (pressedInTopArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x(),
-                                               frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
-                                               frameRectGeo.width(),
-                                               frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
+                    frameRectGeo.y() - lastPos.y() + event->position().y() + deltaHeight,
+                    frameRectGeo.width(),
+                    frameRectGeo.height() + lastPos.y() - event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -272,9 +293,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 下中点
             } else if (pressedInBottomArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x(),
-                                               frameRectGeo.y() + deltaHeight,
-                                               frameRectGeo.width(),
-                                               frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
+                    frameRectGeo.y() + deltaHeight,
+                    frameRectGeo.width(),
+                    frameRectGeo.height() - lastPos.y() + event->position().y() - deltaHeight));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.height() < 0) {
@@ -288,9 +309,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 左中点
             } else if (pressedInLeftArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() - lastPos.x() + event->position().x() + deltaWidth,
-                                               frameRectGeo.y(),
-                                               frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
-                                               frameRectGeo.height()));
+                    frameRectGeo.y(),
+                    frameRectGeo.width() + lastPos.x() - event->position().x() - deltaWidth,
+                    frameRectGeo.height()));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.width() < 0) {
@@ -304,9 +325,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 // 右中点
             } else if (pressedInRightArea) {
                 QRect r = checkRectVaild(QRect(frameRectGeo.x() + deltaWidth,
-                                               frameRectGeo.y(),
-                                               frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
-                                               frameRectGeo.height()));
+                    frameRectGeo.y(),
+                    frameRectGeo.width() - lastPos.x() + event->position().x() - deltaWidth,
+                    frameRectGeo.height()));
                 deltaHeight = deltaWidth = 0;
                 // 水平或竖直缩成一条线后自动切换到相对应的另一个点
                 if (r.width() < 0) {
@@ -321,7 +342,7 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent *event)
                 int newX = frameRectGeo.x() - lastPos.x() + event->position().x();
                 int newY = frameRectGeo.y() - lastPos.y() + event->position().y();
                 ui->frameRect->move(qMin(rect().right() - frameRectGeo.width() + 1, qMax(newX, rect().left())),
-                                    qMin(rect().bottom() - frameRectGeo.height() + 1, qMax(newY, rect().top())));
+                    qMin(rect().bottom() - frameRectGeo.height() + 1, qMax(newY, rect().top())));
                 refreshPointPos();
             }
         }
@@ -338,38 +359,38 @@ void FreeSnapDialog::refreshPointPos()
 {
     QRectF r = ui->frameRect->geometry();
     ui->widgetLeftTopPoint->setGeometry(r.x() - pointRadius / 2,
-                                        r.y() - pointRadius / 2,
-                                        pointRadius,
-                                        pointRadius);
+        r.y() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetLeftBottomPoint->setGeometry(r.x() - pointRadius / 2,
-                                           r.y() + r.height() - pointRadius / 2,
-                                           pointRadius,
-                                           pointRadius);
+        r.y() + r.height() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetRightTopPoint->setGeometry(r.x() + r.width() - pointRadius / 2,
-                                         r.y() - pointRadius / 2,
-                                         pointRadius,
-                                         pointRadius);
+        r.y() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetRightBottomPoint->setGeometry(r.x() + r.width() - pointRadius / 2,
-                                            r.y() + r.height() - pointRadius / 2,
-                                            pointRadius,
-                                            pointRadius);
+        r.y() + r.height() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
 
     ui->widgetLeftPoint->setGeometry(r.x() - pointRadius / 2,
-                                     (2 * r.y() + r.height()) / 2 - pointRadius / 2,
-                                     pointRadius,
-                                     pointRadius);
+        (2 * r.y() + r.height()) / 2 - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetRightPoint->setGeometry(r.x() + r.width() - pointRadius / 2,
-                                      (2 * r.y() + r.height()) / 2 - pointRadius / 2,
-                                      pointRadius,
-                                      pointRadius);
+        (2 * r.y() + r.height()) / 2 - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetTopPoint->setGeometry((2 * r.x() + r.width()) / 2 - pointRadius / 2,
-                                    r.y() - pointRadius / 2,
-                                    pointRadius,
-                                    pointRadius);
+        r.y() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
     ui->widgetBottomPoint->setGeometry((2 * r.x() + r.width()) / 2 - pointRadius / 2,
-                                       r.y() + r.height() - pointRadius / 2,
-                                       pointRadius,
-                                       pointRadius);
+        r.y() + r.height() - pointRadius / 2,
+        pointRadius,
+        pointRadius);
 
     refreshGrayArea();
 }
@@ -378,9 +399,9 @@ void FreeSnapDialog::refreshPointPos()
 QRect FreeSnapDialog::checkRectVaild(QRect r)
 {
     QRect newRect = QRect(qMax(0, r.x()),
-                          qMax(0, r.y()),
-                          qMin(width() - r.x(), r.width()),
-                          qMin(height() - r.y(), r.height()));
+        qMax(0, r.y()),
+        qMin(width() - r.x(), r.width()),
+        qMin(height() - r.y(), r.height()));
     newRect.setWidth(newRect.width() - (newRect.x() - r.x()));
     newRect.setHeight(newRect.height() - (newRect.y() - r.y()));
     return newRect;
@@ -410,8 +431,8 @@ void FreeSnapDialog::refreshGrayArea()
     QPainterPath grayPath = QPainterPath();
     grayPath.addRegion(QRegion(geometry()).subtracted(ui->frameRect->geometry()));
     grayItem = scene->addPolygon(grayPath.toFillPolygon(),
-                                 QPen(QColorConstants::Transparent),
-                                 QBrush(grayColor));
+        QPen(QColorConstants::Transparent),
+        QBrush(grayColor));
 }
 
 // 更新预览放大内容
@@ -436,7 +457,8 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     int sizeY = 0;
     ui->labelSize->setText(QString::number(sizeX) + " x " + QString::number(sizeY));
     int r = 0, g = 0, b = 0;
-    if (!pixelColor) pixelColor = new QColor();
+    if (!pixelColor)
+        pixelColor = new QColor();
     pixelColor->setRgb(image.pixelColor(mousePos.x(), mousePos.y()).rgb());
     pixelColor->getRgb(&r, &g, &b);
     ui->labelRGB->setText("RGB:(" + QString::number(r) + "," + QString::number(g) + "," + QString::number(b) + ")");
@@ -464,10 +486,16 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
 }
 
 // 键盘事件
-void FreeSnapDialog::keyPressEvent(QKeyEvent *event)
+void FreeSnapDialog::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        *this->resultPixmap = picture.copy(ui->frameRect->geometry());
+        auto geometry = ui->frameRect->geometry();
+        auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
+        geometry.setRect(geometry.x() * devicePixelRatio,
+            geometry.y() * devicePixelRatio,
+            geometry.width() * devicePixelRatio,
+            geometry.height() * devicePixelRatio);
+        *this->resultPixmap = picture.copy(geometry);
         captured = true;
         close();
         return;
@@ -475,8 +503,8 @@ void FreeSnapDialog::keyPressEvent(QKeyEvent *event)
         captured = false;
         close();
         return;
-    } else if (event->key() == Qt::Key_C) {         // C键复制颜色
-        QClipboard *clipboard = QApplication::clipboard();
+    } else if (event->key() == Qt::Key_C) { // C键复制颜色
+        QClipboard* clipboard = QApplication::clipboard();
         clipboard->setText(QString::number(pixelColor->rgb(), 16));
         return;
     }

@@ -76,20 +76,6 @@ HEADERS += \
     src/updatedialog.h \
     src/updateutil.h \
     src/util.h \
-#    src/psd_sdk/PsdExport.h \
-#    src/psd_sdk/PsdExportColorMode.h \
-#    src/psd_sdk/PsdExportChannel.h \
-#    src/psd_sdk/PsdExportDocument.h \
-#    src/psd_sdk/PsdExportMetaDataAttribute.h \
-#    src/psd_sdk/PsdExportLayer.h \
-#    src/psd_sdk/PsdCompressionType.h \
-#    src/psd_sdk/PsdAlphaChannel.h \
-#    src/psd_sdk/PsdFixedSizeString.h \
-#    src/psd_sdk/PsdAssert.h \
-#    src/psd_sdk/PsdAllocator.h \
-#    src/psd_sdk/PsdMallocAllocator.h \
-#    src/psd_sdk/PsdFile.h \
-#    src/psd_sdk/PsdNativeFile.h \
     src/windowsinfo.h
 
 FORMS += \
@@ -117,14 +103,6 @@ RC_FILE += res/RCData.rc
 
 unix|win32: LIBS += \
     -L$$PWD/./lib/ -lGDI32
-
-INCLUDEPATH += $$PWD/./lib/
-DEPENDPATH += $$PWD/./lib/
-
-unix|win32: LIBS += \
-    -L$$PWD/./lib/ -lpsd_sdk
-
-#win32: LIBS += $$PWD/./lib/Psd_MD.lib
 
 INCLUDEPATH += $$PWD/./lib/
 DEPENDPATH += $$PWD/./lib/
