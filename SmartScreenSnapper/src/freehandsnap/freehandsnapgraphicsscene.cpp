@@ -1,45 +1,70 @@
 #include "freehandsnapgraphicsscene.h"
 
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsPolygonItem>
-#include <QRegion>
+#include <QApplication>
 #include <QDebug>
+#include <QGraphicsPolygonItem>
+#include <QGraphicsSceneMouseEvent>
+#include <QRegion>
 
-FreeHandSnapGraphicsScene::FreeHandSnapGraphicsScene(QWidget *parent) :
-    QGraphicsScene(parent),
-    mousePressed(false),
-    unsuredPath(nullptr),
-    hasNewUnsuredPath(false),
-    path(),
-    pathItem(nullptr),
-    grayItem(nullptr),
-    grayColor(0, 0, 0, 180)
+FreeHandSnapGraphicsScene::FreeHandSnapGraphicsScene(QWidget* parent)
+    : QGraphicsScene(parent)
+    , mousePressed(false)
+    , unsuredPath(nullptr)
+    , hasNewUnsuredPath(false)
+    , path()
+    , pathItem(nullptr)
+    , grayItem(nullptr)
+    , grayColor(0, 0, 0, 180)
 {
-    connect(this, &QGraphicsScene::sceneRectChanged, this, [=](){
+    connect(this, &QGraphicsScene::sceneRectChanged, this, [=]() {
         refreshGrayArea();
     });
 }
 
 FreeHandSnapGraphicsScene::~FreeHandSnapGraphicsScene()
 {
-    if (unsuredPath) delete unsuredPath;
-    if (path) delete path;
+    if (unsuredPath)
+        delete unsuredPath;
+    if (path)
+        delete path;
 }
 
 QPolygonF FreeHandSnapGraphicsScene::getPathPolygonF()
 {
-    auto p = QPainterPath(*path);
+    auto devicePixelRatio = qApp->devicePixelRatio();
+    QPainterPath newPath;
+    if (path->elementCount() > 0) {
+        auto startPoint = path->elementAt(0);
+        newPath = QPainterPath(QPointF(
+            startPoint.x * devicePixelRatio,
+            startPoint.y * devicePixelRatio));
+    }
+
+    for (int i = 1; i < path->elementCount(); i++) {
+        newPath.lineTo(QPointF(
+            path->elementAt(i).x * devicePixelRatio,
+            path->elementAt(i).y * devicePixelRatio));
+    }
+    auto p = QPainterPath(newPath);
     QPointF point = pathItem->pos();
-    p.translate(-point.x(), -point.y());
+    p.translate(-point.x() * devicePixelRatio, -point.y() * devicePixelRatio);
     return p.toFillPolygon();
 }
 
 QRectF FreeHandSnapGraphicsScene::getPathRect()
 {
-    return path->boundingRect();
+    auto r = path->boundingRect();
+    auto devicePixelRatio = qApp->devicePixelRatio();
+    r.setRect(
+        r.x() * devicePixelRatio,
+        r.y() * devicePixelRatio,
+        r.width() * devicePixelRatio,
+        r.height() * devicePixelRatio);
+    // qDebug() << r;
+    return r;
 }
 
-void FreeHandSnapGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void FreeHandSnapGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     mousePressed = true;
     hasNewUnsuredPath = false;
@@ -48,7 +73,7 @@ void FreeHandSnapGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent*)
 {
     mousePressed = false;
 
@@ -59,7 +84,7 @@ void FreeHandSnapGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     }
 }
 
-void FreeHandSnapGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void FreeHandSnapGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
     if (mousePressed) {
         path->lineTo(event->scenePos());
@@ -87,7 +112,6 @@ void FreeHandSnapGraphicsScene::refreshPathItem(QPainterPath path)
         pathItem = addPath(path, QPen(QBrush(Qt::yellow), 5));
     }
 }
-
 
 // 绘制灰色阴影
 void FreeHandSnapGraphicsScene::refreshGrayArea()

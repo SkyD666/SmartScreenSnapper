@@ -1,5 +1,4 @@
 #include "freesnapdialog.h"
-#include "screenshothelper.h"
 #include "ui_freesnapdialog.h"
 #include <QApplication>
 #include <QClipboard>
@@ -13,7 +12,7 @@
 #include <windows.h>
 
 FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
-    : QDialog(parent)
+    : BaseFullScreenSnapDialog(parent)
     , ui(new Ui::FreeSnapDialog)
     , grayColor(0, 0, 0, 180)
     , grayItem(nullptr)
@@ -39,18 +38,9 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
 {
     ui->setupUi(this);
 
-    auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
-    picture = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getFullScreen());
-    picture.setDevicePixelRatio(devicePixelRatio);
-    image = picture.toImage();
+    doAfterSetupUi();
 
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-    setWindowState(Qt::WindowActive);
-    // 多显示器支持
-    move(GetSystemMetrics(SM_XVIRTUALSCREEN) / devicePixelRatio,
-        GetSystemMetrics(SM_YVIRTUALSCREEN) / devicePixelRatio);
-    resize(GetSystemMetrics(SM_CXVIRTUALSCREEN) / devicePixelRatio,
-        GetSystemMetrics(SM_CYVIRTUALSCREEN) / devicePixelRatio);
+    image = fullScreenPixmap.toImage();
 
     ui->widgetInfoContainer->adjustSize();
     ui->widgetInfoContainer->setVisible(false);
@@ -60,23 +50,11 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
     setMouseTracking(true);
     scene = new QGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
-    scene->addPixmap(picture);
+    scene->addPixmap(fullScreenPixmap);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setGeometry(0, 0, width(), height());
     ui->graphicsView->setIgnoreMouseEvent(true);
-    // ui->graphicsView->setTransform(
-    //     QTransform()
-    //         .scale(
-    //             1.0 / ui->graphicsView->devicePixelRatio(),
-    //             1.0 / ui->graphicsView->devicePixelRatio())
-    //         .translate(
-    //             0,
-    //             0));
-    // ui->graphicsView->setTransform(QTransform(1.0 / ui->graphicsView->devicePixelRatio(), 0, 0,
-    //                                    0, 1.0 / ui->graphicsView->devicePixelRatio(), 0,
-    //                                    0, 0, 1),
-    // true);
 
     QString frameRectStyle = QString("border: ") + QString::number(rectLineWidth) + QString(" solid rgb(255, 255, 0)");
     ui->frameRect->setStyleSheet(frameRectStyle);
@@ -478,7 +456,7 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     // 绘制黑色填充背景
     painter.fillRect(0, 0, scaledPreviewWidth, scaledPreviewHeight, Qt::black);
     // 绘制noScaledPreviewPixmap
-    painter.drawPixmap(drawX, drawY, picture.copy(x, y, scaledPreviewWidth, scaledPreviewHeight));
+    painter.drawPixmap(drawX, drawY, fullScreenPixmap.copy(x, y, scaledPreviewWidth, scaledPreviewHeight));
     painter.setPen(QColor(7, 200, 250));
     painter.drawLine(0, processedPixmap.height() / 2, processedPixmap.width(), processedPixmap.height() / 2);
     painter.drawLine(processedPixmap.width() / 2, 0, processedPixmap.width() / 2, processedPixmap.height());
@@ -495,7 +473,8 @@ void FreeSnapDialog::keyPressEvent(QKeyEvent* event)
             geometry.y() * devicePixelRatio,
             geometry.width() * devicePixelRatio,
             geometry.height() * devicePixelRatio);
-        *this->resultPixmap = picture.copy(geometry);
+        *this->resultPixmap = fullScreenPixmap.copy(geometry);
+        this->resultPixmap->setDevicePixelRatio(1);
         captured = true;
         close();
         return;

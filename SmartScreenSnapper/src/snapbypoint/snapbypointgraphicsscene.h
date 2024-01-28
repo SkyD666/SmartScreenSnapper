@@ -4,8 +4,7 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsView>
 
-class SnapByPointGraphicsScene : public QGraphicsScene
-{
+class SnapByPointGraphicsScene : public QGraphicsScene {
     Q_OBJECT
 
 signals:
@@ -14,17 +13,15 @@ signals:
     void rightButtonClicked();
 
 public:
-    SnapByPointGraphicsScene(QWidget *parent = nullptr);
+    SnapByPointGraphicsScene(QWidget* parent = nullptr);
 
     ~SnapByPointGraphicsScene();
 
-
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
 
 private:
-
     QGraphicsRectItem* rectItem;
 
     QList<QPair<HWND, QRect>> windowRectList;

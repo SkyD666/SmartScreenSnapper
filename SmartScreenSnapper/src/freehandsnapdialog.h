@@ -1,6 +1,7 @@
 #ifndef FREEHANDSNAPDIALOG_H
 #define FREEHANDSNAPDIALOG_H
 
+#include "src/basefullscreensnapdialog.h"
 #include <QDialog>
 #include <QGraphicsScene>
 
@@ -10,26 +11,23 @@ namespace Ui {
 class FreeHandSnapDialog;
 }
 
-class FreeHandSnapDialog : public QDialog
-{
+class FreeHandSnapDialog : public BaseFullScreenSnapDialog {
     Q_OBJECT
 
 signals:
     void captured(QPixmap);
 
 public:
-    explicit FreeHandSnapDialog(QWidget *parent = nullptr);
+    explicit FreeHandSnapDialog(QWidget* parent = nullptr);
     ~FreeHandSnapDialog();
 
 private:
-    Ui::FreeHandSnapDialog *ui;
+    Ui::FreeHandSnapDialog* ui;
 
-    FreeHandSnapGraphicsScene *scene;
-
-    QPixmap fullScreenPixmap;
+    FreeHandSnapGraphicsScene* scene;
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent* event);
 };
 
 #endif // FREEHANDSNAPDIALOG_H

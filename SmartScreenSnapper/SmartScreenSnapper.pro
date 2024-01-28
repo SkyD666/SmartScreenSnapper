@@ -20,6 +20,7 @@ SOURCES += \
     src/MyGlobalShortcut/MyWinEventFilter.cpp \
     src/aboutdialog.cpp \
     src/application.cpp \
+    src/basefullscreensnapdialog.cpp \
     src/const.cpp \
     src/freehandsnapdialog.cpp \
     src/freehandsnap/freehandsnapgraphicsscene.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
     src/MyGlobalShortcut/MyWinEventFilter.h \
     src/aboutdialog.h \
     src/application.h \
+    src/basefullscreensnapdialog.h \
     src/const.h \
     src/freehandsnapdialog.h \
     src/freehandsnap/freehandsnapgraphicsscene.h \

@@ -1,4 +1,3 @@
-#include "screenshothelper.h"
 #include "snapfrompointdialog.h"
 #include "ui_snapfrompointdialog.h"
 #include <QMouseEvent>
@@ -6,22 +5,17 @@
 #include <QStyleOption>
 #include <windows.h>
 
-SnapByPointDialog::SnapByPointDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SnapFromPointDialog)
+SnapByPointDialog::SnapByPointDialog(QWidget* parent)
+    : BaseFullScreenSnapDialog(parent)
+    , ui(new Ui::SnapFromPointDialog)
 {
     ui->setupUi(this);
 
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-    setWindowState(Qt::WindowActive);
-    // 多显示器支持
-    move(GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN));
-    resize(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+    doAfterSetupUi();
 
-    setMouseTracking(true);
+    // 多显示器支持
     ui->graphicsView->setMouseTracking(true);
 
-    fullScreenPixmap = ScreenShotHelper::layersToPixmap(ScreenShotHelper::getFullScreen());
     scene = new SnapByPointGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
     scene->setBackgroundBrush(QBrush(fullScreenPixmap));
@@ -29,11 +23,11 @@ SnapByPointDialog::SnapByPointDialog(QWidget *parent) :
     ui->graphicsView->setScene(scene);
     ui->graphicsView->setGeometry(0, 0, width(), height());
 
-    connect(scene, &SnapByPointGraphicsScene::captured, this, [=](QRectF r){
+    connect(scene, &SnapByPointGraphicsScene::captured, this, [=](QRectF r) {
         emit captured(QPixmap(fullScreenPixmap.copy(r.toRect())));
         close();
     });
-    connect(scene, &SnapByPointGraphicsScene::rightButtonClicked, this, [=](){
+    connect(scene, &SnapByPointGraphicsScene::rightButtonClicked, this, [=]() {
         close();
     });
 }

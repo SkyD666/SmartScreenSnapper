@@ -6,29 +6,26 @@
 #include <QGraphicsScene>
 
 #include "snapbypoint/snapbypointgraphicsscene.h"
+#include "src/basefullscreensnapdialog.h"
 
 namespace Ui {
 class SnapFromPointDialog;
 }
 
-class SnapByPointDialog : public QDialog
-{
+class SnapByPointDialog : public BaseFullScreenSnapDialog {
     Q_OBJECT
 
 signals:
     void captured(QPixmap);
 
 public:
-    explicit SnapByPointDialog(QWidget *parent = nullptr);
+    explicit SnapByPointDialog(QWidget* parent = nullptr);
     ~SnapByPointDialog();
 
-    SnapByPointGraphicsScene *scene;
-
-    QPixmap fullScreenPixmap;
+    SnapByPointGraphicsScene* scene;
 
 private:
-    Ui::SnapFromPointDialog *ui;
-
+    Ui::SnapFromPointDialog* ui;
 };
 
 #endif // SNAPFROMPOINTDIALOG_H
