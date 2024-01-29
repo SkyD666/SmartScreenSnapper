@@ -64,6 +64,8 @@ public:
 
     static bool copyToClipBoardAfterSnap;
 
+    static bool freeSnapReleaseMouseCapture;
+
     static ShotTypeItem snapTypeItems[ScreenShotHelper::ShotType::Count];
 
     static QPair<QString, QString> imageExtName[6];

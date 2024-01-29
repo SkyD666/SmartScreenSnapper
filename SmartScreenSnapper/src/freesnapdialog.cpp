@@ -1,4 +1,5 @@
 #include "freesnapdialog.h"
+#include "publicdata.h"
 #include "ui_freesnapdialog.h"
 #include <QApplication>
 #include <QClipboard>
@@ -146,6 +147,10 @@ void FreeSnapDialog::mouseReleaseEvent(QMouseEvent* event)
     pressedInBottomArea = false;
 
     deltaHeight = deltaWidth = 0;
+
+    if (PublicData::freeSnapReleaseMouseCapture) {
+        captureAndClose();
+    }
 }
 
 void FreeSnapDialog::mouseMoveEvent(QMouseEvent* event)
@@ -463,20 +468,25 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     ui->labelPreview->setPixmap(processedPixmap.scaled(ui->labelPreview->width(), ui->labelPreview->height(), Qt::KeepAspectRatio));
 }
 
+void FreeSnapDialog::captureAndClose()
+{
+    auto geometry = ui->frameRect->geometry();
+    auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
+    geometry.setRect(geometry.x() * devicePixelRatio,
+        geometry.y() * devicePixelRatio,
+        geometry.width() * devicePixelRatio,
+        geometry.height() * devicePixelRatio);
+    *this->resultPixmap = fullScreenPixmap.copy(geometry);
+    this->resultPixmap->setDevicePixelRatio(1);
+    captured = true;
+    close();
+}
+
 // 键盘事件
 void FreeSnapDialog::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        auto geometry = ui->frameRect->geometry();
-        auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
-        geometry.setRect(geometry.x() * devicePixelRatio,
-            geometry.y() * devicePixelRatio,
-            geometry.width() * devicePixelRatio,
-            geometry.height() * devicePixelRatio);
-        *this->resultPixmap = fullScreenPixmap.copy(geometry);
-        this->resultPixmap->setDevicePixelRatio(1);
-        captured = true;
-        close();
+        captureAndClose();
         return;
     } else if (event->key() == Qt::Key_Escape) {
         captured = false;

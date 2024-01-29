@@ -21,6 +21,7 @@ bool PublicData::hotKeyNoWait = true;
 bool PublicData::includeCursor = false;
 bool PublicData::noBorder = false;
 bool PublicData::copyToClipBoardAfterSnap = false;
+bool PublicData::freeSnapReleaseMouseCapture = false;
 bool PublicData::editMode = false;
 QString PublicData::gifSavePath = "";
 QString PublicData::styleName = "";
@@ -101,6 +102,7 @@ void PublicData::readSettings()
     saveImageQuality = qSettings.value("Config/SaveImageQuality", -1).toInt();
     snapMethod = qSettings.value("Config/SnapMethod", SnapMethod2).toInt();
     copyToClipBoardAfterSnap = qSettings.value("Config/CopyToClipBoardAfterSnap", false).toBool();
+    freeSnapReleaseMouseCapture = qSettings.value("Config/FreeSnapReleaseMouseCapture", false).toBool();
     gifSavePath = qSettings.value("Tool/GIFSavePath", "").toString();
     styleName = qSettings.value("Config/StyleName", "").toString();
     fileNameTemplate = qSettings.value("Config/FileNameTemplate", "").toString();
@@ -136,6 +138,7 @@ void PublicData::writeSettings()
     qSettings.setValue("Config/SaveImageQuality", saveImageQuality);
     qSettings.setValue("Config/SnapMethod", snapMethod);
     qSettings.setValue("Config/CopyToClipBoardAfterSnap", copyToClipBoardAfterSnap);
+    qSettings.setValue("Config/FreeSnapReleaseMouseCapture", freeSnapReleaseMouseCapture);
     qSettings.setValue("Tool/GIFSavePath", gifSavePath);
     qSettings.setValue("Config/StyleName", styleName);
     qSettings.setValue("Config/FileNameTemplate", fileNameTemplate);

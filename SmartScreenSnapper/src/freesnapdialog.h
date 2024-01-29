@@ -75,6 +75,8 @@ protected:
 
     void refreshGrayArea(); // 更新灰色区域
     void refreshPreviewArea(QPoint mousePos); // 更新预览区域
+
+    void captureAndClose(); // 截图并关闭窗体
 };
 
 #endif // FREESNAPDIALOG_H
