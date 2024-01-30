@@ -25,43 +25,43 @@ public:
 private:
     Ui::FreeSnapDialog* ui;
 
-    QColor grayColor;
+    QColor grayColor = QColor(0, 0, 0, 180);
 
-    QGraphicsItem* grayItem;
+    QGraphicsItem* grayItem = nullptr;
 
-    float previewZoomRate;
+    float previewZoomRate = 3.2f;
 
-    QGraphicsScene* scene;
+    QGraphicsScene* scene = new QGraphicsScene(this);
 
     QImage image;
 
-    QColor* pixelColor;
+    QColor pixelColor = QColor();
 
-    QPixmap* resultPixmap;
+    QPixmap* resultPixmap = nullptr;
 
     bool& captured;
 
-    int rectLineWidth;
-    int pointRadius;
+    int rectLineWidth = 1;
+    int pointRadius = 9;
 
-    int deltaHeight;
-    int deltaWidth;
+    int deltaHeight = 0;
+    int deltaWidth = 0;
 
-    bool hasRect;
-    bool mousePressed;
+    bool hasRect = false;
+    bool mousePressed = false;
     QPointF pressedPos;
 
     QPointF lastPos;
 
-    bool pressedInRectArea;
-    bool pressedInLeftTopArea;
-    bool pressedInRightTopArea;
-    bool pressedInLeftBottomArea;
-    bool pressedInRightBottomArea;
-    bool pressedInLeftArea;
-    bool pressedInRightArea;
-    bool pressedInTopArea;
-    bool pressedInBottomArea;
+    bool pressedInRectArea = false;
+    bool pressedInLeftTopArea = false;
+    bool pressedInRightTopArea = false;
+    bool pressedInLeftBottomArea = false;
+    bool pressedInRightBottomArea = false;
+    bool pressedInLeftArea = false;
+    bool pressedInRightArea = false;
+    bool pressedInTopArea = false;
+    bool pressedInBottomArea = false;
 
 protected:
     void mousePressEvent(QMouseEvent* event);

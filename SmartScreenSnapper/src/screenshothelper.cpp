@@ -104,6 +104,12 @@ QList<QPair<QPixmap, QPoint>> ScreenShotHelper::grabWindow(int snapMethod, HWND 
         GetCursorInfo(&ci);
         GetIconInfo(ci.hCursor, &iconInf);
         layers.append(qMakePair(grabCursor(), QPoint(ci.ptScreenPos.x - x - r.left - iconInf.xHotspot, ci.ptScreenPos.y - y - r.top - iconInf.yHotspot)));
+        if (iconInf.hbmMask) {
+            DeleteObject(iconInf.hbmMask);
+        }
+        if (iconInf.hbmColor) {
+            DeleteObject(iconInf.hbmColor);
+        }
     }
 
     return layers;

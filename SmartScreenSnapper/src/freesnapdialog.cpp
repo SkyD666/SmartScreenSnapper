@@ -15,27 +15,8 @@
 FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
     : BaseFullScreenSnapDialog(parent)
     , ui(new Ui::FreeSnapDialog)
-    , grayColor(0, 0, 0, 180)
-    , grayItem(nullptr)
-    , previewZoomRate(3.2f)
-    , pixelColor(nullptr)
     , resultPixmap(result)
     , captured(captured)
-    , rectLineWidth(1)
-    , pointRadius(9)
-    , deltaHeight(0)
-    , deltaWidth(0)
-    , hasRect(false)
-    , mousePressed(false)
-    , pressedInRectArea(false)
-    , pressedInLeftTopArea(false)
-    , pressedInRightTopArea(false)
-    , pressedInLeftBottomArea(false)
-    , pressedInRightBottomArea(false)
-    , pressedInLeftArea(false)
-    , pressedInRightArea(false)
-    , pressedInTopArea(false)
-    , pressedInBottomArea(false)
 {
     ui->setupUi(this);
 
@@ -49,7 +30,6 @@ FreeSnapDialog::FreeSnapDialog(QPixmap* result, bool& captured, QWidget* parent)
 
     // 可在不点击鼠标的情况下捕获移动事件
     setMouseTracking(true);
-    scene = new QGraphicsScene(this);
     scene->setSceneRect(QRectF(0, 0, width(), height()));
     scene->addPixmap(fullScreenPixmap);
     ui->graphicsView->setRenderHint(QPainter::Antialiasing);
@@ -421,6 +401,7 @@ void FreeSnapDialog::refreshGrayArea()
 // 更新预览放大内容
 void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
 {
+    auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
     // 更新预判Widget位置---------------------------
     CURSORINFO ci;
     ICONINFO iconInf;
@@ -429,21 +410,31 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     GetIconInfo(ci.hCursor, &iconInf);
     int infoContainerX = mousePos.x() + GetSystemMetrics(SM_CXCURSOR) - iconInf.xHotspot;
     int infoContainerY = mousePos.y() + GetSystemMetrics(SM_CYCURSOR) - iconInf.yHotspot;
-    if (infoContainerX + ui->widgetInfoContainer->width() > width())
+    if (infoContainerX + ui->widgetInfoContainer->width() > width()) {
         infoContainerX = mousePos.x() - GetSystemMetrics(SM_CXCURSOR) + iconInf.xHotspot - ui->widgetInfoContainer->width();
-    if (infoContainerY + ui->widgetInfoContainer->height() > height())
+    }
+    if (infoContainerY + ui->widgetInfoContainer->height() > height()) {
         infoContainerY = mousePos.y() - GetSystemMetrics(SM_CYCURSOR) + iconInf.yHotspot - ui->widgetInfoContainer->height();
+    }
+    if (iconInf.hbmMask) {
+        DeleteObject(iconInf.hbmMask);
+    }
+    if (iconInf.hbmColor) {
+        DeleteObject(iconInf.hbmColor);
+    }
+
     ui->widgetInfoContainer->setVisible(true);
     ui->widgetInfoContainer->move(infoContainerX, infoContainerY);
-    ui->labelPosition->setText("(" + QString::number(mousePos.x() + 1) + "," + QString::number(mousePos.y() + 1) + ")");
-    int sizeX = 0;
-    int sizeY = 0;
-    ui->labelSize->setText(QString::number(sizeX) + " x " + QString::number(sizeY));
+    ui->labelPosition->setText("("
+        + QString::number(round(mousePos.x() * devicePixelRatio) + 1) + ","
+        + QString::number(round(mousePos.y() * devicePixelRatio) + 1)
+        + ")");
+    ui->labelSize->setText(
+        QString::number(round(ui->frameRect->width() * devicePixelRatio)) + " x "
+        + QString::number(round(ui->frameRect->height() * devicePixelRatio)));
     int r = 0, g = 0, b = 0;
-    if (!pixelColor)
-        pixelColor = new QColor();
-    pixelColor->setRgb(image.pixelColor(mousePos.x(), mousePos.y()).rgb());
-    pixelColor->getRgb(&r, &g, &b);
+    pixelColor.setRgb(image.pixelColor(mousePos.x(), mousePos.y()).rgb());
+    pixelColor.getRgb(&r, &g, &b);
     ui->labelRGB->setText("RGB:(" + QString::number(r) + "," + QString::number(g) + "," + QString::number(b) + ")");
 
     // 更新预览图片---------------------------
@@ -494,7 +485,7 @@ void FreeSnapDialog::keyPressEvent(QKeyEvent* event)
         return;
     } else if (event->key() == Qt::Key_C) { // C键复制颜色
         QClipboard* clipboard = QApplication::clipboard();
-        clipboard->setText(QString::number(pixelColor->rgb(), 16));
+        clipboard->setText(QString::number(pixelColor.rgb(), 16));
         return;
     }
 }
