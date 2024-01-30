@@ -1,27 +1,24 @@
 <div align="center">
-    <div>
-        <img src="image/icon.png" style="height: 100px"/>
-    </div>
+    <img src="image/icon.png" style="width: 130px"/>
     <h1>📸 SmartScreenSnapper</h1>
     <p>
         <a href="https://github.com/SkyD666/SmartScreenSnapper/releases/latest" style="text-decoration:none">
-            <img src="https://img.shields.io/github/v/release/SkyD666/SmartScreenSnapper?display_name=release" alt="GitHub release (latest by date)"/>
+            <img src="https://img.shields.io/github/v/release/SkyD666/SmartScreenSnapper?display_name=release&style=for-the-badge" alt="GitHub release (latest by date)"/>
         </a>
         <a href="https://github.com/SkyD666/SmartScreenSnapper/releases/latest" style="text-decoration:none" >
-            <img src="https://img.shields.io/github/downloads/SkyD666/SmartScreenSnapper/total" alt="GitHub all downloads"/>
+            <img src="https://img.shields.io/github/downloads/SkyD666/SmartScreenSnapper/total?style=for-the-badge" alt="GitHub all downloads"/>
         </a>
         <a href="https://img.shields.io/badge/platform-Windows >= 10 x64-brightgreen" style="text-decoration:none" >
-            <img src="https://img.shields.io/badge/platform-Windows >= 10 x64-brightgreen" alt="Windows version"/>
+            <img src="https://img.shields.io/badge/platform-Windows >= 10 x64-brightgreen?&style=for-the-badge" alt="Windows version"/>
         </a>
         <a href="https://github.com/SkyD666/SmartScreenSnapper/blob/master/LICENSE" style="text-decoration:none" >
-            <img src="https://img.shields.io/github/license/SkyD666/SmartScreenSnapper" alt="GitHub license"/>
+            <img src="https://img.shields.io/github/license/SkyD666/SmartScreenSnapper?&style=for-the-badge" alt="GitHub license"/>
         </a>
 	</p>
     <p>
         一个小巧实用的<b>截图工具</b>，使用 Qt 6 编写。
     </p>
 </div>
-
 
 
 
