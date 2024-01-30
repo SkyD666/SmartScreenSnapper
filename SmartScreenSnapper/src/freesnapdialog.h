@@ -74,7 +74,7 @@ protected:
     void setRectVisible(bool visible);
 
     void refreshGrayArea(); // 更新灰色区域
-    void refreshPreviewArea(QPoint mousePos); // 更新预览区域
+    void refreshPreviewArea(QPointF mousePos); // 更新预览区域
 
     void captureAndClose(); // 截图并关闭窗体
 };

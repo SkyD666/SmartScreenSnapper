@@ -37,6 +37,7 @@ MdiWindow::MdiWindow(QWidget* parent, Qt::WindowFlags flags)
     GraphicsScene* graphicsScene = new GraphicsScene(ui->graphicsView);
     connect(graphicsScene, &GraphicsScene::itemMoved, this, [=](QGraphicsItem* movedItem, const QPointF& movedFromPosition) {
         undoStack->push(new UndoMove(movedItem, movedFromPosition));
+        graphicsScene->setSceneRect(graphicsScene->itemsBoundingRect());
     });
     ui->graphicsView->setScene(graphicsScene);
     setWidget(containerWidget);
@@ -54,6 +55,7 @@ MdiWindow::MdiWindow(QWidget* parent, Qt::WindowFlags flags)
             auto newPixmap = pixmapItem->pixmap();
             newPixmap.setDevicePixelRatio(screen()->devicePixelRatio());
             pixmapItem->setPixmap(newPixmap);
+            ui->graphicsView->scene()->setSceneRect(ui->graphicsView->scene()->itemsBoundingRect());
         }
     });
 }
@@ -73,6 +75,7 @@ void MdiWindow::setLayers(QList<QPair<QPixmap, QPoint>> layers)
         ui->graphicsView->scene()->addItem(item);
         item->setPos(layer.second);
     }
+    ui->graphicsView->scene()->setSceneRect(ui->graphicsView->scene()->itemsBoundingRect());
 }
 
 void MdiWindow::setListItemName(QString name)

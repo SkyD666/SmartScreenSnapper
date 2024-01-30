@@ -1,19 +1,18 @@
 #ifndef MDIWINDOW_H
 #define MDIWINDOW_H
 
-#include <QMdiSubWindow>
-#include <QListWidgetItem>
+#include "screenshothelper.h"
 #include <QCloseEvent>
+#include <QListWidgetItem>
+#include <QMdiSubWindow>
 #include <QMenu>
 #include <QUndoStack>
-#include "screenshothelper.h"
 
 namespace Ui {
 class MdiWindowWidget;
 }
 
-class MdiWindow : public QMdiSubWindow
-{
+class MdiWindow : public QMdiSubWindow {
     Q_OBJECT
 
 signals:
@@ -24,7 +23,7 @@ signals:
 public:
     enum { MdiWindowRole = Qt::UserRole + 1 };
 
-    MdiWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+    MdiWindow(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 
     ~MdiWindow();
 
@@ -32,7 +31,7 @@ public:
 
     void setListItemName(QString name);
 
-    QListWidgetItem & getListItem();
+    QListWidgetItem& getListItem();
 
     QString getName();
 
@@ -56,15 +55,16 @@ public:
 
     void setShotType(ScreenShotHelper::ShotType newShotType);
 
-    QUndoStack *getUndoStack() const;
+    QUndoStack* getUndoStack() const;
 
 private:
+    Ui::MdiWindowWidget* ui;
 
-    Ui::MdiWindowWidget *ui;
+    qreal initDpi = devicePixelRatio();
 
     QListWidgetItem listItem;
 
-    QWidget *containerWidget;
+    QWidget* containerWidget;
 
     QString name;
 
@@ -74,16 +74,16 @@ private:
 
     ScreenShotHelper::ShotType shotType;
 
-    QMenu *contextMenu;
+    QMenu* contextMenu;
 
     void initActions();
 
-    QUndoStack *undoStack;
+    QUndoStack* undoStack;
 
 protected:
-    void closeEvent(QCloseEvent *event) override;
+    void closeEvent(QCloseEvent* event) override;
 
-    void contextMenuEvent(QContextMenuEvent *event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 };
 
 #endif // MDIWINDOW_H

@@ -312,9 +312,9 @@ void FreeSnapDialog::mouseMoveEvent(QMouseEvent* event)
     }
 
     // 更新预览放大区域内容
-    refreshPreviewArea(event->pos());
+    refreshPreviewArea(event->position());
 
-    lastPos = event->pos();
+    lastPos = event->position();
 }
 
 // 更新8个点的位置
@@ -399,9 +399,12 @@ void FreeSnapDialog::refreshGrayArea()
 }
 
 // 更新预览放大内容
-void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
+void FreeSnapDialog::refreshPreviewArea(QPointF mousePos)
 {
     auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
+    QPoint devicePixelRatioMousePos = QPoint(
+        round(mousePos.x() * devicePixelRatio),
+        round(mousePos.y() * devicePixelRatio));
     // 更新预判Widget位置---------------------------
     CURSORINFO ci;
     ICONINFO iconInf;
@@ -426,24 +429,31 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     ui->widgetInfoContainer->setVisible(true);
     ui->widgetInfoContainer->move(infoContainerX, infoContainerY);
     ui->labelPosition->setText("("
-        + QString::number(round(mousePos.x() * devicePixelRatio) + 1) + ","
-        + QString::number(round(mousePos.y() * devicePixelRatio) + 1)
+        + QString::number(devicePixelRatioMousePos.x() + 1) + ","
+        + QString::number(devicePixelRatioMousePos.y() + 1)
         + ")");
     ui->labelSize->setText(
         QString::number(round(ui->frameRect->width() * devicePixelRatio)) + " x "
         + QString::number(round(ui->frameRect->height() * devicePixelRatio)));
     int r = 0, g = 0, b = 0;
-    pixelColor.setRgb(image.pixelColor(mousePos.x(), mousePos.y()).rgb());
+    pixelColor.setRgb(
+        image.pixelColor(devicePixelRatioMousePos.x(), devicePixelRatioMousePos.y())
+            .rgb());
     pixelColor.getRgb(&r, &g, &b);
     ui->labelRGB->setText("RGB:(" + QString::number(r) + "," + QString::number(g) + "," + QString::number(b) + ")");
 
     // 更新预览图片---------------------------
-    float scaledPreviewWidth = ui->labelPreview->width() / previewZoomRate;
-    float scaledPreviewHeight = ui->labelPreview->height() / previewZoomRate;
+    float scaledPreviewWidth = ui->labelPreview->width()
+        / previewZoomRate;
+    float scaledPreviewHeight = ui->labelPreview->height()
+        / previewZoomRate;
     // 注意要向上取整ceil两次
-    int x = ceil(mousePos.x() - scaledPreviewWidth / 2);
-    int y = ceil(mousePos.y() - scaledPreviewHeight / 2);
+    int x = ceil(devicePixelRatioMousePos.x() - (scaledPreviewWidth / devicePixelRatio / 2));
+    int y = ceil(devicePixelRatioMousePos.y() - (scaledPreviewHeight / devicePixelRatio / 2));
+    int x2 = ceil(devicePixelRatioMousePos.x() - (scaledPreviewWidth / 2));
+    int y2 = ceil(devicePixelRatioMousePos.y() - (scaledPreviewHeight / 2));
     QPixmap processedPixmap(scaledPreviewWidth, scaledPreviewHeight);
+    processedPixmap.setDevicePixelRatio(devicePixelRatio);
     QPainter painter(&processedPixmap);
     painter.setViewport(0, 0, scaledPreviewWidth, scaledPreviewHeight);
     // 开始绘制noScaledPreviewPixmap的位置
@@ -452,21 +462,33 @@ void FreeSnapDialog::refreshPreviewArea(QPoint mousePos)
     // 绘制黑色填充背景
     painter.fillRect(0, 0, scaledPreviewWidth, scaledPreviewHeight, Qt::black);
     // 绘制noScaledPreviewPixmap
-    painter.drawPixmap(drawX, drawY, fullScreenPixmap.copy(x, y, scaledPreviewWidth, scaledPreviewHeight));
-    painter.setPen(QColor(7, 200, 250));
-    painter.drawLine(0, processedPixmap.height() / 2, processedPixmap.width(), processedPixmap.height() / 2);
-    painter.drawLine(processedPixmap.width() / 2, 0, processedPixmap.width() / 2, processedPixmap.height());
-    ui->labelPreview->setPixmap(processedPixmap.scaled(ui->labelPreview->width(), ui->labelPreview->height(), Qt::KeepAspectRatio));
+    painter.drawPixmap(drawX, drawY, fullScreenPixmap.copy(x2, y2, scaledPreviewWidth, scaledPreviewHeight));
+    painter.setPen(QPen(QBrush((QColor(7, 200, 250))), 1.0 / devicePixelRatio));
+    painter.drawLine(
+        0,
+        round(processedPixmap.height() / devicePixelRatio / 2),
+        round(processedPixmap.width() / devicePixelRatio),
+        round(processedPixmap.height() / devicePixelRatio / 2));
+    painter.drawLine(
+        round(processedPixmap.width() / devicePixelRatio / 2),
+        0,
+        round(processedPixmap.width() / devicePixelRatio / 2),
+        round(processedPixmap.height() / devicePixelRatio));
+    ui->labelPreview->setPixmap(
+        processedPixmap.scaled(
+            round(ui->labelPreview->width() * devicePixelRatio),
+            round(ui->labelPreview->height() * devicePixelRatio),
+            Qt::KeepAspectRatio));
 }
 
 void FreeSnapDialog::captureAndClose()
 {
     auto geometry = ui->frameRect->geometry();
     auto devicePixelRatio = ui->graphicsView->devicePixelRatio();
-    geometry.setRect(geometry.x() * devicePixelRatio,
-        geometry.y() * devicePixelRatio,
-        geometry.width() * devicePixelRatio,
-        geometry.height() * devicePixelRatio);
+    geometry.setRect(round(geometry.x() * devicePixelRatio),
+        round(geometry.y() * devicePixelRatio),
+        round(geometry.width() * devicePixelRatio),
+        round(geometry.height() * devicePixelRatio));
     *this->resultPixmap = fullScreenPixmap.copy(geometry);
     this->resultPixmap->setDevicePixelRatio(1);
     captured = true;
